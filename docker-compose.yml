@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  dentalapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dental_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=dental_db;Username=postgres;Password=yourpassword"
+
+  db:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: dental_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
