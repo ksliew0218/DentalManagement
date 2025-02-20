@@ -12,7 +12,9 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// ✅ Configure Middleware (Fixes Missing Configurations)
+// ✅ Fix: Bind to all network interfaces (IPv4 & IPv6) to allow Docker access
+app.Urls.Add("http://*:9090");
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

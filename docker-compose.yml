@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: dental_app
     ports:
-      - "8080:80"
+      - "9090:9090"
     depends_on:
       - db
     environment:
