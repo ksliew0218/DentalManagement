@@ -10,5 +10,6 @@ namespace DentalManagement.Models  // Ensure this matches your project namespace
 
         // ✅ Add this line to ensure Patient model is found
         public DbSet<Patient> Patients { get; set; }
+        public DbSet<TreatmentType> TreatmentTypes { get; set; }
     }
 }
