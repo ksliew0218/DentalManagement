@@ -1,0 +1,48 @@
+@model DentalManagement.Models.Patient
+
+@{
+    ViewData["Title"] = "Patient Register";
+}
+
+<h2>Patient Register</h2>
+
+<form asp-action="Register" method="post">
+    <label>Email:</label>
+    <input type="email" name="email" required /><br />
+
+    <label>Username:</label>
+    <input type="text" name="username" required /><br />
+
+    <label>Password:</label>
+    <input type="password" name="password" required /><br />
+
+    <label>First Name:</label>
+    <input asp-for="FirstName" required /><br />
+
+    <label>Last Name:</label>
+    <input asp-for="LastName" required /><br />
+
+    <label>Gender:</label>
+    <select asp-for="Gender">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+    </select><br />
+
+    <label>Date of Birth:</label>
+    <input asp-for="DateOfBirth" type="date" required /><br />
+
+    <label>Address:</label>
+    <input asp-for="Address" required /><br />
+
+    <label>Phone Number:</label>
+    <input asp-for="PhoneNumber" required /><br />
+
+    <label>Emergency Contact Name:</label>
+    <input asp-for="EmergencyContactName" required /><br />
+
+    <label>Emergency Contact Phone:</label>
+    <input asp-for="EmergencyContactPhone" required /><br />
+
+    <button type="submit">Register</button>
+</form>

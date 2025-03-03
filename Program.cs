@@ -13,7 +13,7 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 
 // ✅ Fix: Bind to all network interfaces (IPv4 & IPv6) to allow Docker access
-app.Urls.Add("http://*:9090");
+app.Urls.Add("http://localhost:9090");
 
 if (!app.Environment.IsDevelopment())
 {
