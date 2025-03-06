@@ -26,7 +26,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly ApplicationDbContext _context; // 🔹 注入数据库上下文
+        private readonly ApplicationDbContext _context; 
 
         public RegisterModel(
             UserManager<User> userManager,
@@ -42,7 +42,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
-            _context = context; // 🔹 赋值数据库上下文
+            _context = context; 
         }
 
         [BindProperty]
@@ -70,7 +70,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
-            // 🔹 新增 Patient 相关字段
             [Required]
             [Display(Name = "First Name")]
             public string FirstName { get; set; }
@@ -112,7 +111,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
-                user.Role = UserRole.Patient; // 🔹 设置角色为 Patient
+                user.Role = UserRole.Patient; 
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
@@ -122,7 +121,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
 
                     var userId = await _userManager.GetUserIdAsync(user);
 
-                    // 🔹 创建 Patient 记录
                     var patient = new Patient
                     {
                         UserID = userId,
@@ -137,7 +135,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                     };
 
                     _context.Patients.Add(patient);
-                    await _context.SaveChangesAsync(); // 🔹 保存到数据库
+                    await _context.SaveChangesAsync(); 
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnUrl);

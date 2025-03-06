@@ -11,7 +11,7 @@ namespace DentalManagement.Models
         Patient
     }
 
-    public class User : IdentityUser // ✅ Identity 需要继承 IdentityUser
+    public class User : IdentityUser 
     {
         public UserRole Role { get; set; } = UserRole.Patient;
         public bool IsActive { get; set; } = true;
@@ -20,17 +20,16 @@ namespace DentalManagement.Models
         public DateTime CreatedAt
         {
             get => _createdAt;
-            set => _createdAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); // ✅ 确保 UTC
+            set => _createdAt = DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
         private DateTime _updatedAt = DateTime.UtcNow;
         public DateTime UpdatedAt
         {
             get => _updatedAt;
-            set => _updatedAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); // ✅ 确保 UTC
+            set => _updatedAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); 
         }
 
-        // 🔹 关联 Patients
         public virtual ICollection<Patient> Patients { get; set; }
     }
 }

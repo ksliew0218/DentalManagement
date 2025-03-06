@@ -10,8 +10,8 @@ namespace DentalManagement.Models
         public int Id { get; set; }
 
         [ForeignKey("User")]
-        public string UserID { get; set; }  // ✅ IdentityUser 的主键是 string
-        public User User { get; set; }  // ✅ 关联 User 表
+        public string UserID { get; set; } 
+        public User User { get; set; }  
 
         [Required]
         public string FirstName { get; set; }
@@ -20,14 +20,14 @@ namespace DentalManagement.Models
         public string LastName { get; set; }
 
         [Required]
-        public string Gender { get; set; }  // ENUM('Male', 'Female', 'Other')
+        public string Gender { get; set; }  
 
         private DateTime _dateOfBirth;
         [Required]
         public DateTime DateOfBirth
         {
             get => _dateOfBirth;
-            set => _dateOfBirth = DateTime.SpecifyKind(value, DateTimeKind.Utc); // ✅ 确保存储为 UTC
+            set => _dateOfBirth = DateTime.SpecifyKind(value, DateTimeKind.Utc); 
         }
 
         public string? Address { get; set; }
