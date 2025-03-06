@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: dental_app
     ports:
-      - "9090:9090"
+      - "9090:80"
     environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:80"
       ConnectionStrings__DefaultConnection: "Host=ep-aged-dawn-a1b43ker-pooler.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_asjynoYCvM74;SSL Mode=Require;Trust Server Certificate=True"

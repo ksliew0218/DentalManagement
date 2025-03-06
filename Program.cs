@@ -17,7 +17,8 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 
-app.Urls.Add("http://localhost:9090");
+var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.0.0:80";
+app.Urls.Add(urls);
 
 if (!app.Environment.IsDevelopment())
 {
