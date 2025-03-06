@@ -1,16 +1,16 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace DentalManagement.Models  // Ensure this matches your project namespace
+namespace DentalManagement.Models
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<User> // ✅ 继承 IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
-        { }
+        {
+        }
 
-        // ✅ Add this line to ensure Patient model is found
-        public DbSet<User> Users { get; set; }
-        public DbSet<Patient> Patients { get; set; }
+        public DbSet<Patient> Patients { get; set; } // ✅ Identity 已包含 Users
         public DbSet<TreatmentType> TreatmentTypes { get; set; }
     }
 }

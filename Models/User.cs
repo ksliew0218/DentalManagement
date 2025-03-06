@@ -1,35 +1,36 @@
+using Microsoft.AspNetCore.Identity;
 using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace DentalManagement.Models
 {
     public enum UserRole
     {
+        Admin,
         Doctor,
-        Patient,
-        Admin
+        Patient
     }
 
-    public class User
+    public class User : IdentityUser // ✅ Identity 需要继承 IdentityUser
     {
-        [Key]
-        public int Id { get; set; }
-
-        [Required, EmailAddress]
-        public required string Email { get; set; }  // 添加 required 关键字
-
-        [Required, MinLength(4)]
-        public required string Username { get; set; }  // 添加 required 关键字
-
-        [Required]
-        public required string Password { get; set; }  // 添加 required 关键字
-
-        [Required]
-        public UserRole Role { get; set; }
-
+        public UserRole Role { get; set; } = UserRole.Patient;
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        private DateTime _createdAt = DateTime.UtcNow;
+        public DateTime CreatedAt
+        {
+            get => _createdAt;
+            set => _createdAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); // ✅ 确保 UTC
+        }
+
+        private DateTime _updatedAt = DateTime.UtcNow;
+        public DateTime UpdatedAt
+        {
+            get => _updatedAt;
+            set => _updatedAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); // ✅ 确保 UTC
+        }
+
+        // 🔹 关联 Patients
+        public virtual ICollection<Patient> Patients { get; set; }
     }
 }

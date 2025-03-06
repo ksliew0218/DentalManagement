@@ -5,7 +5,7 @@
 namespace DentalManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdatePatientDateTime : Migration
+    public partial class FixDateTimeUtc : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
