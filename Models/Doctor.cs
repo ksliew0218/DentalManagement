@@ -43,5 +43,6 @@ namespace DentalManagement.Models
 
         [Required]
         public StatusType Status { get; set; } // Active/Inactive
+        public List<DoctorTreatment> DoctorTreatments { get; set; } = new();
     }
 }
