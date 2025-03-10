@@ -12,5 +12,6 @@ namespace DentalManagement.Models
 
         public DbSet<Patient> Patients { get; set; } // ✅ Identity 已包含 Users
         public DbSet<TreatmentType> TreatmentTypes { get; set; }
+        public DbSet<Doctor> Doctors { get; set; }
     }
 }
