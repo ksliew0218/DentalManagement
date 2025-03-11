@@ -7,9 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();  
+    .AddDefaultTokenProviders(); 
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();  
@@ -40,8 +40,8 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var userManager = services.GetRequiredService<UserManager<User>>();  
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();  
+    // var userManager = services.GetRequiredService<UserManager<User>>();  
+    // var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();  
 
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
     try
@@ -50,7 +50,7 @@ using (var scope = app.Services.CreateScope())
         {
             Console.WriteLine("✅ Database connection successful!");
 
-            await DbInitializer.Initialize(services, userManager, roleManager);
+            // await DbInitializer.Initialize(services, userManager, roleManager);
         }
         else
         {
