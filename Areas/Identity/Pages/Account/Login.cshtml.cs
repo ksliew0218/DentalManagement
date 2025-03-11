@@ -21,11 +21,13 @@ namespace DentalManagement.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<User> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<User> signInManager, UserManager<User> userManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -116,6 +118,17 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    
+                    // Get the logged-in user
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    
+                    // Check if the user is an admin
+                    if (user != null && user.Role == UserRole.Admin)
+                    {
+                        // Redirect admin users to the admin dashboard
+                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                    }
+                    
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

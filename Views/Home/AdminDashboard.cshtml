@@ -1,0 +1,192 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4">Admin Dashboard</h1>
+            <p class="lead">Welcome to the Dental Management System Admin Dashboard</p>
+        </div>
+        <div class="col-auto">
+            <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Create New Treatment
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Doctors Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Doctors</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.DoctorCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-person-badge fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Patients</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.PatientCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treatments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Treatments
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TreatmentCount</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clipboard2-pulse fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Appointments</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="btn btn-primary btn-block py-3">
+                                <i class="bi bi-plus-circle me-2"></i> Add Treatment
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="#" class="btn btn-success btn-block py-3">
+                                <i class="bi bi-person-plus me-2"></i> Add Doctor
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="#" class="btn btn-info btn-block py-3 text-white">
+                                <i class="bi bi-calendar-plus me-2"></i> New Appointment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">System Info</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <div class="small font-weight-bold">Application Version <span class="float-end">v1.0.0</span></div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small font-weight-bold">Database Status <span class="float-end text-success">Connected</span></div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small font-weight-bold">Last Backup <span class="float-end">@DateTime.Now.AddDays(-1).ToString("MMM dd, yyyy")</span></div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small font-weight-bold">Server Time <span class="float-end">@DateTime.Now.ToString("HH:mm:ss")</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    .text-primary {
+        color: #4e73df !important;
+    }
+    .text-success {
+        color: #1cc88a !important;
+    }
+    .text-info {
+        color: #36b9cc !important;
+    }
+    .text-warning {
+        color: #f6c23e !important;
+    }
+    .font-weight-bold {
+        font-weight: 700 !important;
+    }
+    .text-xs {
+        font-size: .7rem;
+    }
+    .text-uppercase {
+        text-transform: uppercase !important;
+    }
+    .fa-2x {
+        font-size: 2em;
+    }
+    .text-gray-300 {
+        color: #dddfeb !important;
+    }
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+    .btn-block {
+        display: block;
+        width: 100%;
+    }
+</style> 

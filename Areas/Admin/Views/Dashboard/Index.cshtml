@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Create New Treatment
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @ViewBag.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Doctors Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card border-0 h-100 bg-gradient-primary text-white">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-title text-uppercase">Doctors</div>
+                        <div class="count">@ViewBag.DoctorCount</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-person-badge icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="#" class="text-white small stretched-link">View Details <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patients Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card border-0 h-100 bg-gradient-success text-white">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-title text-uppercase">Patients</div>
+                        <div class="count">@ViewBag.PatientCount</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="#" class="text-white small stretched-link">View Details <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treatments Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card border-0 h-100 bg-gradient-info text-white">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-title text-uppercase">Treatments</div>
+                        <div class="count">@ViewBag.TreatmentCount</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-clipboard2-pulse icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-area="" asp-controller="TreatmentType" asp-action="Index" class="text-white small stretched-link">View Details <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card dashboard-card border-0 h-100 bg-gradient-warning text-white">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="card-title text-uppercase">Appointments</div>
+                        <div class="count">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-calendar-check icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="#" class="text-white small stretched-link">View Details <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="btn btn-primary btn-block py-3">
+                            <i class="bi bi-plus-circle me-2"></i> Add Treatment
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="#" class="btn btn-success btn-block py-3">
+                            <i class="bi bi-person-plus me-2"></i> Add Doctor
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="#" class="btn btn-info btn-block py-3 text-white">
+                            <i class="bi bi-calendar-plus me-2"></i> New Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold">System Info</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <div class="small font-weight-bold">Application Version <span class="float-end">v1.0.0</span></div>
+                </div>
+                <div class="mb-2">
+                    <div class="small font-weight-bold">Database Status <span class="float-end text-success">Connected</span></div>
+                </div>
+                <div class="mb-2">
+                    <div class="small font-weight-bold">Last Backup <span class="float-end">@DateTime.Now.AddDays(-1).ToString("MMM dd, yyyy")</span></div>
+                </div>
+                <div class="mb-2">
+                    <div class="small font-weight-bold">Server Time <span class="float-end">@DateTime.Now.ToString("HH:mm:ss")</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

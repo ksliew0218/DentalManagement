@@ -4,6 +4,11 @@
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var isAdmin = currentUser?.Role == UserRole.Admin;
+}
+
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {

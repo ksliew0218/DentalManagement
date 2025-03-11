@@ -1,0 +1,110 @@
+/* Admin Dashboard Styles */
+
+#wrapper {
+    overflow-x: hidden;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: -15rem;
+    transition: margin 0.25s ease-out;
+    width: 15rem;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#sidebar-wrapper .list-group {
+    width: 15rem;
+}
+
+#sidebar-wrapper .list-group-item {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #343a40 !important;
+    border-left: 4px solid #007bff;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background-color: #343a40 !important;
+    border-left: 4px solid #007bff;
+}
+
+#page-content-wrapper {
+    min-width: 100vw;
+}
+
+body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
+    margin-left: 0;
+}
+
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
+
+    body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
+        margin-left: -15rem;
+    }
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-card .card-body {
+    padding: 1.5rem;
+}
+
+.dashboard-card .icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.dashboard-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card .count {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Card colors */
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(45deg, #1cc88a, #13855c);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(45deg, #36b9cc, #258391);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(45deg, #f6c23e, #dda20a);
+} 

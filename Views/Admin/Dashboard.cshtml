@@ -1,0 +1,107 @@
+@model DentalManagement.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4">
+                <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
+            </h1>
+            <p class="lead text-muted">Manage your dental practice from one central location.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-primary">
+                        <i class="bi bi-people-fill me-2"></i>Patients
+                    </h3>
+                    <h2 class="display-4 fw-bold">@Model.PatientCount</h2>
+                    <p class="card-text">Total registered patients</p>
+                    <a href="#" class="btn btn-outline-primary">Manage Patients</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-success">
+                        <i class="bi bi-person-badge-fill me-2"></i>Doctors
+                    </h3>
+                    <h2 class="display-4 fw-bold">@Model.DoctorCount</h2>
+                    <p class="card-text">Active dental professionals</p>
+                    <a href="#" class="btn btn-outline-success">Manage Doctors</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-info">
+                        <i class="bi bi-clipboard2-pulse me-2"></i>Treatments
+                    </h3>
+                    <h2 class="display-4 fw-bold">@Model.TreatmentTypeCount</h2>
+                    <p class="card-text">Available treatment types</p>
+                    <a asp-controller="TreatmentType" asp-action="Index" class="btn btn-outline-info">Manage Treatments</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>Administrative Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-grid">
+                                <a asp-controller="TreatmentType" asp-action="Create" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-plus-circle me-2"></i>Add Treatment Type
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-success btn-lg">
+                                    <i class="bi bi-calendar-plus me-2"></i>Schedule Appointment
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-info btn-lg text-white">
+                                    <i class="bi bi-file-earmark-text me-2"></i>Generate Reports
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">No recent activity to display.</p>
+                    <!-- This section can be populated with actual activity data in the future -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
