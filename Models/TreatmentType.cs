@@ -30,5 +30,6 @@ namespace DentalManagement.Models
 
         // Nullable in case it’s never updated
         public DateTime? UpdatedAt { get; set; }
+        public List<DoctorTreatment> DoctorTreatments { get; set; } = new();
     }
 }
