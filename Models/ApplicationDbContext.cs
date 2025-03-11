@@ -3,14 +3,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DentalManagement.Models
 {
-    public class ApplicationDbContext : IdentityDbContext<User> // ✅ 继承 IdentityDbContext<User>
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
 
-        public DbSet<Patient> Patients { get; set; } // ✅ Identity 已包含 Users
+        public DbSet<Patient> Patients { get; set; }
         public DbSet<TreatmentType> TreatmentTypes { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
     }

@@ -1,21 +1,20 @@
-using DentalManagement.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using DentalManagement.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders(); 
+    .AddDefaultTokenProviders();  
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages(); 
+builder.Services.AddRazorPages();  
 
 var app = builder.Build();
-
 
 var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.0.0:80";
 app.Urls.Add(urls);
@@ -29,24 +28,34 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthentication(); 
-app.UseAuthorization();
-
+app.UseAuthentication();  
+app.UseAuthorization();   
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-
-app.MapRazorPages(); 
+app.MapRazorPages();  
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserManager<User>>();  
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();  
+
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
     try
     {
-        dbContext.Database.CanConnect();
-        Console.WriteLine("✅ Database connection successful!");
+        if (dbContext.Database.CanConnect())
+        {
+            Console.WriteLine("✅ Database connection successful!");
+
+            await DbInitializer.Initialize(services, userManager, roleManager);
+        }
+        else
+        {
+            Console.WriteLine("❌ Failed to connect to the database.");
+        }
     }
     catch (Exception ex)
     {

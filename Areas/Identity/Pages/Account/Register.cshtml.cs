@@ -25,7 +25,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
         private readonly IUserStore<User> _userStore;
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        private readonly IEmailSender _emailSender;
+        // private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context; 
 
         public RegisterModel(
@@ -33,7 +33,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             IUserStore<User> userStore,
             SignInManager<User> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender,
+            // IEmailSender emailSender,
             ApplicationDbContext context)
         {
             _userManager = userManager;
@@ -41,7 +41,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            _emailSender = emailSender;
+            // _emailSender = emailSender;
             _context = context; 
         }
 
