@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
 
 namespace DentalManagement.Areas.Identity.Pages.Account
@@ -25,15 +25,13 @@ namespace DentalManagement.Areas.Identity.Pages.Account
         private readonly IUserStore<User> _userStore;
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
-        // private readonly IEmailSender _emailSender;
-        private readonly ApplicationDbContext _context; 
+        private readonly ApplicationDbContext _context;
 
         public RegisterModel(
             UserManager<User> userManager,
             IUserStore<User> userStore,
             SignInManager<User> signInManager,
             ILogger<RegisterModel> logger,
-            // IEmailSender emailSender,
             ApplicationDbContext context)
         {
             _userManager = userManager;
@@ -41,8 +39,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
             _logger = logger;
-            // _emailSender = emailSender;
-            _context = context; 
+            _context = context;
         }
 
         [BindProperty]
@@ -60,13 +57,14 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             public string Email { get; set; }
 
             [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "The password must be between {2} and {1} characters.", MinimumLength = 8)]
             [DataType(DataType.Password)]
+            [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "Password must have at least one uppercase letter, one lowercase letter, and one number.")]
             [Display(Name = "Password")]
             public string Password { get; set; }
 
             [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
+            [Display(Name = "Confirm Password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
@@ -105,49 +103,62 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = CreateUser();
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-
-                user.Role = UserRole.Patient; 
-
-                var result = await _userManager.CreateAsync(user, Input.Password);
-
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
-
-                    var userId = await _userManager.GetUserIdAsync(user);
-
-                    var patient = new Patient
-                    {
-                        UserID = userId,
-                        FirstName = Input.FirstName,
-                        LastName = Input.LastName,
-                        Gender = Input.Gender,
-                        DateOfBirth = Input.DateOfBirth,
-                        Address = Input.Address,
-                        PhoneNumber = Input.PhoneNumber,
-                        EmergencyContactName = Input.EmergencyContactName,
-                        EmergencyContactPhone = Input.EmergencyContactPhone
-                    };
-
-                    _context.Patients.Add(patient);
-                    await _context.SaveChangesAsync(); 
-
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                return Page();
             }
 
-            return Page();
+            var user = CreateUser();
+            await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+            await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+            user.Role = UserRole.Patient;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var result = await _userManager.CreateAsync(user, Input.Password);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return Page();
+                }
+
+                _logger.LogInformation("User created a new account with password.");
+
+                var userId = await _userManager.GetUserIdAsync(user);
+
+                var patient = new DentalManagement.Models.Patient
+                {
+                    UserID = userId,
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
+                    Gender = Input.Gender,
+                    DateOfBirth = Input.DateOfBirth,
+                    Address = Input.Address,
+                    PhoneNumber = Input.PhoneNumber,
+                    EmergencyContactName = Input.EmergencyContactName,
+                    EmergencyContactPhone = Input.EmergencyContactPhone
+                };
+
+                _context.Patients.Add(patient);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return LocalRedirect(returnUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error during user registration: {ex.Message}");
+                await transaction.RollbackAsync();
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
+                return Page();
+            }
         }
 
         private User CreateUser()

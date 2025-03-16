@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
-using DentalManagement.Areas.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure Identity with more complete options
-builder.Services.AddDefaultIdentity<User>(options => {
+// Configure Identity with complete options
+builder.Services.AddDefaultIdentity<User>(options =>
+{
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
@@ -21,11 +21,8 @@ builder.Services.AddDefaultIdentity<User>(options => {
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Add MVC with support for areas
-builder.Services.AddControllersWithViews(options => 
-{
-    options.Conventions.Add(new AdminAreaRegistration());
-});
+// Add MVC with support for multiple areas
+builder.Services.AddControllersWithViews();
 
 // Add Razor Pages support (required for Identity)
 builder.Services.AddRazorPages();
@@ -40,6 +37,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
+// Ensure application runs on the configured URL
 var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.0.0:80";
 app.Urls.Add(urls);
 
@@ -57,10 +55,10 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthentication();  
-app.UseAuthorization();   
+app.UseAuthentication();
+app.UseAuthorization();
 
-// Add area route
+// Add area routes for both `Admin` and `Patient`
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
@@ -71,22 +69,22 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Map Razor Pages (required for Identity)
-app.MapRazorPages();  
+app.MapRazorPages();
 
+// Database Initialization
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    // var userManager = services.GetRequiredService<UserManager<User>>();  
-    // var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();  
-
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
+
     try
     {
         if (dbContext.Database.CanConnect())
         {
             Console.WriteLine("✅ Database connection successful!");
 
-            // await DbInitializer.Initialize(services, userManager, roleManager);
+            // Run DbInitializer if necessary
+            // await DbInitializer.Initialize(services);
         }
         else
         {

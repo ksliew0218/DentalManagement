@@ -82,6 +82,12 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
+            if (user.Role != UserRole.Admin)
+            {
+                return RedirectToPage("./Profile");
+            }
+
+
             await LoadAsync(user);
             return Page();
         }

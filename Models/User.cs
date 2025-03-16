@@ -11,7 +11,7 @@ namespace DentalManagement.Models
         Patient
     }
 
-    public class User : IdentityUser 
+    public class User : IdentityUser
     {
         public UserRole Role { get; set; } = UserRole.Patient;
         public bool IsActive { get; set; } = true;
@@ -27,9 +27,9 @@ namespace DentalManagement.Models
         public DateTime UpdatedAt
         {
             get => _updatedAt;
-            set => _updatedAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); 
+            set => _updatedAt = DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
-        public virtual ICollection<Patient> Patients { get; set; }
+        public virtual Patient Patient { get; set; }
     }
 }
