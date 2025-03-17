@@ -16,4 +16,6 @@ RUN dotnet publish "DentalManagement.csproj" -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app .
-ENTRYPOINT ["dotnet", "DentalManagement.dll"]
+COPY startup.sh .
+RUN chmod +x startup.sh
+ENTRYPOINT ["./startup.sh"]

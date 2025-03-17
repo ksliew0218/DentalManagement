@@ -6,7 +6,7 @@
             <h2 class="mb-0">Create Treatment Type</h2>
         </div>
         <div class="card-body">
-            <form asp-action="Create" class="needs-validation" novalidate>
+            <form asp-action="Create" class="needs-validation" enctype="multipart/form-data" novalidate>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <div class="form-group">
@@ -39,7 +39,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <div class="form-group">
-                            <label class="form-label">Price ($) <span class="text-danger">*</span></label>
+                            <label class="form-label">Price (RM) <span class="text-danger">*</span></label>
                             <input asp-for="Price" type="number" step="0.01" class="form-control" required />
                             <div class="invalid-feedback">Please enter a valid price</div>
                         </div>
@@ -70,6 +70,16 @@
                         <div class="form-group">
                             <label class="form-label">Description</label>
                             <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Treatment Image <small class="text-muted">(Optional)</small></label>
+                            <input type="file" name="ImageFile" class="form-control" accept="image/*" data-val="false" />
+                            <small class="text-muted">Upload an image for this treatment (optional). Recommended size: 800x600 pixels.</small>
                         </div>
                     </div>
                 </div>
@@ -180,6 +190,35 @@
                     durationInput.value = '90';
                     descriptionInput.value = 'Custom-fitted cap that covers a damaged or weak tooth to restore its shape and function.';
                     break;
+            }
+        });
+        
+        // Image preview functionality
+        document.querySelector('input[name="ImageFile"]').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                
+                // Create preview element if it doesn't exist
+                let previewContainer = document.getElementById('imagePreview');
+                if (!previewContainer) {
+                    previewContainer = document.createElement('div');
+                    previewContainer.id = 'imagePreview';
+                    previewContainer.className = 'mt-2';
+                    this.parentNode.appendChild(previewContainer);
+                }
+                
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" />
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                reader.readAsDataURL(file);
             }
         });
     </script>
