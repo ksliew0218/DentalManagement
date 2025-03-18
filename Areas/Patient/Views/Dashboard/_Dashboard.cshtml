@@ -8,84 +8,92 @@
     <link href="~/css/dashboard.css" rel="stylesheet" asp-append-version="true">
 </head>
 
-<div class="row">
-    <!-- Patient Info Card -->
-    <div class="col-12">
-        <div class="patient-info-card">
-            <div class="welcome-section">
+<div class="dashboard-container">
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <div class="welcome-header">
+            <div class="welcome-title">
                 <h2>Welcome back, <span class="patient-name">@User.Identity.Name</span></h2>
-                <div class="patient-details">
-                    <div class="info-item">
-                        <i class="bi bi-gender-female"></i>
-                        <span>Female</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="bi bi-calendar3"></i>
-                        <span>24 years</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="bi bi-droplet-fill"></i>
-                        <span>O+</span>
-                    </div>
+                <p class="subtitle">Here's your health overview</p>
+            </div>
+            <div class="patient-details">
+                <div class="info-badge">
+                    <i class="bi bi-person"></i>
+                    <span>Female</span>
+                </div>
+                <div class="info-badge">
+                    <i class="bi bi-calendar3"></i>
+                    <span>24 years</span>
+                </div>
+                <div class="info-badge">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Regular Patient</span>
                 </div>
             </div>
-            <div class="visit-section">
-                <div class="visit-item">
+        </div>
+        
+        <div class="visit-timeline">
+            <div class="visit-card recent">
+                <div class="visit-icon">
                     <i class="bi bi-clock-history"></i>
-                    <div class="visit-info">
-                        <span class="visit-label">Recent Visit</span>
-                        <span class="visit-date">15 March 2024</span>
-                    </div>
                 </div>
-                <div class="visit-item">
+                <div class="visit-info">
+                    <h4>Recent Visit</h4>
+                    <time>15 March 2024</time>
+                </div>
+            </div>
+            <div class="visit-card upcoming">
+                <div class="visit-icon">
                     <i class="bi bi-calendar-check"></i>
-                    <div class="visit-info">
-                        <span class="visit-label">Upcoming Visit</span>
-                        <span class="visit-date">*</span>
-                    </div>
+                </div>
+                <div class="visit-info">
+                    <h4>Upcoming Visit</h4>
+                    <span class="no-visit">No scheduled visits</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="col-12">
-        <div class="stats-container">
-            <div class="stats-card">
-                <div class="stats-icon bg-info">
-                    <i class="bi bi-people"></i>
-                </div>
-                <div class="stats-details">
-                    <span class="stats-number">@ViewData["PatientCount"]</span>
-                    <span class="stats-label">Patients</span>
-                </div>
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card patients">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
             </div>
-            <div class="stats-card">
-                <div class="stats-icon bg-success">
-                    <i class="bi bi-clipboard2-pulse"></i>
-                </div>
-                <div class="stats-details">
-                    <span class="stats-number">@ViewData["SurgeryCount"]</span>
-                    <span class="stats-label">Surgeries</span>
-                </div>
+            <div class="stat-content">
+                <div class="stat-number">@ViewData["PatientCount"]</div>
+                <div class="stat-label">Total Patients</div>
             </div>
-            <div class="stats-card">
-                <div class="stats-icon bg-warning">
-                    <i class="bi bi-journal-check"></i>
-                </div>
-                <div class="stats-details">
-                    <span class="stats-number">@ViewData["DischargeCount"]</span>
-                    <span class="stats-label">Discharges</span>
-                </div>
+            <div class="stat-trend positive">
+                <i class="bi bi-arrow-up"></i>
+                <span>12%</span>
             </div>
         </div>
-    </div>
-
-    <!-- Additional Dashboard Content -->
-    <div class="col-12">
-        <h2 class="page-title">Dashboard</h2>
-        <div class="dashboard-content">
-            <p>Dashboard content.</p>
+        <div class="stat-card surgeries">
+            <div class="stat-icon">
+                <i class="bi bi-clipboard2-pulse"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">@ViewData["SurgeryCount"]</div>
+                <div class="stat-label">Surgeries</div>
+            </div>
+            <div class="stat-trend positive">
+                <i class="bi bi-arrow-up"></i>
+                <span>8%</span>
+            </div>
+        </div>
+        <div class="stat-card discharges">
+            <div class="stat-icon">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">@ViewData["DischargeCount"]</div>
+                <div class="stat-label">Discharges</div>
+            </div>
+            <div class="stat-trend neutral">
+                <i class="bi bi-dash"></i>
+                <span>0%</span>
+            </div>
         </div>
     </div>
 </div>
