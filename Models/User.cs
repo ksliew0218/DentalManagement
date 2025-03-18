@@ -31,5 +31,6 @@ namespace DentalManagement.Models
         }
 
         public virtual ICollection<Patient> Patients { get; set; }
+        public virtual Doctor Doctor { get; set; } // One-to-One relation with Doctor
     }
 }

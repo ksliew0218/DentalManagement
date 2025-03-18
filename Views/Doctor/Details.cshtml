@@ -1,0 +1,40 @@
+@model DentalManagement.Models.Doctor
+
+@{
+    ViewData["Title"] = "Doctor Details";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Doctor Details</h1>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <h4 class="card-title">@Model.FirstName @Model.LastName</h4>
+            <h6 class="text-muted">@Model.Specialty</h6>
+
+            <hr>
+
+            <p><strong>Email:</strong> @Model.User?.Email</p>
+            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+            <p><strong>Status:</strong> 
+                @if (Model.Status == StatusType.Active)
+                {
+                    <span class="badge bg-success">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactive</span>
+                }
+            </p>
+
+            <div class="mt-4">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
