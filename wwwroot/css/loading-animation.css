@@ -1,0 +1,166 @@
+/* Updated CSS for Correct Animation Alignment */
+
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+.loading-container.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(235, 242, 255, 0.55);
+  backdrop-filter: blur(3px);
+  transition: background-color 0.5s ease-in-out;
+}
+
+.loading-animation {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.strand {
+  position: relative;
+  width: 15px;
+  height: 40px;
+  animation: fadeIn 1.2s forwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.top,
+.bottom {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 12px;
+  width: 12px;
+  border-radius: 100%;
+  animation: 3s move infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes move {
+  0% {
+    background-color: #4e73df;
+    top: 100%;
+    z-index: -3;
+    opacity: 0.4;
+  }
+  25% {
+    height: 8px;
+    width: 8px;
+    background-color: #224abe;
+    z-index: -3;
+    opacity: 0.7;
+  }
+  50% {
+    background-color: #4e73df;
+    top: 0%;
+    z-index: -3;
+    opacity: 1;
+  }
+  75% {
+    height: 12px;
+    width: 12px;
+    background-color: #a8b1c7;
+    z-index: 3;
+    opacity: 0.7;
+  }
+  100% {
+    top: 100%;
+    background-color: #4e73df;
+    z-index: 3;
+    opacity: 0.4;
+  }
+}
+
+/* Adjusted delays for smoother wave effect */
+.strand:nth-child(1) .top {
+  animation-delay: -2.7s;
+}
+.strand:nth-child(1) .bottom {
+  animation-delay: -1.2s;
+}
+.strand:nth-child(2) .top {
+  animation-delay: -2.4s;
+}
+.strand:nth-child(2) .bottom {
+  animation-delay: -0.9s;
+}
+.strand:nth-child(3) .top {
+  animation-delay: -2.1s;
+}
+.strand:nth-child(3) .bottom {
+  animation-delay: -0.6s;
+}
+.strand:nth-child(4) .top {
+  animation-delay: -1.8s;
+}
+.strand:nth-child(4) .bottom {
+  animation-delay: -0.3s;
+}
+.strand:nth-child(5) .top {
+  animation-delay: -1.5s;
+}
+.strand:nth-child(5) .bottom {
+  animation-delay: 0s;
+}
+.strand:nth-child(6) .top {
+  animation-delay: -1.2s;
+}
+.strand:nth-child(6) .bottom {
+  animation-delay: -2.7s;
+}
+.strand:nth-child(7) .top {
+  animation-delay: -0.9s;
+}
+.strand:nth-child(7) .bottom {
+  animation-delay: -2.4s;
+}
+.strand:nth-child(8) .top {
+  animation-delay: -0.6s;
+}
+.strand:nth-child(8) .bottom {
+  animation-delay: -2.1s;
+}
+.strand:nth-child(9) .top {
+  animation-delay: -0.3s;
+}
+.strand:nth-child(9) .bottom {
+  animation-delay: -1.8s;
+}
+.strand:nth-child(10) .top {
+  animation-delay: 0s;
+}
+.strand:nth-child(10) .bottom {
+  animation-delay: -1.5s;
+}

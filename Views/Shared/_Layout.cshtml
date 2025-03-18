@@ -5,6 +5,7 @@
 @{
     var currentUser = await UserManager.GetUserAsync(User);
     var isAdmin = currentUser?.Role == UserRole.Admin;
+    var isPatient = currentUser?.Role == UserRole.Patient; // 确保识别出 Patient
 }
 
 <!DOCTYPE html>
@@ -34,9 +35,10 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
+
                         @if (User.Identity.IsAuthenticated)
                         {
-                            @if (isAdmin)
+                            @if (isAdmin) // Admin navigation
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark fw-bold" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
@@ -49,11 +51,21 @@
                                     </a>
                                 </li>
                             }
+                            else if (isPatient) // Patient navigation
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="Patient" asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-house-door"></i> Dashboard
+                                    </a>
+                                </li>
+                            }
                         }
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
