@@ -37,6 +37,7 @@
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
+                                <th style="width: 80px;">Image</th>
                                 <th>Name</th>
                                 <th>Price</th>
                                 <th>Duration</th>
@@ -49,8 +50,20 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" alt="@item.Name" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+                                        }
+                                    </td>
                                     <td>@item.Name</td>
-                                    <td>$@item.Price.ToString("F2")</td>
+                                    <td>RM @item.Price.ToString("F2")</td>
                                     <td>@item.Duration min</td>
                                     <td>
                                         @if (item.IsActive)
@@ -63,8 +76,11 @@
                                         }
                                     </td>
                                     <td>
-                                        @* This will be implemented later *@
-                                        <span class="badge bg-info">@(item.DoctorTreatments?.Count ?? 0) doctors</span>
+                                        @{
+                                            var doctorCount = item.DoctorTreatments?.Count ?? 0;
+                                            var badgeClass = doctorCount > 0 ? "bg-info" : "bg-secondary";
+                                        }
+                                        <span class="badge @badgeClass">@doctorCount doctor@(doctorCount != 1 ? "s" : "")</span>
                                     </td>
                                     <td>
                                         <div class="btn-group">

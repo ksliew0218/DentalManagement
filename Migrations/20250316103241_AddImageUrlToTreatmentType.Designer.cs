@@ -3,6 +3,7 @@ using System;
 using DentalManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DentalManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250316103241_AddImageUrlToTreatmentType")]
+    partial class AddImageUrlToTreatmentType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,8 +75,7 @@ namespace DentalManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserID")
-                        .IsUnique();
+                    b.HasIndex("UserID");
 
                     b.ToTable("Doctors");
                 });
@@ -148,17 +150,13 @@ namespace DentalManagement.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
-                    b.Property<string>("ProfilePic")
-                        .HasColumnType("text");
-
                     b.Property<string>("UserID")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserID")
-                        .IsUnique();
+                    b.HasIndex("UserID");
 
                     b.ToTable("Patients");
                 });
@@ -184,9 +182,6 @@ namespace DentalManagement.Migrations
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -419,8 +414,8 @@ namespace DentalManagement.Migrations
             modelBuilder.Entity("DentalManagement.Models.Doctor", b =>
                 {
                     b.HasOne("DentalManagement.Models.User", "User")
-                        .WithOne("Doctor")
-                        .HasForeignKey("DentalManagement.Models.Doctor", "UserID")
+                        .WithMany()
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -449,8 +444,8 @@ namespace DentalManagement.Migrations
             modelBuilder.Entity("DentalManagement.Models.Patient", b =>
                 {
                     b.HasOne("DentalManagement.Models.User", "User")
-                        .WithOne("Patient")
-                        .HasForeignKey("DentalManagement.Models.Patient", "UserID")
+                        .WithMany("Patients")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -520,9 +515,7 @@ namespace DentalManagement.Migrations
 
             modelBuilder.Entity("DentalManagement.Models.User", b =>
                 {
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
+                    b.Navigation("Patients");
                 });
 #pragma warning restore 612, 618
         }

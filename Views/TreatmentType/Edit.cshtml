@@ -1,0 +1,405 @@
+@model DentalManagement.Models.TreatmentType
+
+@{
+    ViewData["Title"] = "Edit Treatment";
+}
+
+<div class="container mt-4">
+    <!-- Display success message if available in TempData -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Edit Treatment</h2>
+        </div>
+        <div class="card-body">
+            <!-- Add error message display section -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger mb-4">
+                    <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>Error</h5>
+                    <ul class="mb-0">
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+            
+            <form asp-action="Edit" class="needs-validation" enctype="multipart/form-data" novalidate>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ImageUrl" />
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                            <div class="invalid-feedback">Please enter a treatment name</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Price (RM) <span class="text-danger">*</span></label>
+                            <input asp-for="Price" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                            <div class="invalid-feedback">Please enter a valid price</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Duration (Minutes) <span class="text-danger">*</span></label>
+                            <input asp-for="Duration" type="number" class="form-control" required />
+                            <span asp-validation-for="Duration" class="text-danger"></span>
+                            <div class="invalid-feedback">Please enter the duration in minutes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Active Status</label>
+                            <select asp-for="IsActive" class="form-select">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                            <span asp-validation-for="IsActive" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="form-group">
+                            <label class="form-label">Treatment Image <small class="text-muted">(Optional - you can save changes without updating the image)</small></label>
+                            <input type="file" name="ImageFile" class="form-control" accept="image/*" data-val="false" />
+                            <small class="text-muted">Leave empty to keep the current image. Only upload if you want to replace it.</small>
+                            <div id="imageUploadError" class="text-danger mt-1" style="display: none;">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <span>Error uploading image. Please try again with a different image.</span>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="mt-2" id="currentImage">
+                                    <div class="card">
+                                        <div class="card-header bg-light">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Current Image</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <img src="@Model.ImageUrl" class="img-fluid rounded" style="max-height: 200px;" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="RemoveImage" name="RemoveImage" value="false" />
+                            }
+                            
+                            <div class="mt-2" id="imagePreview" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <span>New Image</span>
+                                    </div>
+                                    <div class="card-body p-2" id="previewContent">
+                                        <!-- Preview image will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="form-group">
+                            <label class="form-label d-block mb-2">Assign Doctors <span class="text-danger">*</span></label>
+                            
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Select doctors who can perform this treatment</span>
+                                        <span class="badge bg-primary" id="selectedDoctorsCount">0 selected</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush doctor-selection">
+                                        <select name="DoctorIds" id="doctorSelection" class="form-select d-none" multiple asp-items="ViewBag.DoctorIds" required>
+                                        </select>
+                                        
+                                        @foreach (var item in ViewBag.DoctorIds)
+                                        {
+                                            bool isSelected = item.Selected;
+                                            <div class="list-group-item doctor-item @(isSelected ? "selected" : "")" data-doctor-id="@item.Value">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi bi-person-badge me-2"></i>
+                                                        @item.Text
+                                                    </div>
+                                                    <div>
+                                                        @if (isSelected)
+                                                        {
+                                                            <button type="button" class="btn btn-sm btn-danger remove-doctor">
+                                                                <i class="bi bi-dash-circle"></i> Remove
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button" class="btn btn-sm btn-success add-doctor">
+                                                                <i class="bi bi-plus-circle"></i> Add
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback">Please assign at least one doctor</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span class="spinner-border spinner-border-sm d-none me-2" id="submitSpinner" role="status" aria-hidden="true"></span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Form validation and submission
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            const submitBtn = document.getElementById('submitBtn');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        } else {
+                            // Show loading state
+                            submitBtn.disabled = true;
+                            submitSpinner.classList.remove('d-none');
+                            submitBtn.innerHTML = submitBtn.innerHTML.replace('Save Changes', 'Saving...');
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+        })();
+        
+        // Doctor selection functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const doctorItems = document.querySelectorAll('.doctor-item');
+            const doctorSelection = document.getElementById('doctorSelection');
+            const selectedDoctorsCount = document.getElementById('selectedDoctorsCount');
+            
+            // Initialize selected count
+            updateSelectedCount();
+            
+            // Add click handlers for all doctor items
+            doctorItems.forEach(item => {
+                const doctorId = item.getAttribute('data-doctor-id');
+                
+                // Add doctor button
+                const addBtn = item.querySelector('.add-doctor');
+                if (addBtn) {
+                    addBtn.addEventListener('click', function() {
+                        selectDoctor(doctorId, item);
+                    });
+                }
+                
+                // Remove doctor button
+                const removeBtn = item.querySelector('.remove-doctor');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        unselectDoctor(doctorId, item);
+                    });
+                }
+            });
+            
+            // Function to select a doctor
+            function selectDoctor(doctorId, item) {
+                // Update the hidden select element
+                for (let i = 0; i < doctorSelection.options.length; i++) {
+                    if (doctorSelection.options[i].value === doctorId) {
+                        doctorSelection.options[i].selected = true;
+                        break;
+                    }
+                }
+                
+                // Update the UI
+                item.classList.add('selected');
+                
+                // Replace the add button with a remove button
+                const btnContainer = item.querySelector('.add-doctor').parentElement;
+                btnContainer.innerHTML = `
+                    <button type="button" class="btn btn-sm btn-danger remove-doctor">
+                        <i class="bi bi-dash-circle"></i> Remove
+                    </button>
+                `;
+                
+                // Add event listener to the new remove button
+                const newRemoveBtn = btnContainer.querySelector('.remove-doctor');
+                newRemoveBtn.addEventListener('click', function() {
+                    unselectDoctor(doctorId, item);
+                });
+                
+                updateSelectedCount();
+            }
+            
+            // Function to unselect a doctor
+            function unselectDoctor(doctorId, item) {
+                // Update the hidden select element
+                for (let i = 0; i < doctorSelection.options.length; i++) {
+                    if (doctorSelection.options[i].value === doctorId) {
+                        doctorSelection.options[i].selected = false;
+                        break;
+                    }
+                }
+                
+                // Update the UI
+                item.classList.remove('selected');
+                
+                // Replace the remove button with an add button
+                const btnContainer = item.querySelector('.remove-doctor').parentElement;
+                btnContainer.innerHTML = `
+                    <button type="button" class="btn btn-sm btn-success add-doctor">
+                        <i class="bi bi-plus-circle"></i> Add
+                    </button>
+                `;
+                
+                // Add event listener to the new add button
+                const newAddBtn = btnContainer.querySelector('.add-doctor');
+                newAddBtn.addEventListener('click', function() {
+                    selectDoctor(doctorId, item);
+                });
+                
+                updateSelectedCount();
+            }
+            
+            // Update the selected count badge
+            function updateSelectedCount() {
+                let count = 0;
+                for (let i = 0; i < doctorSelection.options.length; i++) {
+                    if (doctorSelection.options[i].selected) {
+                        count++;
+                    }
+                }
+                selectedDoctorsCount.textContent = count + ' selected';
+            }
+            
+            // Image handling functionality
+            const imageInput = document.querySelector('input[name="ImageFile"]');
+            const currentImage = document.getElementById('currentImage');
+            const removeImageInput = document.getElementById('RemoveImage');
+            const imageUploadError = document.getElementById('imageUploadError');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewContent = document.getElementById('previewContent');
+            
+            // Image preview functionality
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Hide any previous error
+                        imageUploadError.style.display = 'none';
+                        
+                        // Validate file size (max 5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            imageUploadError.querySelector('span').textContent = 'Image is too large. Maximum size is 5MB. Clear this field to save other changes without updating the image.';
+                            imageUploadError.style.display = 'block';
+                            imageInput.value = ''; // Clear the input
+                            imagePreview.style.display = 'none';
+                            return;
+                        }
+                        
+                        // Validate file type
+                        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                        if (!validTypes.includes(file.type)) {
+                            imageUploadError.querySelector('span').textContent = 'Invalid file type. Please upload a JPG, PNG, GIF, or WEBP image. Clear this field to save other changes without updating the image.';
+                            imageUploadError.style.display = 'block';
+                            imageInput.value = ''; // Clear the input
+                            imagePreview.style.display = 'none';
+                            return;
+                        }
+                        
+                        const reader = new FileReader();
+                        
+                        // Show preview container
+                        imagePreview.style.display = 'block';
+                        
+                        reader.onload = function(e) {
+                            previewContent.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" />`;
+                        }
+                        
+                        reader.onerror = function() {
+                            imageUploadError.querySelector('span').textContent = 'Error reading the image file. Clear this field to save other changes without updating the image.';
+                            imageUploadError.style.display = 'block';
+                            imageInput.value = ''; // Clear the input
+                            imagePreview.style.display = 'none';
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    } else {
+                        // If no file is selected, hide the preview
+                        imagePreview.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <style>
+        .doctor-selection {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .doctor-item {
+            transition: background-color 0.2s;
+        }
+        
+        .doctor-item.selected {
+            background-color: #f8f9fa;
+        }
+        
+        .doctor-item:hover {
+            background-color: #f1f3f5;
+        }
+    </style>
+}

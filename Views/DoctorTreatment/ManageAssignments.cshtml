@@ -1,0 +1,396 @@
+@model DentalManagement.Controllers.DoctorTreatmentViewModel
+
+@{
+    ViewData["Title"] = "Manage Doctor Assignments";
+}
+
+<div class="container mt-4">
+    <!-- Success message alert -->
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" id="successAlert" style="display: none;">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span id="successMessage">Assignment updated successfully!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Error message alert -->
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" id="errorAlert" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span id="errorMessage">An error occurred. Please try again.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Manage Doctor Assignments</h2>
+            <a asp-controller="TreatmentType" asp-action="Details" asp-route-id="@Model.TreatmentType.Id" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left"></i> Back to Treatment
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h3 class="h4 mb-3">Treatment: @Model.TreatmentType.Name</h3>
+                <p class="text-muted">
+                    @if (string.IsNullOrEmpty(Model.TreatmentType.Description))
+                    {
+                        <span class="fst-italic">No description provided</span>
+                    }
+                    else
+                    {
+                        @Model.TreatmentType.Description
+                    }
+                </p>
+                <div class="d-flex gap-3">
+                    <div class="badge bg-primary p-2">
+                        <i class="bi bi-cash-coin me-1"></i> RM @Model.TreatmentType.Price.ToString("F2")
+                    </div>
+                    <div class="badge bg-primary p-2">
+                        <i class="bi bi-clock me-1"></i> @Model.TreatmentType.Duration minutes
+                    </div>
+                    <div class="badge @(Model.TreatmentType.IsActive ? "bg-success" : "bg-secondary") p-2">
+                        <i class="bi bi-circle-fill me-1"></i> @(Model.TreatmentType.IsActive ? "Active" : "Inactive")
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Assigned Doctors</h4>
+                    <div class="d-flex gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showAllDoctors" checked>
+                            <label class="form-check-label" for="showAllDoctors">Show all doctors</label>
+                        </div>
+                        <input type="text" class="form-control form-control-sm" id="doctorSearch" placeholder="Search doctors..." style="width: 200px;">
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Specialty</th>
+                                <th>Assignment Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doctor in Model.DoctorAssignments)
+                            {
+                                <tr class="doctor-row @(doctor.IsAssigned ? "assigned-doctor" : "unassigned-doctor")">
+                                    <td>@doctor.DoctorName</td>
+                                    <td>@doctor.DoctorSpecialty</td>
+                                    <td>
+                                        @if (doctor.IsAssigned)
+                                        {
+                                            <span class="badge @(doctor.IsActive ? "bg-success" : "bg-warning") assignment-status">
+                                                @(doctor.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary assignment-status">Not Assigned</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            @if (doctor.IsAssigned)
+                                            {
+                                                <button type="button" class="btn btn-sm @(doctor.IsActive ? "btn-outline-warning" : "btn-outline-success") toggle-active-btn"
+                                                        data-doctor-id="@doctor.DoctorId" 
+                                                        data-treatment-id="@Model.TreatmentType.Id"
+                                                        data-assignment-id="@doctor.AssignmentId"
+                                                        data-is-active="@doctor.IsActive.ToString().ToLower()">
+                                                    <i class="bi @(doctor.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                                    @(doctor.IsActive ? "Deactivate" : "Activate")
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-btn"
+                                                        data-doctor-id="@doctor.DoctorId" 
+                                                        data-treatment-id="@Model.TreatmentType.Id"
+                                                        data-assignment-id="@doctor.AssignmentId">
+                                                    <i class="bi bi-trash"></i> Remove
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-primary add-assignment-btn"
+                                                        data-doctor-id="@doctor.DoctorId" 
+                                                        data-treatment-id="@Model.TreatmentType.Id">
+                                                    <i class="bi bi-plus-circle"></i> Assign
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Filter doctors
+            $("#doctorSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $(".doctor-row").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+            
+            // Toggle showing all doctors or only assigned ones
+            $("#showAllDoctors").on("change", function() {
+                if ($(this).is(":checked")) {
+                    $(".doctor-row").show();
+                } else {
+                    $(".unassigned-doctor").hide();
+                    $(".assigned-doctor").show();
+                }
+            });
+            
+            // Add assignment
+            $(".add-assignment-btn").on("click", function() {
+                const doctorId = $(this).data("doctor-id");
+                const treatmentId = $(this).data("treatment-id");
+                const row = $(this).closest("tr");
+                
+                $.ajax({
+                    url: '@Url.Action("UpdateAssignment", "DoctorTreatment")',
+                    type: 'POST',
+                    data: {
+                        doctorId: doctorId,
+                        treatmentTypeId: treatmentId,
+                        isAssigned: true,
+                        isActive: true
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            // Update UI
+                            row.removeClass("unassigned-doctor").addClass("assigned-doctor");
+                            row.find(".assignment-status").removeClass("bg-secondary").addClass("bg-success").text("Active");
+                            
+                            // Replace buttons
+                            const btnGroup = row.find(".btn-group");
+                            btnGroup.html(`
+                                <button type="button" class="btn btn-sm btn-outline-warning toggle-active-btn"
+                                        data-doctor-id="${doctorId}" 
+                                        data-treatment-id="${treatmentId}"
+                                        data-assignment-id="0"
+                                        data-is-active="true">
+                                    <i class="bi bi-pause-circle"></i> Deactivate
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-btn"
+                                        data-doctor-id="${doctorId}" 
+                                        data-treatment-id="${treatmentId}"
+                                        data-assignment-id="0">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            `);
+                            
+                            // Reattach event handlers
+                            attachEventHandlers();
+                            
+                            // Show success message
+                            showSuccessMessage("Doctor assigned successfully!");
+                        } else {
+                            showErrorMessage(result.message || "Failed to assign doctor.");
+                        }
+                    },
+                    error: function() {
+                        showErrorMessage("An error occurred while assigning the doctor.");
+                    }
+                });
+            });
+            
+            // Remove assignment
+            function handleRemoveAssignment() {
+                const doctorId = $(this).data("doctor-id");
+                const treatmentId = $(this).data("treatment-id");
+                const row = $(this).closest("tr");
+                
+                if (!confirm("Are you sure you want to remove this doctor from the treatment?")) {
+                    return;
+                }
+                
+                $.ajax({
+                    url: '@Url.Action("UpdateAssignment", "DoctorTreatment")',
+                    type: 'POST',
+                    data: {
+                        doctorId: doctorId,
+                        treatmentTypeId: treatmentId,
+                        isAssigned: false,
+                        isActive: false
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            // Update UI
+                            row.removeClass("assigned-doctor").addClass("unassigned-doctor");
+                            row.find(".assignment-status").removeClass("bg-success bg-warning").addClass("bg-secondary").text("Not Assigned");
+                            
+                            // Replace buttons
+                            const btnGroup = row.find(".btn-group");
+                            btnGroup.html(`
+                                <button type="button" class="btn btn-sm btn-outline-primary add-assignment-btn"
+                                        data-doctor-id="${doctorId}" 
+                                        data-treatment-id="${treatmentId}">
+                                    <i class="bi bi-plus-circle"></i> Assign
+                                </button>
+                            `);
+                            
+                            // Reattach event handlers
+                            attachEventHandlers();
+                            
+                            // Show success message
+                            showSuccessMessage("Doctor removed from treatment successfully!");
+                        } else {
+                            showErrorMessage(result.message || "Failed to remove doctor from treatment.");
+                        }
+                    },
+                    error: function() {
+                        showErrorMessage("An error occurred while removing the doctor from the treatment.");
+                    }
+                });
+            }
+            
+            // Toggle active status
+            function handleToggleActive() {
+                const doctorId = $(this).data("doctor-id");
+                const treatmentId = $(this).data("treatment-id");
+                const isActive = $(this).data("is-active") === "true";
+                const row = $(this).closest("tr");
+                const btn = $(this);
+                
+                $.ajax({
+                    url: '@Url.Action("UpdateAssignment", "DoctorTreatment")',
+                    type: 'POST',
+                    data: {
+                        doctorId: doctorId,
+                        treatmentTypeId: treatmentId,
+                        isAssigned: true,
+                        isActive: !isActive
+                    },
+                    headers: {
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            // Update UI
+                            if (isActive) {
+                                // Deactivating
+                                row.find(".assignment-status").removeClass("bg-success").addClass("bg-warning").text("Inactive");
+                                btn.removeClass("btn-outline-warning").addClass("btn-outline-success");
+                                btn.html('<i class="bi bi-play-circle"></i> Activate');
+                                btn.data("is-active", "false");
+                            } else {
+                                // Activating
+                                row.find(".assignment-status").removeClass("bg-warning").addClass("bg-success").text("Active");
+                                btn.removeClass("btn-outline-success").addClass("btn-outline-warning");
+                                btn.html('<i class="bi bi-pause-circle"></i> Deactivate');
+                                btn.data("is-active", "true");
+                            }
+                            
+                            // Show success message
+                            showSuccessMessage(`Doctor ${isActive ? 'deactivated' : 'activated'} successfully!`);
+                        } else {
+                            showErrorMessage(result.message || `Failed to ${isActive ? 'deactivate' : 'activate'} doctor.`);
+                        }
+                    },
+                    error: function() {
+                        showErrorMessage(`An error occurred while ${isActive ? 'deactivating' : 'activating'} the doctor.`);
+                    }
+                });
+            }
+            
+            // Attach event handlers
+            function attachEventHandlers() {
+                $(".remove-assignment-btn").off("click").on("click", handleRemoveAssignment);
+                $(".toggle-active-btn").off("click").on("click", handleToggleActive);
+                $(".add-assignment-btn").off("click").on("click", function() {
+                    const doctorId = $(this).data("doctor-id");
+                    const treatmentId = $(this).data("treatment-id");
+                    const row = $(this).closest("tr");
+                    
+                    $.ajax({
+                        url: '@Url.Action("UpdateAssignment", "DoctorTreatment")',
+                        type: 'POST',
+                        data: {
+                            doctorId: doctorId,
+                            treatmentTypeId: treatmentId,
+                            isAssigned: true,
+                            isActive: true
+                        },
+                        headers: {
+                            "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(result) {
+                            if (result.success) {
+                                // Update UI
+                                row.removeClass("unassigned-doctor").addClass("assigned-doctor");
+                                row.find(".assignment-status").removeClass("bg-secondary").addClass("bg-success").text("Active");
+                                
+                                // Replace buttons
+                                const btnGroup = row.find(".btn-group");
+                                btnGroup.html(`
+                                    <button type="button" class="btn btn-sm btn-outline-warning toggle-active-btn"
+                                            data-doctor-id="${doctorId}" 
+                                            data-treatment-id="${treatmentId}"
+                                            data-assignment-id="0"
+                                            data-is-active="true">
+                                        <i class="bi bi-pause-circle"></i> Deactivate
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-btn"
+                                            data-doctor-id="${doctorId}" 
+                                            data-treatment-id="${treatmentId}"
+                                            data-assignment-id="0">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                `);
+                                
+                                // Reattach event handlers
+                                attachEventHandlers();
+                                
+                                // Show success message
+                                showSuccessMessage("Doctor assigned successfully!");
+                            } else {
+                                showErrorMessage(result.message || "Failed to assign doctor.");
+                            }
+                        },
+                        error: function() {
+                            showErrorMessage("An error occurred while assigning the doctor.");
+                        }
+                    });
+                });
+            }
+            
+            // Initial attachment of event handlers
+            attachEventHandlers();
+            
+            // Helper functions for alerts
+            function showSuccessMessage(message) {
+                $("#successMessage").text(message);
+                $("#successAlert").fadeIn();
+                setTimeout(function() {
+                    $("#successAlert").fadeOut();
+                }, 5000);
+            }
+            
+            function showErrorMessage(message) {
+                $("#errorMessage").text(message);
+                $("#errorAlert").fadeIn();
+                setTimeout(function() {
+                    $("#errorAlert").fadeOut();
+                }, 5000);
+            }
+        });
+    </script>
+} 
