@@ -2,10 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
-
+using Microsoft.AspNetCore.Authorization;
+using DentalManagement.Authorization;
 namespace DentalManagement.Areas.Patient.Controllers
 {
     [Area("Patient")]
+    [Authorize]
+    [PatientOnly]
     public class DashboardController : Controller
     {
         private readonly UserManager<User> _userManager;

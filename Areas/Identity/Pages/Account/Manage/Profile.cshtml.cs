@@ -65,10 +65,10 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
             public string EmergencyContactPhone { get; set; }
 
             [Display(Name = "Profile Picture")]
-            public IFormFile ProfilePicture { get; set; } // 新增头像上传字段
+            public IFormFile ProfilePicture { get; set; } 
         }
 
-        public string ProfilePictureUrl { get; set; } // 存储当前头像URL
+        public string ProfilePictureUrl { get; set; } 
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -101,7 +101,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
                 EmergencyContactPhone = patient.EmergencyContactPhone
             };
 
-            ProfilePictureUrl = patient.ProfilePic; // 获取当前头像URL
+            ProfilePictureUrl = patient.ProfilePic; 
 
             return Page();
         }
@@ -125,7 +125,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
                 return NotFound("Patient profile not found. Please contact the administrator.");
             }
 
-            // 更新患者信息
             patient.FirstName = Input.FirstName;
             patient.LastName = Input.LastName;
             patient.Gender = Input.Gender;
@@ -135,11 +134,10 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
             patient.EmergencyContactName = Input.EmergencyContactName;
             patient.EmergencyContactPhone = Input.EmergencyContactPhone;
 
-            // 处理头像上传
             if (Input.ProfilePicture != null)
             {
-                var uploadsFolder = Path.Combine("wwwroot", "images", "profiles");
-                Directory.CreateDirectory(uploadsFolder); // 确保目录存在
+                var uploadsFolder = Path.Combine("/app", "wwwroot", "images", "profiles");
+                Directory.CreateDirectory(uploadsFolder); 
 
                 var uniqueFileName = $"{Guid.NewGuid()}_{Input.ProfilePicture.FileName}";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
