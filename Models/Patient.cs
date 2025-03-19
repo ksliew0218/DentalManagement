@@ -34,5 +34,8 @@ namespace DentalManagement.Models
         public string? PhoneNumber { get; set; }
         public string? EmergencyContactName { get; set; }
         public string? EmergencyContactPhone { get; set; }
+
+        public string? ProfilePic { get; set; }
+
     }
 }

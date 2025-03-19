@@ -1,4 +1,3 @@
-// 监听侧边栏点击（事件代理）
 document.querySelector('.nav-menu').addEventListener('click', function (event) {
   const link = event.target.closest('.nav-link');
   if (link) {
@@ -6,14 +5,12 @@ document.querySelector('.nav-menu').addEventListener('click', function (event) {
   }
 });
 
-// 监听浏览器前进/后退
 window.addEventListener('popstate', function (event) {
   if (event.state && event.state.url) {
     loadContent(null, null, false);
   }
 });
 
-// ✅ 只负责 AJAX 逻辑
 function loadContent(event, element, pushState = true) {
   if (event) event.preventDefault();
   showLoadingAnimation();
@@ -55,17 +52,16 @@ function updateActiveMenu(url = window.location.pathname) {
       window.location.origin
     ).pathname;
 
-    // ✅ 确保只激活当前选中的菜单项
     if (linkUrl === url) {
       link.classList.add('active');
-      link.parentElement.classList.add('active'); // ✅ 确保 `li` 也高亮
+      link.parentElement.classList.add('active'); 
     } else {
       link.classList.remove('active');
       link.parentElement.classList.remove('active');
     }
   });
 
-  console.log('🔹 Active menu updated:', url); // ✅ 调试信息
+  console.log('🔹 Active menu updated:', url);
 }
 
 // Update the click handler in your JavaScript
