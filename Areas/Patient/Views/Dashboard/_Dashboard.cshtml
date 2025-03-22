@@ -6,6 +6,7 @@
 <head>
     <!-- Link to your custom dashboard CSS -->
     <link href="~/css/dashboard.css" rel="stylesheet" asp-append-version="true">
+    <link href="~/css/treatment-details.css" rel="stylesheet" asp-append-version="true">
 </head>
 
 <div class="dashboard-container">
@@ -14,20 +15,20 @@
         <div class="welcome-header">
             <div class="welcome-title">
                 <h2>Welcome back, <span class="patient-name">@ViewData["FullName"]</span></h2>
-                <p class="subtitle">Here's your health overview</p>
+                <p class="subtitle">Your oral health journey continues here</p>
             </div>
             <div class="patient-details">
                 <div class="info-badge">
                     <i class="bi bi-person"></i>
-                    <span>Female</span>
+                    <span>@ViewData["Gender"]</span>
                 </div>
                 <div class="info-badge">
                     <i class="bi bi-calendar3"></i>
-                    <span>24 years</span>
+                    <span>@ViewData["Age"] years</span>
                 </div>
                 <div class="info-badge">
                     <i class="bi bi-shield-check"></i>
-                    <span>Regular Patient</span>
+                    <span>@ViewData["PatientType"]</span>
                 </div>
             </div>
         </div>
@@ -221,56 +222,105 @@
         }
     </div>
 
-    <!-- Treatment Types Section -->
-    <div class="section-card treatment-types">
-        <div class="card-header">
-            <h3><i class="bi bi-grid"></i> Available Treatments</h3>
-        </div>
-        
-        @if (ViewData["AvailableTreatments"] != null && ((IEnumerable<dynamic>)ViewData["AvailableTreatments"]).Any())
+<!-- Treatment Types Section -->
+<div class="section-card treatment-types">
+    <div class="card-header">
+        <h3><i class="bi bi-grid"></i> Available Treatments</h3>
+    </div>
+    
+    @if (ViewData["AvailableTreatments"] != null && ((IEnumerable<dynamic>)ViewData["AvailableTreatments"]).Any())
+{
+    <div class="treatment-types-grid">
+        @foreach (var treatment in (IEnumerable<dynamic>)ViewData["AvailableTreatments"])
         {
-            <div class="treatment-types-grid">
-                @foreach (var treatment in (IEnumerable<dynamic>)ViewData["AvailableTreatments"])
-                {
-                    <div class="treatment-type-card">
-                        <div class="treatment-type-icon">
-                            @{
-                                var iconClass = treatment.TreatmentName.ToLower() switch
-                                {
-                                    var name when name.Contains("cleaning") => "bi-brush",
-                                    var name when name.Contains("whitening") => "bi-brightness-high",
-                                    var name when name.Contains("root canal") => "bi-tools",
-                                    var name when name.Contains("crown") => "bi-gem",
-                                    _ => "bi-plus-circle"
-                                };
-                            }
-                            <i class="bi @iconClass"></i>
-                        </div>
-                        <div class="treatment-type-content">
-                            <h4>@treatment.TreatmentName</h4>
-                            <p>@treatment.Description</p>
-                            <a href="/Patient/Treatments/Details?treatment=@Uri.EscapeDataString(treatment.TreatmentName)" 
-                               class="learn-more-link">
-                                Learn More
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="empty-treatments-state">
-                <div class="empty-state-illustration">
-                    <i class="bi bi-clipboard-x"></i>
+            <div class="treatment-type-card" data-treatment-name="@treatment.TreatmentName">
+                <div class="treatment-type-icon">
+                    @{
+                        var iconClass = treatment.TreatmentName.ToLower() switch
+                        {
+                            var name when name.Contains("cleaning") => "bi-brush",
+                            var name when name.Contains("scaling") => "bi-brush",
+                            var name when name.Contains("polish") => "bi-brush",
+                            
+                            var name when name.Contains("whitening") => "bi-brightness-high",
+                            var name when name.Contains("bleach") => "bi-brightness-high",
+                            
+                            var name when name.Contains("extraction") => "bi-scissors",
+                            var name when name.Contains("removal") => "bi-scissors",
+                            var name when name.Contains("wisdom") => "bi-scissors",
+                            
+                            var name when name.Contains("root canal") => "bi-tools",
+                            var name when name.Contains("endodontic") => "bi-tools",
+                            var name when name.Contains("pulp") => "bi-tools",
+                            
+                            var name when name.Contains("crown") => "bi-gem",
+                            var name when name.Contains("cap") => "bi-gem",
+                            
+                            var name when name.Contains("filling") => "bi-pencil-fill",
+                            var name when name.Contains("restoration") => "bi-pencil-fill",
+                            var name when name.Contains("composite") => "bi-pencil-fill",
+                            var name when name.Contains("amalgam") => "bi-pencil-fill",
+                            
+                            var name when name.Contains("implant") => "bi-nut",
+                            
+                            var name when name.Contains("braces") => "bi-layout-three-columns",
+                            var name when name.Contains("aligner") => "bi-layout-three-columns",
+                            var name when name.Contains("invisalign") => "bi-layout-three-columns",
+                            var name when name.Contains("orthodontic") => "bi-layout-three-columns",
+                            
+                            var name when name.Contains("denture") => "bi-emoji-smile",
+                            var name when name.Contains("prosthetic") => "bi-emoji-smile",
+                            
+                            var name when name.Contains("x-ray") => "bi-camera",
+                            var name when name.Contains("radiograph") => "bi-camera",
+                            var name when name.Contains("scan") => "bi-camera",
+                            var name when name.Contains("diagnostic") => "bi-search",
+                            
+                            var name when name.Contains("surgery") => "bi-scissors",
+                            var name when name.Contains("surgical") => "bi-scissors",
+                            
+                            var name when name.Contains("gum") => "bi-heart-pulse",
+                            var name when name.Contains("periodontal") => "bi-heart-pulse",
+                            
+                            var name when name.Contains("tooth") => "bi-square",
+                            var name when name.Contains("dental") => "bi-square",
+                            
+                            _ => "bi-plus-circle"
+                        };
+                    }
+                    <i class="bi @iconClass"></i>
                 </div>
-                <p class="empty-state-message">No treatment types available at the moment</p>
+                <div class="treatment-type-content">
+                    <h4>@treatment.TreatmentName</h4>
+                    <p>@treatment.Description</p>
+                    <a href="#" class="learn-more-link">
+                        Learn More
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         }
+    </div>
+}
+else
+{
+    <div class="empty-treatments-state">
+        <div class="empty-state-illustration">
+            <i class="bi bi-clipboard-x"></i>
+        </div>
+        <p class="empty-state-message">No treatment types available at the moment</p>
+    </div>
+}
+</div>
+
+<!-- Treatment Details Overlay -->
+<div id="treatment-details-overlay">
+    <div id="treatment-details-content">
+        <!-- Content will be populated by JavaScript -->
     </div>
 </div>
 
 @section Scripts {
     <script src="~/js/dashboard.js" asp-append-version="true"></script>
+    <script src="~/js/treatment-details.js" asp-append-version="true"></script>
 }

@@ -50,6 +50,7 @@
             </button>
         </div>
 
+
         <div class="profile-section">
             <div class="profile-image">
                 @if (!string.IsNullOrEmpty(profileImageUrl))
@@ -77,6 +78,7 @@
             </div>
         </div>
 
+        <div class="sidebar-scroll-area">
         <ul class="nav-menu">
             <button class="menu-toggle-collapsed">
                 <i class="bi bi-list"></i>
@@ -143,6 +145,7 @@
                 <div class="info-item"><i class="bi bi-clock"></i><span>Mon-Fri: 9:00 AM - 6:00 PM</span></div>
             </div>
         </div>
+    </div>
     </nav>
 
     <div id="contentContainer">
@@ -167,3 +170,4 @@
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+

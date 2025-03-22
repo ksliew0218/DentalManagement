@@ -5,6 +5,38 @@
     ViewData["ActivePage"] = ManageNavPages.Profile;
 }
 
+<style>
+    /* Profile page specific styles */
+    .profile-image-container {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        border: 3px solid #edf2f9;
+        padding: 3px;
+    }
+
+    .profile-img-large {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-initials-large {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
+        color: white;
+        border-radius: 50%;
+    }
+</style>
+
 <h3>@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
 
@@ -17,11 +49,27 @@
             <div class="mb-3 text-center">
                 @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
                 {
-                    <img src="@Model.ProfilePictureUrl" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px;" alt="Profile Picture">
+                    <div class="profile-image-container">
+                        <img src="@Model.ProfilePictureUrl" class="profile-img-large" alt="Profile Picture">
+                    </div>
                 }
                 else
                 {
-                    <img src="/images/profiles/default-avatar.png" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px;" alt="Default Profile Picture">
+                    <div class="profile-image-container">
+                        @{
+                            var fullName = $"{Model.Input.FirstName} {Model.Input.LastName}";
+                            var initials = !string.IsNullOrEmpty(fullName) && fullName.Trim() != " " 
+                                ? $"{fullName.Split(' ')[0][0]}{(fullName.Split(' ').Length > 1 ? fullName.Split(' ')[1][0] : "")}"
+                                : "U";
+                            
+                            var hash = !string.IsNullOrEmpty(fullName) ? fullName.GetHashCode() : "User".GetHashCode();
+                            var colors = new[] { "#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#34495e", "#16a085", "#27ae60", "#2980b9", "#8e44ad", "#2c3e50" };
+                            var backgroundColor = colors[Math.Abs(hash) % colors.Length];
+                        }
+                        <div class="profile-initials-large" style="background-color: @backgroundColor;">
+                            @initials.ToUpper()
+                        </div>
+                    </div>
                 }
             </div>
 

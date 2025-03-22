@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using DentalManagement.Authorization;
+
 namespace DentalManagement.Areas.Patient.Controllers
 {
     [Area("Patient")]
@@ -20,33 +21,42 @@ namespace DentalManagement.Areas.Patient.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            var fullName = "Guest";
+    public async Task<IActionResult> Index()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        var fullName = "Guest";
+        var gender = "";
+        var age = 0;
+        var patientType = "Regular Patient"; // Hardcoded for now
 
-            // Hardcoded user name, can be dynamic based on actual user later
-            if (user != null)
+        // Get patient data from database
+        if (user != null)
+        {
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.UserID == user.Id);
+                
+            if (patient != null)
             {
-                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
-                if (patient != null)
+                fullName = $"{patient.FirstName} {patient.LastName}";
+                gender = patient.Gender;
+                
+                // Calculate age from DateOfBirth
+                age = DateTime.Today.Year - patient.DateOfBirth.Year;
+                // Adjust age if birthday hasn't occurred yet this year
+                if (patient.DateOfBirth.Date > DateTime.Today.AddYears(-age))
                 {
-                    fullName = $"{patient.FirstName} {patient.LastName}";
+                    age--;
                 }
             }
+        }
 
-            // Hardcoded counts for dashboard data
-            var patientCount = 10;  // Hardcoded value
-            var surgeryCount = 5;   // Hardcoded value
-            var dischargeCount = 3; // Hardcoded value
-
-            var upcomingAppointment = new
-            {
-                AppointmentDate = "March 25, 2024",
-                AppointmentTime = "10:30 AM",
-                DoctorName = "Dr. Sarah Wilson",
-                AppointmentType = "Regular Checkup"
-            };
+        var upcomingAppointment = new
+        {
+            AppointmentDate = "March 25, 2024",
+            AppointmentTime = "10:30 AM",
+            DoctorName = "Dr. Sarah Wilson",
+            AppointmentType = "Regular Checkup"
+        };
 
             var latestTreatments = new[]
             {
@@ -55,13 +65,18 @@ namespace DentalManagement.Areas.Patient.Controllers
                 new { TreatmentDate = "January 15, 2024", TreatmentType = "X-Ray Examination", DoctorName = "Dr. Mike Johnson" }
             };
 
-            var availableTreatments = new[]
-            {
-                new { TreatmentName = "Teeth Cleaning", Description = "Professional cleaning to remove plaque and tartar." },
-                new { TreatmentName = "Teeth Whitening", Description = "Professional whitening for a brighter smile." },
-                new { TreatmentName = "Root Canal", Description = "Treatment for infected or damaged tooth pulp." },
-                new { TreatmentName = "Dental Crown", Description = "Custom-made caps to cover damaged teeth." }
-            };
+            var availableTreatments = await _context.TreatmentTypes
+                .Where(t => t.IsActive && !t.IsDeleted)
+                .OrderBy(t => t.Name)
+                .Select(t => new 
+                { 
+                    TreatmentName = t.Name, 
+                    Description = t.Description ?? "No description available.",
+                    Price = t.Price,
+                    Duration = t.Duration,
+                    ImageUrl = t.ImageUrl
+                })
+                .ToListAsync();
 
             var ongoingTreatment = new
             {
@@ -73,16 +88,56 @@ namespace DentalManagement.Areas.Patient.Controllers
             };
 
             // Pass hardcoded data to ViewData
-            ViewData["FullName"] = fullName;
-            ViewData["PatientCount"] = patientCount;
-            ViewData["SurgeryCount"] = surgeryCount;
-            ViewData["DischargeCount"] = dischargeCount;
-            ViewData["UpcomingAppointment"] = upcomingAppointment; // Passing upcoming appointment data
-            ViewData["LatestTreatments"] = latestTreatments; // Passing latest treatments data
-            ViewData["AvailableTreatments"] = availableTreatments; // Passing available treatments data
-            ViewData["OngoingTreatment"] = ongoingTreatment;
+        ViewData["FullName"] = fullName;
+        ViewData["Gender"] = gender;
+        ViewData["Age"] = age;
+        ViewData["PatientType"] = patientType;
+        ViewData["UpcomingAppointment"] = upcomingAppointment;
+        ViewData["LatestTreatments"] = latestTreatments;
+        ViewData["AvailableTreatments"] = availableTreatments;
+        ViewData["OngoingTreatment"] = ongoingTreatment;
 
-            return PartialView("_Dashboard"); // Returning PartialView
+            return PartialView("_Dashboard");
+        }
+
+        [HttpGet]
+        [Route("/Patient/Treatments/GetTreatmentDetails")]
+        public async Task<IActionResult> GetTreatmentDetails(string treatmentName)
+        {
+            try
+            {
+                // Get the treatment details
+                var treatmentDetails = await _context.TreatmentTypes
+                    .Where(t => t.Name == treatmentName && t.IsActive && !t.IsDeleted)
+                    .Select(t => new
+                    {
+                        name = t.Name,
+                        description = t.Description ?? "No description available.",
+                        price = t.Price,
+                        duration = t.Duration,
+                        // Get doctors through the DoctorTreatment join table
+                        doctors = t.DoctorTreatments
+                            .Where(dt => dt.IsActive && !dt.IsDeleted)
+                            .Select(dt => new 
+                            { 
+                                name = $"Dr. {dt.Doctor.FirstName} {dt.Doctor.LastName}",
+                                specialty = dt.Doctor.Specialty ?? "General Dentistry"
+                            })
+                            .ToList()
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (treatmentDetails == null)
+                {
+                    return NotFound(new { message = "Treatment not found" });
+                }
+
+                return Json(treatmentDetails);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching treatment details", error = ex.Message });
+            }
         }
     }
 }
