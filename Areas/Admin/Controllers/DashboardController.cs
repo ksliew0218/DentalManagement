@@ -23,7 +23,7 @@ namespace DentalManagement.Areas.Admin.Controllers
             try
             {
                 // Get counts for dashboard
-                ViewBag.DoctorCount = _context.Doctors.Count();
+                ViewBag.DoctorCount = _context.Doctors.Count(d => !d.IsDeleted);
                 ViewBag.PatientCount = _context.Patients.Count();
                 ViewBag.TreatmentCount = _context.TreatmentTypes.Count();
                 

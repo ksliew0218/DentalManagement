@@ -1,0 +1,66 @@
+@model DentalManagement.Models.Doctor
+
+@{
+    ViewData["Title"] = "Doctor Details";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h2 class="mb-0">Doctor Details</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <img src="@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "/Images/default-profile.png" : Model.ProfilePictureUrl)" 
+                         alt="Doctor Image" class="img-fluid rounded-circle shadow" style="width: 180px; height: 180px; object-fit: cover;" />
+                </div>
+                <div class="col-md-8">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th class="text-muted">Name:</th>
+                                <td>@Model.FirstName @Model.LastName</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Email:</th>
+                                <td>@Model.User.Email</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Gender:</th>
+                                <td>@Model.Gender</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Phone Number:</th>
+                                <td>@Model.PhoneNumber</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Specialty:</th>
+                                <td>@Model.Specialty</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Qualifications:</th>
+                                <td>@Model.Qualifications</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Experience (Years):</th>
+                                <td>@Model.ExperienceYears</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Status:</th>
+                                <td>
+                                    <span class="badge @(Model.Status == StatusType.Active ? "bg-success" : "bg-danger")">
+                                        @Model.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+        </div>
+    </div>
+</div>
