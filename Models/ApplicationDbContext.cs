@@ -14,5 +14,6 @@ namespace DentalManagement.Models
         public DbSet<TreatmentType> TreatmentTypes { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<DoctorTreatment> DoctorTreatments { get; set; }
+        public DbSet<TimeSlot> TimeSlots { get; set; }
     }
 }

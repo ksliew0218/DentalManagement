@@ -18,6 +18,7 @@ builder.Services.AddDefaultIdentity<User>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 6;
 })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -26,6 +27,12 @@ builder.Services.AddControllersWithViews();
 
 // Add Razor Pages support (required for Identity)
 builder.Services.AddRazorPages();
+
+// Configure Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
 
 // Configure application cookie options
 builder.Services.ConfigureApplicationCookie(options =>
@@ -50,6 +57,21 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseDeveloperExceptionPage();
+    
+    // In development, middleware to write unhandled exceptions to the console
+    app.Use(async (context, next) =>
+    {
+        try
+        {
+            await next();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+            throw; // Re-throw to be handled by the developer exception page
+        }
+    });
 }
 
 app.UseHttpsRedirection();
@@ -76,6 +98,8 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
     try
     {
@@ -83,8 +107,8 @@ using (var scope = app.Services.CreateScope())
         {
             Console.WriteLine("✅ Database connection successful!");
 
-            // Run DbInitializer if necessary
-            // await DbInitializer.Initialize(services);
+            // Run DbInitializer with correct parameters
+            await DbInitializer.Initialize(services, userManager, roleManager);
         }
         else
         {

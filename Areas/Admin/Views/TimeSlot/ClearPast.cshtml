@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Clear Past Time Slots";
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <h5 class="alert-heading">⚠️ Warning</h5>
+                <p>You are about to delete all time slots with dates prior to today. This action cannot be undone.</p>
+                <p>This will remove all time slots from previous days, freeing up database space and keeping your schedule clean.</p>
+            </div>
+            
+            <div class="mt-4">
+                <form asp-action="ClearPast" method="post">
+                    <div class="d-flex">
+                        <a asp-action="Index" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Clear Past Time Slots
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 

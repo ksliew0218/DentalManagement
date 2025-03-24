@@ -1,0 +1,109 @@
+@model IEnumerable<DentalManagement.Models.TimeSlot>
+
+@{
+    ViewData["Title"] = "Manage Doctor Time Slots";
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning">
+            @TempData["WarningMessage"]
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    
+    <div class="d-flex justify-content-between mb-3">
+        <div>
+            <a asp-action="Create" class="btn btn-primary me-2">
+                <i class="fas fa-plus-circle me-1"></i> Create New Slots
+            </a>
+            <a asp-action="ClearPast" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-1"></i> Clear Past Slots
+            </a>
+        </div>
+        
+        <div>
+            @{
+                var today = DateTime.UtcNow.Date;
+                var pastSlots = Model.Count(s => s.StartTime.Date < today);
+            }
+            @if (pastSlots > 0)
+            {
+                <div class="text-danger">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    <span>@pastSlots past slot(s) found. Consider clearing them.</span>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="timeSlotsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var slot in Model)
+                        {
+                            var rowClass = slot.StartTime.Date < today ? "text-muted bg-light" : "";
+                            <tr class="@rowClass">
+                                <td>@slot.Doctor.FirstName @slot.Doctor.LastName</td>
+                                <td>@slot.StartTime.ToShortDateString()</td>
+                                <td>@slot.StartTime.ToShortTimeString()</td>
+                                <td>@slot.EndTime.ToShortTimeString()</td>
+                                <td>
+                                    @if (slot.IsBooked)
+                                    {
+                                        <span class="badge bg-danger">Booked</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">Available</span>
+                                    }
+                                    @if (slot.StartTime.Date < today)
+                                    {
+                                        <span class="badge bg-secondary">Past</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#timeSlotsTable').DataTable({
+                "order": [[1, "asc"], [2, "asc"]] // Sort by date and then by start time
+            });
+        });
+    </script>
+} 

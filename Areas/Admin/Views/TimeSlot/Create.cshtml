@@ -1,0 +1,85 @@
+@model DentalManagement.ViewModels.CreateTimeSlotViewModel
+
+@{
+    ViewData["Title"] = "Create Doctor Time Slots";
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8 col-lg-6 mx-auto">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="DoctorId" class="form-label">👨‍⚕️ Doctor</label>
+                            <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select">
+                                <option value="">-- Select Doctor --</option>
+                            </select>
+                            <span asp-validation-for="DoctorId" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label">📅 Start Date</label>
+                                <input asp-for="StartDate" class="form-control" type="date" />
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="EndDate" class="form-label">📅 End Date</label>
+                                <input asp-for="EndDate" class="form-control" type="date" />
+                                <span asp-validation-for="EndDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DailyStartTime" class="form-label">🕒 Daily Start Time</label>
+                                <input asp-for="DailyStartTime" class="form-control" type="time" />
+                                <span asp-validation-for="DailyStartTime" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DailyEndTime" class="form-label">🕓 Daily End Time</label>
+                                <input asp-for="DailyEndTime" class="form-control" type="time" />
+                                <span asp-validation-for="DailyEndTime" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">📝 Time Slot Generation Information</h5>
+                                <p>The system will generate 1-hour time slots for each day in the selected date range.</p>
+                                <p><span class="text-danger fw-bold">Note:</span> A lunch break from 12:00 PM to 1:00 PM will be automatically excluded from slot generation.</p>
+                                <p>For example, if you select:</p>
+                                <ul>
+                                    <li>Start Date: June 1, 2023</li>
+                                    <li>End Date: June 3, 2023</li>
+                                    <li>Daily Start Time: 9:00 AM</li>
+                                    <li>Daily End Time: 3:00 PM</li>
+                                </ul>
+                                <p>The system will create the following slots:</p>
+                                <p><strong>June 1:</strong> 9:00-10:00, 10:00-11:00, 11:00-12:00, <span class="text-danger fw-bold">12:00-1:00 (Lunch Break)</span>, 1:00-2:00, 2:00-3:00</p>
+                                <p><strong>June 2:</strong> 9:00-10:00, 10:00-11:00, 11:00-12:00, <span class="text-danger fw-bold">12:00-1:00 (Lunch Break)</span>, 1:00-2:00, 2:00-3:00</p>
+                                <p><strong>June 3:</strong> 9:00-10:00, 10:00-11:00, 11:00-12:00, <span class="text-danger fw-bold">12:00-1:00 (Lunch Break)</span>, 1:00-2:00, 2:00-3:00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-1"></i> Generate Time Slots
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
