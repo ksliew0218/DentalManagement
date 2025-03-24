@@ -28,7 +28,7 @@ namespace DentalManagement.Areas.Admin.Controllers
                 // Create an AdminDashboardViewModel with proper data
                 var model = new AdminDashboardViewModel
                 {
-                    DoctorCount = _context.Doctors.Count(),
+                    DoctorCount = _context.Doctors.Count(d => !d.IsDeleted),
                     PatientCount = _context.Patients.Count(),
                     TreatmentTypeCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count(),
                     AppointmentCount = 0, // Update this if you implement appointments

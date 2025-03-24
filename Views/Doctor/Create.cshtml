@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Create Doctor";
-    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <h1>Create Doctor</h1>
@@ -22,7 +21,7 @@
     </div>
 }
 
-<form asp-area="Admin" asp-controller="Doctor" asp-action="Create" method="post">
+<form asp-controller="Doctor" asp-action="Create" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <div class="form-group">
         <label asp-for="FirstName" class="control-label"></label>
@@ -82,9 +81,8 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="ProfilePictureUrl" class="control-label"></label>
-        <input asp-for="ProfilePictureUrl" class="form-control" />
-        <span asp-validation-for="ProfilePictureUrl" class="text-danger"></span>
+        <label asp-for="ProfilePictureUrl" class="control-label">Upload Profile Picture</label>
+        <input type="file" name="ProfileImage" class="form-control" accept="image/*" required />
     </div>
 
     <div class="form-group">

@@ -40,6 +40,7 @@ namespace DentalManagement.Models
         public string? AvailableTimeSlots { get; set; } // Store JSON data for time slots
 
         public string? ProfilePictureUrl { get; set; } // Store URL for profile picture
+        public bool IsDeleted { get; set; } = false;
 
         [Required]
         public StatusType Status { get; set; } // Active/Inactive
