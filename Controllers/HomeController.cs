@@ -4,6 +4,7 @@ using DentalManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using Microsoft.AspNetCore.Identity;
+using System.Linq;
 
 namespace DentalManagement.Controllers;
 
@@ -40,6 +41,11 @@ public class HomeController : Controller
             {
                 return RedirectToAction("AccessDenied");
             }
+            
+            // Get counts for dashboard
+            ViewBag.DoctorCount = _context.Doctors.Count();
+            ViewBag.PatientCount = _context.Patients.Count();
+            ViewBag.TreatmentCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count();
             
             // Redirect to the new Admin Dashboard
             return RedirectToAction("Index", "Dashboard", new { area = "Admin" });

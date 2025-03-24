@@ -1,3 +1,4 @@
+@model DentalManagement.ViewModels.AdminDashboardViewModel
 @{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
@@ -26,7 +27,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="card-title text-uppercase">Doctors</div>
-                        <div class="count">@ViewBag.DoctorCount</div>
+                        <div class="count">@Model.DoctorCount</div>
                     </div>
                     <div class="col-auto">
                         <i class="bi bi-person-badge icon"></i>
@@ -46,7 +47,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="card-title text-uppercase">Patients</div>
-                        <div class="count">@ViewBag.PatientCount</div>
+                        <div class="count">@Model.PatientCount</div>
                     </div>
                     <div class="col-auto">
                         <i class="bi bi-people icon"></i>
@@ -66,7 +67,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="card-title text-uppercase">Treatments</div>
-                        <div class="count">@ViewBag.TreatmentCount</div>
+                        <div class="count">@Model.TreatmentTypeCount</div>
                     </div>
                     <div class="col-auto">
                         <i class="bi bi-clipboard2-pulse icon"></i>
@@ -86,7 +87,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="card-title text-uppercase">Appointments</div>
-                        <div class="count">0</div>
+                        <div class="count">@Model.AppointmentCount</div>
                     </div>
                     <div class="col-auto">
                         <i class="bi bi-calendar-check icon"></i>

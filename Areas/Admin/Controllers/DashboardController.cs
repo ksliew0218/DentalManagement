@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using DentalManagement.Models;
 using System;
 using DentalManagement.Authorization;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using DentalManagement.ViewModels;
 
 namespace DentalManagement.Areas.Admin.Controllers
 {
@@ -22,21 +25,34 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             try
             {
-                // Get counts for dashboard
-                ViewBag.DoctorCount = _context.Doctors.Count();
-                ViewBag.PatientCount = _context.Patients.Count();
-                ViewBag.TreatmentCount = _context.TreatmentTypes.Count();
-                
-                return View();
+                // Create an AdminDashboardViewModel with proper data
+                var model = new AdminDashboardViewModel
+                {
+                    DoctorCount = _context.Doctors.Count(),
+                    PatientCount = _context.Patients.Count(),
+                    TreatmentTypeCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count(),
+                    AppointmentCount = 0, // Update this if you implement appointments
+                    TotalRevenue = 0 // Update this if you implement revenue tracking
+                };
+
+                return View(model);
             }
             catch (Exception ex)
             {
                 // Handle any errors gracefully
                 ViewBag.ErrorMessage = "Error loading dashboard data: " + ex.Message;
-                ViewBag.DoctorCount = 0;
-                ViewBag.PatientCount = 0;
-                ViewBag.TreatmentCount = 0;
-                return View();
+                
+                // Return a model with default values
+                var defaultModel = new AdminDashboardViewModel
+                {
+                    DoctorCount = 0,
+                    PatientCount = 0,
+                    TreatmentTypeCount = 0,
+                    AppointmentCount = 0,
+                    TotalRevenue = 0
+                };
+                
+                return View(defaultModel);
             }
         }
     }

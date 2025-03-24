@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using DentalManagement.Authorization;
+using System.Linq;
+using DentalManagement.ViewModels;
 
 namespace DentalManagement.Controllers
 {
@@ -32,12 +34,17 @@ namespace DentalManagement.Controllers
         {
             try
             {
-                // Get counts for dashboard
-                ViewBag.DoctorCount = _context.Doctors.Count();
-                ViewBag.PatientCount = _context.Patients.Count();
-                ViewBag.TreatmentCount = _context.TreatmentTypes.Count();
+                // Create an AdminDashboardViewModel with proper data
+                var model = new AdminDashboardViewModel
+                {
+                    DoctorCount = _context.Doctors.Count(),
+                    PatientCount = _context.Patients.Count(),
+                    TreatmentTypeCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count(),
+                    AppointmentCount = 0, // Update this if you implement appointments
+                    TotalRevenue = 0 // Update this if you implement revenue tracking
+                };
                 
-                return View();
+                return View(model);
             }
             catch (Exception ex)
             {
