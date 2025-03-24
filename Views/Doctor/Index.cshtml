@@ -1,0 +1,172 @@
+@model IEnumerable<DentalManagement.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Doctors";
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Doctors</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Doctor
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-exclamation-circle text-muted" style="font-size: 3rem;"></i>
+                    <h3 class="mt-3">No Doctors Found</h3>
+                    <p class="text-muted">Start by adding your first doctor.</p>
+                    <a asp-action="Create" class="btn btn-primary mt-2">Add Doctor</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Profile</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Specialty</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doctor in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@(string.IsNullOrEmpty(doctor.ProfilePictureUrl) ? "/Images/default-profile.png" : doctor.ProfilePictureUrl)" 
+                                             alt="Profile Picture" 
+                                             class="rounded-circle" style="width:50px; height:50px; object-fit:cover;" />
+                                    </td>
+                                    <td>@doctor.FirstName</td>
+                                    <td>@doctor.LastName</td>
+                                    <td>@doctor.Specialty</td>
+                                    <td>
+                                        <span class="badge @(doctor.Status == StatusType.Active ? "bg-success" : "bg-secondary")">
+                                            @(doctor.Status == StatusType.Active ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="Edit" asp-route-id="@doctor.Id" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@doctor.Id" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <button type="button" class="btn btn-sm @(doctor.Status == StatusType.Active ? "btn-outline-warning" : "btn-outline-success")" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#confirmStatusModal" 
+                                                    data-status="@doctor.Status" 
+                                                    data-action-url="@Url.Action("ToggleStatus", new { id = doctor.Id })">
+                                                <i class="bi @(doctor.Status == StatusType.Active ? "bi-x-circle" : "bi-check-circle")"></i>
+                                            </button>
+
+                                            <!-- Delete Button (Opens Confirmation Modal) -->
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#confirmDeleteModal" 
+                                                    data-action-url="@Url.Action("Delete", new { id = doctor.Id })">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Modal for Confirmation -->
+<div class="modal fade" id="confirmStatusModal" tabindex="-1" aria-labelledby="confirmStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmStatusModalLabel">Confirm Status Change</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="statusMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="statusForm" method="post">
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this doctor? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle Status Change Modal
+        document.getElementById('confirmStatusModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var status = button.getAttribute('data-status');
+            var actionUrl = button.getAttribute('data-action-url');
+            var confirmButton = document.querySelector("#statusForm button[type='submit']");
+
+            if (status === "Active") {
+                document.getElementById('statusMessage').textContent = "Are you sure you want to deactivate this doctor?";
+                confirmButton.className = "btn btn-danger";
+            } else {
+                document.getElementById('statusMessage').textContent = "Are you sure you want to activate this doctor?";
+                confirmButton.className = "btn btn-primary";
+            }
+
+            document.getElementById('statusForm').setAttribute('action', actionUrl);
+        });
+
+        // Handle Delete Confirmation Modal
+        document.getElementById('confirmDeleteModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var actionUrl = button.getAttribute('data-action-url');
+            document.getElementById('deleteForm').setAttribute('action', actionUrl);
+        });
+
+        setTimeout(() => document.querySelector('.alert')?.remove(), 5000);
+    </script>
+}
+
