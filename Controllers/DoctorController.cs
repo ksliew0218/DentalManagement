@@ -140,7 +140,7 @@ namespace DentalManagement.Controllers
         {
             var doctor = await _context.Doctors
                 .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
+                .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
 
             if (doctor == null)
             {
@@ -189,7 +189,7 @@ namespace DentalManagement.Controllers
         {
             var doctor = await _context.Doctors
                 .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
+                .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
 
             if (doctor == null)
             {
@@ -204,7 +204,7 @@ namespace DentalManagement.Controllers
         {
             var doctor = await _context.Doctors
                 .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
+                .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
 
             if (doctor == null)
             {
@@ -218,11 +218,11 @@ namespace DentalManagement.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, 
-            [Bind("Id,UserID,FirstName,LastName,Gender,DateOfBirth,PhoneNumber,Specialty,Qualifications,ExperienceYears,Status")] 
+            [Bind("Id,UserID,FirstName,LastName,Gender,DateOfBirth,PhoneNumber,Specialty,Qualifications,ExperienceYears,Status,IsDeleted")] 
             Doctor doctor, 
             IFormFile ProfileImage)
         {
-            if (id != doctor.Id)
+            if (id != doctor.Id || doctor.IsDeleted)
             {
                 return NotFound();
             }

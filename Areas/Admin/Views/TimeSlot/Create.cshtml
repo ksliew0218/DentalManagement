@@ -4,19 +4,28 @@
     ViewData["Title"] = "Create Doctor Time Slots";
 }
 
-<div class="container-fluid">
-    <h2 class="mb-4">@ViewData["Title"]</h2>
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="TimeSlot" asp-action="Index">Doctor Time Slots</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create Slots</li>
+        </ol>
+    </nav>
     
     <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Create Doctor Time Slots</h2>
+        </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-8 col-lg-6 mx-auto">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" class="needs-validation" novalidate>
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
                         
                         <div class="mb-3">
-                            <label asp-for="DoctorId" class="form-label">👨‍⚕️ Doctor</label>
-                            <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select">
+                            <label asp-for="DoctorId" class="form-label">Doctor <span class="text-danger">*</span></label>
+                            <select asp-for="DoctorId" asp-items="ViewBag.Doctors" class="form-select" required>
                                 <option value="">-- Select Doctor --</option>
                             </select>
                             <span asp-validation-for="DoctorId" class="text-danger"></span>
@@ -24,33 +33,33 @@
                         
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label asp-for="StartDate" class="form-label">📅 Start Date</label>
-                                <input asp-for="StartDate" class="form-control" type="date" />
+                                <label asp-for="StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                <input asp-for="StartDate" class="form-control" type="date" required />
                                 <span asp-validation-for="StartDate" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="EndDate" class="form-label">📅 End Date</label>
-                                <input asp-for="EndDate" class="form-control" type="date" />
+                                <label asp-for="EndDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                <input asp-for="EndDate" class="form-control" type="date" required />
                                 <span asp-validation-for="EndDate" class="text-danger"></span>
                             </div>
                         </div>
                         
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label asp-for="DailyStartTime" class="form-label">🕒 Daily Start Time</label>
-                                <input asp-for="DailyStartTime" class="form-control" type="time" />
+                                <label asp-for="DailyStartTime" class="form-label">Daily Start Time <span class="text-danger">*</span></label>
+                                <input asp-for="DailyStartTime" class="form-control" type="time" required />
                                 <span asp-validation-for="DailyStartTime" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="DailyEndTime" class="form-label">🕓 Daily End Time</label>
-                                <input asp-for="DailyEndTime" class="form-control" type="time" />
+                                <label asp-for="DailyEndTime" class="form-label">Daily End Time <span class="text-danger">*</span></label>
+                                <input asp-for="DailyEndTime" class="form-control" type="time" required />
                                 <span asp-validation-for="DailyEndTime" class="text-danger"></span>
                             </div>
                         </div>
                         
-                        <div class="card bg-light mb-3">
+                        <div class="card bg-light mb-4">
                             <div class="card-body">
-                                <h5 class="card-title">📝 Time Slot Generation Information</h5>
+                                <h5 class="card-title"><i class="bi bi-info-circle"></i> Time Slot Generation Information</h5>
                                 <p>The system will generate 1-hour time slots for each day in the selected date range.</p>
                                 <p><span class="text-danger fw-bold">Note:</span> A lunch break from 12:00 PM to 1:00 PM will be automatically excluded from slot generation.</p>
                                 <p>For example, if you select:</p>
@@ -67,10 +76,12 @@
                             </div>
                         </div>
                         
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a asp-area="Admin" asp-controller="TimeSlot" asp-action="Index" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-arrow-left"></i> Back to Time Slots
+                            </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-calendar-plus me-1"></i> Generate Time Slots
+                                <i class="bi bi-calendar-plus"></i> Generate Time Slots
                             </button>
                         </div>
                     </form>
@@ -82,4 +93,22 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
 } 

@@ -58,7 +58,7 @@ namespace DentalManagement.Controllers
 
                 // Get all doctors
                 var doctors = await _context.Doctors
-                    .Where(d => d.Status == StatusType.Active)
+                    .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                     .OrderBy(d => d.LastName)
                     .ThenBy(d => d.FirstName)
                     .ToListAsync();

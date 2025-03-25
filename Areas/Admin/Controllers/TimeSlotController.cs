@@ -47,6 +47,7 @@ namespace DentalManagement.Areas.Admin.Controllers
             var timeSlots = await _context.TimeSlots
                 .Include(t => t.Doctor)
                 .ThenInclude(d => d.User)
+                .Where(t => !t.Doctor.IsDeleted)
                 .OrderBy(t => t.StartTime)
                 .ToListAsync();
                 
@@ -58,7 +59,7 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             var doctors = await _context.Doctors
                 .Include(d => d.User)
-                .Where(d => d.Status == StatusType.Active)
+                .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                 .ToListAsync();
                 
             ViewBag.Doctors = new SelectList(doctors, "Id", "User.Email");
@@ -76,6 +77,15 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Check if doctor exists and is not deleted
+                var doctor = await _context.Doctors.FindAsync(model.DoctorId);
+                if (doctor == null || doctor.IsDeleted)
+                {
+                    ModelState.AddModelError("DoctorId", "The selected doctor does not exist or has been deleted.");
+                    await PrepareViewBagDoctorsAsync();
+                    return View(model);
+                }
+                
                 // Get the time components from DailyStartTime and DailyEndTime
                 TimeSpan startTimeOfDay = model.DailyStartTime.TimeOfDay;
                 TimeSpan endTimeOfDay = model.DailyEndTime.TimeOfDay;
@@ -255,7 +265,7 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             var doctors = await _context.Doctors
                 .Include(d => d.User)
-                .Where(d => d.Status == StatusType.Active)
+                .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                 .ToListAsync();
                 
             ViewBag.Doctors = new SelectList(doctors, "Id", "User.Email");

@@ -5,7 +5,7 @@
 @{
     var currentUser = await UserManager.GetUserAsync(User);
     var isAdmin = currentUser?.Role == UserRole.Admin;
-    var isPatient = currentUser?.Role == UserRole.Patient; // 确保识别出 Patient
+    var isPatient = currentUser?.Role == UserRole.Patient;
 }
 
 <!DOCTYPE html>
@@ -13,7 +13,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DentalManagement</title>
+    <title>@ViewData["Title"] - Dental Management System</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -23,17 +23,19 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DentalManagement</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-hospital me-2"></i> Dental Management
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
+                    <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
 
                         @if (User.Identity.IsAuthenticated)
@@ -41,28 +43,43 @@
                             @if (isAdmin) // Admin navigation
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark fw-bold" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                                        <i class="bi bi-speedometer2 me-1"></i> Admin Dashboard
+                                    <a class="nav-link text-white" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-speedometer2"></i> Admin Dashboard
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="TreatmentType" asp-action="Index">
-                                        <i class="bi bi-clipboard2-pulse me-1"></i> Treatments
+                                    <a class="nav-link text-white" asp-area="" asp-controller="TreatmentType" asp-action="Index">
+                                        <i class="bi bi-clipboard2-pulse"></i> Treatments
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Doctor" asp-action="Index">
+                                        <i class="bi bi-person-badge"></i> Doctors
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="Admin" asp-controller="TimeSlot" asp-action="Index">
+                                        <i class="bi bi-calendar-week"></i> Doctor Slots
                                     </a>
                                 </li>
                             }
                             else if (isPatient) // Patient navigation
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="Patient" asp-controller="Dashboard" asp-action="Index">
+                                    <a class="nav-link text-white" asp-area="Patient" asp-controller="Dashboard" asp-action="Index">
                                         <i class="bi bi-house-door"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="Patient" asp-controller="Appointments" asp-action="Index">
+                                        <i class="bi bi-calendar-check"></i> Appointments
                                     </a>
                                 </li>
                             }
                         }
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
 
@@ -77,9 +94,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-5">
         <div class="container">
-            &copy; 2025 - DentalManagement - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - Dental Management System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

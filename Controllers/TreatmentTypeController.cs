@@ -113,7 +113,7 @@ namespace DentalManagement.Controllers
                 // Improved doctor selection with full name display
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
-                        .Where(d => d.Status == StatusType.Active)
+                        .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                         .OrderBy(d => d.LastName)
                         .ThenBy(d => d.FirstName)
                         .Select(d => new 
@@ -203,7 +203,7 @@ namespace DentalManagement.Controllers
                 // If we got this far, something failed, redisplay form
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
-                        .Where(d => d.Status == StatusType.Active)
+                        .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                         .OrderBy(d => d.LastName)
                         .ThenBy(d => d.FirstName)
                         .Select(d => new 
@@ -258,7 +258,7 @@ namespace DentalManagement.Controllers
                 // Prepare the multiselect list with all doctors
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
-                        .Where(d => d.Status == StatusType.Active)
+                        .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                         .OrderBy(d => d.LastName)
                         .ThenBy(d => d.FirstName)
                         .Select(d => new 
@@ -429,7 +429,7 @@ namespace DentalManagement.Controllers
                 
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
-                        .Where(d => d.Status == StatusType.Active)
+                        .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
                         .OrderBy(d => d.LastName)
                         .ThenBy(d => d.FirstName)
                         .Select(d => new 
