@@ -16,23 +16,11 @@ namespace DentalManagement.Models
         // Make navigation property nullable to avoid null reference exceptions
         public virtual Doctor? Doctor { get; set; }
 
-        private DateTime _startTime;
-        
         [Required]
-        public DateTime StartTime
-        {
-            get => _startTime;
-            set => _startTime = DateTime.SpecifyKind(value, DateTimeKind.Utc);
-        }
+        public DateTime StartTime { get; set; }
 
-        private DateTime _endTime;
-        
         [Required]
-        public DateTime EndTime
-        {
-            get => _endTime;
-            set => _endTime = DateTime.SpecifyKind(value, DateTimeKind.Utc);
-        }
+        public DateTime EndTime { get; set; }
 
         [Required]
         public bool IsBooked { get; set; } = false;

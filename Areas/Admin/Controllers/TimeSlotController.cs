@@ -77,89 +77,86 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check if doctor exists and is not deleted
-                var doctor = await _context.Doctors.FindAsync(model.DoctorId);
-                if (doctor == null || doctor.IsDeleted)
+                try
                 {
-                    ModelState.AddModelError("DoctorId", "The selected doctor does not exist or has been deleted.");
-                    await PrepareViewBagDoctorsAsync();
-                    return View(model);
-                }
-                
-                // Get the time components from DailyStartTime and DailyEndTime
-                TimeSpan startTimeOfDay = model.DailyStartTime.TimeOfDay;
-                TimeSpan endTimeOfDay = model.DailyEndTime.TimeOfDay;
-                
-                // Validate that end time is after start time
-                if (endTimeOfDay <= startTimeOfDay)
-                {
-                    ModelState.AddModelError("DailyEndTime", "End time must be after start time");
-                    await PrepareViewBagDoctorsAsync();
-                    return View(model);
-                }
-                
-                // Validate that the date range is valid
-                if (model.EndDate < model.StartDate)
-                {
-                    ModelState.AddModelError("EndDate", "End date must be after start date");
-                    await PrepareViewBagDoctorsAsync();
-                    return View(model);
-                }
-                
-                // Define lunch time (12:00 PM - 1:00 PM)
-                TimeSpan lunchTimeStart = new TimeSpan(12, 0, 0); // 12:00 PM
-                TimeSpan lunchTimeEnd = new TimeSpan(13, 0, 0);   // 1:00 PM
-                
-                // Calculate all slots for each day in the date range
-                var timeSlots = new List<TimeSlot>();
-                int duplicateSlots = 0;
-                
-                // Get existing slots for this doctor in the date range to check for duplicates
-                var existingSlots = await _context.TimeSlots
-                    .Where(ts => ts.DoctorId == model.DoctorId)
-                    .Where(ts => ts.StartTime.Date >= model.StartDate.Date && ts.StartTime.Date <= model.EndDate.Date)
-                    .ToListAsync();
-                
-                for (DateTime date = model.StartDate.Date; date <= model.EndDate.Date; date = date.AddDays(1))
-                {
-                    // Create DateTime objects with UTC Kind
-                    DateTime currentStart = DateTime.SpecifyKind(
-                        date.Add(startTimeOfDay), 
-                        DateTimeKind.Utc
-                    );
-                    
-                    DateTime currentEnd = DateTime.SpecifyKind(
-                        date.Add(startTimeOfDay).AddHours(1), 
-                        DateTimeKind.Utc
-                    );
-                    
-                    DateTime dayEnd = DateTime.SpecifyKind(
-                        date.Add(endTimeOfDay), 
-                        DateTimeKind.Utc
-                    );
-                    
-                    // Create 1-hour slots for this day
-                    while (currentEnd <= dayEnd)
+                    // Check if doctor exists and is not deleted
+                    var doctor = await _context.Doctors.FindAsync(model.DoctorId);
+                    if (doctor == null || doctor.IsDeleted)
                     {
-                        // Skip slot creation during lunch time (12:00 PM - 1:00 PM)
-                        TimeSpan currentTimeOfDay = currentStart.TimeOfDay;
-                        if (currentTimeOfDay < lunchTimeStart || currentTimeOfDay >= lunchTimeEnd)
+                        ModelState.AddModelError("DoctorId", "The selected doctor does not exist or has been deleted.");
+                        await PrepareViewBagDoctorsAsync();
+                        return View(model);
+                    }
+                    
+                    // Get the time components from DailyStartTime and DailyEndTime
+                    int startHour = model.DailyStartTime.Hour;
+                    int endHour = model.DailyEndTime.Hour;
+                    
+                    // Validate that end time is after start time
+                    if (endHour <= startHour)
+                    {
+                        ModelState.AddModelError("DailyEndTime", "End time must be after start time");
+                        await PrepareViewBagDoctorsAsync();
+                        return View(model);
+                    }
+                    
+                    // Validate that the date range is valid
+                    if (model.EndDate < model.StartDate)
+                    {
+                        ModelState.AddModelError("EndDate", "End date must be after start date");
+                        await PrepareViewBagDoctorsAsync();
+                        return View(model);
+                    }
+                    
+                    // Calculate all slots for each day in the date range
+                    var timeSlots = new List<TimeSlot>();
+                    int duplicateSlots = 0;
+                    
+                    // Convert all dates to UTC
+                    DateTime startDate = DateTime.SpecifyKind(model.StartDate.Date, DateTimeKind.Utc);
+                    DateTime endDate = DateTime.SpecifyKind(model.EndDate.Date, DateTimeKind.Utc);
+                    
+                    // Get existing slots for this doctor in the date range to check for duplicates
+                    var existingSlots = await _context.TimeSlots
+                        .Where(ts => ts.DoctorId == model.DoctorId)
+                        .Where(ts => ts.StartTime.Date >= startDate && ts.StartTime.Date <= endDate)
+                        .ToListAsync();
+                    
+                    // Loop through each day in the date range
+                    for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+                    {
+                        // Loop through each hour from start to end time
+                        for (int hour = startHour; hour < endHour; hour++)
                         {
-                            // Check if this slot already exists
+                            // Skip lunch hour (12-1 PM)
+                            if (hour == 12) continue;
+                            
+                            // Create explicit UTC DateTimes for slot start and end
+                            DateTime slotStart = DateTime.SpecifyKind(
+                                new DateTime(date.Year, date.Month, date.Day, hour, 0, 0), 
+                                DateTimeKind.Utc
+                            );
+                            
+                            DateTime slotEnd = DateTime.SpecifyKind(
+                                new DateTime(date.Year, date.Month, date.Day, hour + 1, 0, 0), 
+                                DateTimeKind.Utc
+                            );
+                            
+                            // Check for duplicates
                             bool isDuplicate = existingSlots.Any(s => 
                                 s.DoctorId == model.DoctorId && 
-                                s.StartTime.Year == currentStart.Year &&
-                                s.StartTime.Month == currentStart.Month && 
-                                s.StartTime.Day == currentStart.Day &&
-                                s.StartTime.Hour == currentStart.Hour);
+                                s.StartTime.Year == slotStart.Year &&
+                                s.StartTime.Month == slotStart.Month && 
+                                s.StartTime.Day == slotStart.Day &&
+                                s.StartTime.Hour == slotStart.Hour);
                             
                             if (!isDuplicate)
                             {
                                 timeSlots.Add(new TimeSlot
                                 {
                                     DoctorId = model.DoctorId,
-                                    StartTime = currentStart,
-                                    EndTime = currentEnd,
+                                    StartTime = slotStart,
+                                    EndTime = slotEnd,
                                     IsBooked = false
                                 });
                             }
@@ -168,18 +165,8 @@ namespace DentalManagement.Areas.Admin.Controllers
                                 duplicateSlots++;
                             }
                         }
-                        
-                        // Move to the next hour
-                        currentStart = currentEnd;
-                        currentEnd = DateTime.SpecifyKind(
-                            currentStart.AddHours(1), 
-                            DateTimeKind.Utc
-                        );
                     }
-                }
-                
-                try
-                {
+                    
                     if (timeSlots.Count == 0)
                     {
                         if (duplicateSlots > 0)
@@ -209,8 +196,14 @@ namespace DentalManagement.Areas.Admin.Controllers
                 }
                 catch (Exception ex)
                 {
+                    // Log detailed error information
                     Console.WriteLine($"Error saving time slots: {ex.Message}");
-                    ModelState.AddModelError("", "An error occurred while saving time slots. Please try again.");
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    }
+                    
+                    ModelState.AddModelError("", $"An error occurred: {ex.Message}");
                 }
             }
             

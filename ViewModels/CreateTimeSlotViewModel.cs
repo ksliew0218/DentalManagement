@@ -30,18 +30,16 @@ namespace DentalManagement.ViewModels
 
         public CreateTimeSlotViewModel()
         {
-            // Initialize with UTC values
-            var now = DateTime.UtcNow;
-            StartDate = DateTime.SpecifyKind(now.Date, DateTimeKind.Utc);
-            EndDate = DateTime.SpecifyKind(now.Date.AddDays(7), DateTimeKind.Utc);
+            // Use simple DateTime values without specifying Kind
+            var today = DateTime.Now.Date;
             
-            // Set 9:00 AM
-            var startTime = now.Date.AddHours(9);
-            DailyStartTime = DateTime.SpecifyKind(startTime, DateTimeKind.Utc);
+            // Initialize with default values
+            StartDate = today;
+            EndDate = today.AddDays(7);
             
-            // Set 5:00 PM
-            var endTime = now.Date.AddHours(17);
-            DailyEndTime = DateTime.SpecifyKind(endTime, DateTimeKind.Utc);
+            // Default work hours
+            DailyStartTime = new DateTime(2000, 1, 1, 9, 0, 0);
+            DailyEndTime = new DateTime(2000, 1, 1, 17, 0, 0);
         }
     }
 } 

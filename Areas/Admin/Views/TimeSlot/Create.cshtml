@@ -47,12 +47,12 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="DailyStartTime" class="form-label">Daily Start Time <span class="text-danger">*</span></label>
-                                <input asp-for="DailyStartTime" class="form-control" type="time" required />
+                                <input asp-for="DailyStartTime" class="form-control" type="time" value="09:00" required />
                                 <span asp-validation-for="DailyStartTime" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="DailyEndTime" class="form-label">Daily End Time <span class="text-danger">*</span></label>
-                                <input asp-for="DailyEndTime" class="form-control" type="time" required />
+                                <input asp-for="DailyEndTime" class="form-control" type="time" value="17:00" required />
                                 <span asp-validation-for="DailyEndTime" class="text-danger"></span>
                             </div>
                         </div>
