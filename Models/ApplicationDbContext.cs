@@ -16,11 +16,15 @@ namespace DentalManagement.Models
         {
         }
 
+        // Existing DbSets
         public DbSet<Patient> Patients { get; set; }
         public DbSet<TreatmentType> TreatmentTypes { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<DoctorTreatment> DoctorTreatments { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
+        
+        // Add Appointment DbSet
+        public DbSet<Appointment> Appointments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +57,35 @@ namespace DentalManagement.Models
                 .HasConversion(
                     v => v, 
                     v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+            // Configure Appointment Relationships
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Patient)
+                .WithMany()
+                .HasForeignKey(a => a.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.Doctor)
+                .WithMany()
+                .HasForeignKey(a => a.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Appointment>()
+                .HasOne(a => a.TreatmentType)
+                .WithMany()
+                .HasForeignKey(a => a.TreatmentTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Appointment constraints
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.Status)
+                .HasMaxLength(50)
+                .HasDefaultValue("Scheduled");
+
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
         }
 
         // Ensure UTC DateTime values when saving to database
