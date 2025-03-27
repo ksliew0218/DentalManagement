@@ -1,0 +1,175 @@
+@model IEnumerable<DentalManagement.Models.TimeSlot>
+
+@{
+    ViewData["Title"] = "My Time Slots";
+}
+
+<div class="container-fluid px-0">
+    <!-- Page Heading with Navigation -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a href="@Url.Action("Index", "Dashboard", new { area = "Doctor" })" class="btn btn-outline-primary me-3">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <h1 class="h3 mb-0 text-gray-800">My Time Slots</h1>
+        </div>
+        <div class="btn-group">
+            <a href="@Url.Action("Index", "TimeSlots", new { area = "Doctor" })" class="btn btn-primary">
+                <i class="bi bi-list"></i> List View
+            </a>
+            <a href="@Url.Action("Calendar", "TimeSlots", new { area = "Doctor" })" class="btn btn-outline-primary">
+                <i class="bi bi-calendar3"></i> Calendar View
+            </a>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Time Slots Table Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-clock me-2"></i>
+                <h6 class="m-0 font-weight-bold">Time Slots List</h6>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-calendar-date text-primary me-2"></i> Date
+                                    </div>
+                                </th>
+                                <th class="px-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-clock text-success me-2"></i> Start Time
+                                    </div>
+                                </th>
+                                <th class="px-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-clock-fill text-danger me-2"></i> End Time
+                                    </div>
+                                </th>
+                                <th class="px-4 py-3 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var slot in Model)
+                            {
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <span class="fw-medium">@slot.StartTime.ToLocalTime().ToString("dddd, MMM d, yyyy")</span>
+                                    </td>
+                                    <td class="px-4 py-3">@slot.StartTime.ToLocalTime().ToString("h:mm tt")</td>
+                                    <td class="px-4 py-3">@slot.EndTime.ToLocalTime().ToString("h:mm tt")</td>
+                                    <td class="px-4 py-3 text-center">
+                                        @if (slot.IsBooked)
+                                        {
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">
+                                                <i class="bi bi-calendar-check me-1"></i> Booked
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                                <i class="bi bi-calendar-plus me-1"></i> Available
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x text-muted" style="font-size: 3.5rem;"></i>
+                    <p class="lead mt-3 mb-0">No time slots found.</p>
+                    <p class="text-muted mb-4">Time slots are created by administrators to make you available for appointments.</p>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Schedule Legend -->
+    <div class="card shadow">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 text-primary">Status Legend</h6>
+        </div>
+        <div class="card-body py-3">
+            <div class="d-flex flex-wrap">
+                <div class="d-flex align-items-center me-4 mb-2">
+                    <span class="badge bg-success rounded-pill px-3 py-2 me-2">
+                        <i class="bi bi-calendar-plus me-1"></i> Available
+                    </span>
+                    <span>Slot is open and can be booked by patients</span>
+                </div>
+                <div class="d-flex align-items-center me-4 mb-2">
+                    <span class="badge bg-danger rounded-pill px-3 py-2 me-2">
+                        <i class="bi bi-calendar-check me-1"></i> Booked
+                    </span>
+                    <span>Slot has been booked by a patient</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Table styles */
+        .table {
+            font-size: 0.9rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.08rem;
+        }
+        
+        .badge {
+            font-weight: 500;
+        }
+        
+        .btn-group .btn {
+            box-shadow: none;
+        }
+        
+        /* Enhanced colors */
+        .table-light {
+            background-color: #f8f9fa;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        .fw-medium {
+            font-weight: 500;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+} 

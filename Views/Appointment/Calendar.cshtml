@@ -1,0 +1,128 @@
+@{
+    ViewData["Title"] = "Doctor Schedule Calendar";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-calendar-week"></i> Doctor Schedule Calendar</h4>
+            <div>
+                <a asp-action="Create" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> New Appointment
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="doctorSelect" class="form-label">Select Doctor:</label>
+                        <select id="doctorSelect" class="form-select">
+                            @foreach (var doctor in ViewBag.Doctors)
+                            {
+                                if (doctor.Id == ViewBag.DoctorId)
+                                {
+                                    <option value="@doctor.Id" selected>Dr. @doctor.FirstName @doctor.LastName</option>
+                                }
+                                else
+                                {
+                                    <option value="@doctor.Id">Dr. @doctor.FirstName @doctor.LastName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="calendar" style="height: 650px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Details Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Appointment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="appointmentDetails">
+                    <p><strong>Patient:</strong> <span id="patientName"></span></p>
+                    <p><strong>Treatment:</strong> <span id="treatmentName"></span></p>
+                    <p><strong>Date/Time:</strong> <span id="appointmentDateTime"></span></p>
+                    <p><strong>Status:</strong> <span id="appointmentStatus"></span></p>
+                    <p><strong>Notes:</strong> <span id="appointmentNotes"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a id="editAppointmentBtn" href="#" class="btn btn-primary">Edit</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- FullCalendar dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var selectedDoctorId = document.getElementById('doctorSelect').value;
+            
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                slotMinTime: '08:00:00',
+                slotMaxTime: '19:00:00',
+                allDaySlot: false,
+                height: 'auto',
+                stickyHeaderDates: true,
+                nowIndicator: true,
+                businessHours: {
+                    daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
+                    startTime: '08:00',
+                    endTime: '18:00',
+                },
+                events: {
+                    url: `/Appointment/GetAppointments?doctorId=${selectedDoctorId}`,
+                    method: 'GET',
+                    failure: function() {
+                        alert('There was an error while fetching appointments!');
+                    }
+                },
+                eventClick: function(info) {
+                    // Display appointment details in modal
+                    document.getElementById('patientName').textContent = info.event.extendedProps.patientName;
+                    document.getElementById('treatmentName').textContent = info.event.extendedProps.treatmentName;
+                    document.getElementById('appointmentDateTime').textContent = info.event.start.toLocaleString();
+                    document.getElementById('appointmentStatus').textContent = info.event.extendedProps.status;
+                    document.getElementById('appointmentNotes').textContent = info.event.extendedProps.notes || 'No notes';
+                    
+                    // Set up the edit button link
+                    document.getElementById('editAppointmentBtn').href = `/Appointment/Edit/${info.event.id}`;
+                    
+                    // Show the modal
+                    var appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+                    appointmentModal.show();
+                }
+            });
+            
+            calendar.render();
+            
+            // Handle doctor selection change
+            document.getElementById('doctorSelect').addEventListener('change', function() {
+                selectedDoctorId = this.value;
+                window.location.href = `/Appointment/Calendar?doctorId=${selectedDoctorId}`;
+            });
+        });
+    </script>
+} 

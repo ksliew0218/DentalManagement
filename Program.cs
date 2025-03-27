@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
+using Microsoft.AspNetCore.Identity;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +53,6 @@ app.Urls.Add(urls);
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    // We're removing the database error page reference since the package is missing
 }
 else
 {
@@ -87,8 +87,6 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    var userManager = services.GetRequiredService<UserManager<User>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
     try
     {
@@ -96,8 +94,10 @@ using (var scope = app.Services.CreateScope())
         {
             Console.WriteLine("✅ Database connection successful!");
 
-            // Run DbInitializer with correct parameters
-            await DbInitializer.Initialize(services, userManager, roleManager);
+            // Initialize the database using the existing DbInitializer
+            await DentalManagement.Models.DbInitializer.InitializeAsync(services);
+            
+            Console.WriteLine("Database initialized!");
         }
         else
         {

@@ -16,25 +16,20 @@ namespace DentalManagement.Models
         {
         }
 
-        // Existing DbSets
         public DbSet<Patient> Patients { get; set; }
         public DbSet<TreatmentType> TreatmentTypes { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<DoctorTreatment> DoctorTreatments { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
-        // Add Appointment DbSet
         public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<LeaveType> LeaveTypes { get; set; }
-        public DbSet<LeaveAllocation> LeaveAllocations { get; set; }
-        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure DoctorTreatment (using Id as primary key instead of composite key)
+            // Configure DoctorTreatment composite key
             modelBuilder.Entity<DoctorTreatment>()
-                .HasKey(dt => dt.Id);
+                .HasKey(dt => new { dt.DoctorId, dt.TreatmentTypeId });
 
             // Configure DoctorTreatment relationships
             modelBuilder.Entity<DoctorTreatment>()
@@ -59,93 +54,6 @@ namespace DentalManagement.Models
                 .HasConversion(
                     v => v, 
                     v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-
-            // Configure Appointment Relationships
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.Patient)
-                .WithMany()
-                .HasForeignKey(a => a.PatientId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.Doctor)
-                .WithMany()
-                .HasForeignKey(a => a.DoctorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.TreatmentType)
-                .WithMany()
-                .HasForeignKey(a => a.TreatmentTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure Appointment constraints
-            modelBuilder.Entity<Appointment>()
-                .Property(a => a.Status)
-                .HasMaxLength(50)
-                .HasDefaultValue("Scheduled");
-
-            modelBuilder.Entity<Appointment>()
-                .Property(a => a.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
-                    
-            // Configure Leave related DateTime fields with DateTimeKind.Utc
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.StartDate)
-                .HasConversion(
-                    v => v, 
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.EndDate)
-                .HasConversion(
-                    v => v, 
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.DateRequested)
-                .HasConversion(
-                    v => v, 
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.DateActioned)
-                .HasConversion(
-                    v => v.HasValue ? v.Value : DateTime.UtcNow, 
-                    v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    
-            modelBuilder.Entity<LeaveAllocation>()
-                .Property(la => la.DateCreated)
-                .HasConversion(
-                    v => v, 
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    
-            modelBuilder.Entity<LeaveAllocation>()
-                .Property(la => la.DateModified)
-                .HasConversion(
-                    v => v, 
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    
-            // Configure nullable string properties for leave management
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.RequestComments)
-                .IsRequired(false);
-                
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.ApproverComments)
-                .IsRequired(false);
-                
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.ApproverId)
-                .IsRequired(false);
-                
-            modelBuilder.Entity<LeaveRequest>()
-                .Property(lr => lr.DocumentPath)
-                .IsRequired(false);
-                
-            modelBuilder.Entity<LeaveType>()
-                .Property(lt => lt.Description)
-                .IsRequired(false);
         }
 
         // Ensure UTC DateTime values when saving to database
