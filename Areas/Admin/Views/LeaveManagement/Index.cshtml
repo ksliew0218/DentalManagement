@@ -1,0 +1,139 @@
+@model DentalManagement.ViewModels.AdminLeaveManagementViewModel
+@{
+    ViewData["Title"] = "Leave Management";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string currentStatus = ViewBag.CurrentStatus ?? "Pending";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Leave Management</h1>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="leaveStatusTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link @(currentStatus == "Pending" ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = "Pending" })" role="tab">
+                        <i class="fas fa-clock mr-1"></i>Pending
+                        <span class="badge badge-warning">@Model.PendingRequests.Count</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(currentStatus == "Approved" ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = "Approved" })" role="tab">
+                        <i class="fas fa-check mr-1"></i>Approved
+                        <span class="badge badge-success">@Model.ApprovedRequests.Count</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(currentStatus == "Rejected" ? "active" : "")" 
+                       href="@Url.Action("Index", new { status = "Rejected" })" role="tab">
+                        <i class="fas fa-times mr-1"></i>Rejected
+                        <span class="badge badge-danger">@Model.RejectedRequests.Count</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list mr-1"></i>
+                        @currentStatus Leave Requests
+                    </h6>
+                    <div class="dropdown no-arrow">
+                        <a href="@Url.Action("ManageBalances")" class="btn btn-sm btn-primary">
+                            <i class="fas fa-balance-scale fa-sm"></i> Manage Leave Balances
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="leaveRequestsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Request Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var requests = currentStatus switch
+                                    {
+                                        "Approved" => Model.ApprovedRequests,
+                                        "Rejected" => Model.RejectedRequests,
+                                        _ => Model.PendingRequests
+                                    };
+                                }
+                                
+                                @foreach (var request in requests)
+                                {
+                                    <tr>
+                                        <td>Dr. @request.Doctor.FirstName @request.Doctor.LastName</td>
+                                        <td>@request.LeaveType.Name</td>
+                                        <td>@request.StartDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@request.EndDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@request.TotalDays</td>
+                                        <td>@request.RequestDate.ToString("yyyy-MM-dd")</td>
+                                        <td>
+                                            <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            
+                                            @if (request.Status == LeaveRequestStatus.Pending)
+                                            {
+                                                <a asp-action="Approve" asp-route-id="@request.Id" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a asp-action="Reject" asp-route-id="@request.Id" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#leaveRequestsTable').DataTable({
+                "order": [[5, "desc"]], // Order by request date
+                "pageLength": 10
+            });
+            
+            // Display any success message
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                toastr.success('@TempData["SuccessMessage"]');
+                </text>
+            }
+            
+            // Display any error message
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                toastr.error('@TempData["ErrorMessage"]');
+                </text>
+            }
+        });
+    </script>
+} 

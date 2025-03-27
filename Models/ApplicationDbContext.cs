@@ -22,6 +22,9 @@ namespace DentalManagement.Models
         public DbSet<DoctorTreatment> DoctorTreatments { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<LeaveType> LeaveTypes { get; set; }
+        public DbSet<DoctorLeaveBalance> DoctorLeaveBalances { get; set; }
+        public DbSet<DoctorLeaveRequest> DoctorLeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +57,31 @@ namespace DentalManagement.Models
                 .HasConversion(
                     v => v, 
                     v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            // Configure DateTime properties for leave management
+            modelBuilder.Entity<DoctorLeaveRequest>()
+                .Property(l => l.StartDate)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<DoctorLeaveRequest>()
+                .Property(l => l.EndDate)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<DoctorLeaveRequest>()
+                .Property(l => l.RequestDate)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<DoctorLeaveRequest>()
+                .Property(l => l.ApprovalDate)
+                .HasConversion(
+                    v => v.HasValue ? v.Value : DateTime.MinValue, 
+                    v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
         }
 
         // Ensure UTC DateTime values when saving to database

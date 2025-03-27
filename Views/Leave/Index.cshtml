@@ -1,0 +1,136 @@
+@model DentalManagement.ViewModels.DoctorLeaveViewModel
+@{
+    ViewData["Title"] = "Leave Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Leave Balances</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="leaveBalanceTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Leave Type</th>
+                                    <th>Paid/Unpaid</th>
+                                    <th>Remaining Days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var balance in Model.LeaveBalances)
+                                {
+                                    <tr>
+                                        <td>@balance.LeaveType.Name</td>
+                                        <td>@(balance.LeaveType.IsPaid ? "Paid" : "Unpaid")</td>
+                                        <td>
+                                            @if (balance.LeaveType.IsPaid)
+                                            {
+                                                <span class="@(balance.RemainingDays > 0 ? "text-success" : "text-danger")">
+                                                    @balance.RemainingDays days
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-info">Unlimited</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Leave Requests</h6>
+                    <div class="dropdown no-arrow">
+                        <a asp-action="Apply" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus fa-sm"></i> Apply for Leave
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="leaveRequestTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model.LeaveRequests.OrderByDescending(r => r.RequestDate))
+                                {
+                                    <tr>
+                                        <td>@request.LeaveType.Name</td>
+                                        <td>@request.StartDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@request.EndDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@request.TotalDays</td>
+                                        <td>
+                                            @switch (request.Status)
+                                            {
+                                                case LeaveRequestStatus.Pending:
+                                                    <span class="badge badge-warning">Pending</span>
+                                                    break;
+                                                case LeaveRequestStatus.Approved:
+                                                    <span class="badge badge-success">Approved</span>
+                                                    break;
+                                                case LeaveRequestStatus.Rejected:
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (request.Status == LeaveRequestStatus.Pending)
+                                            {
+                                                <a asp-action="Cancel" asp-route-id="@request.Id" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#leaveRequestTable').DataTable({
+                "order": [[1, "desc"]],
+                "pageLength": 10
+            });
+            
+            // Display any success message
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                toastr.success('@TempData["SuccessMessage"]');
+                </text>
+            }
+        });
+    </script>
+} 

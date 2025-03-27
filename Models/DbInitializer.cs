@@ -65,6 +65,45 @@ namespace DentalManagement.Models
                             Console.WriteLine("Added existing admin user to Admin role");
                         }
                     }
+
+                    // Seed leave types
+                    if (!dbContext.LeaveTypes.Any())
+                    {
+                        var leaveTypes = new List<LeaveType>
+                        {
+                            new LeaveType
+                            {
+                                Name = "Annual Leave",
+                                IsPaid = true,
+                                DefaultDays = 14,
+                                Description = "Regular annual leave for vacation"
+                            },
+                            new LeaveType
+                            {
+                                Name = "Sick Leave",
+                                IsPaid = true,
+                                DefaultDays = 10,
+                                Description = "Leave for illness and medical reasons"
+                            },
+                            new LeaveType
+                            {
+                                Name = "Bereavement Leave",
+                                IsPaid = true,
+                                DefaultDays = 3,
+                                Description = "Leave for the death of a family member"
+                            },
+                            new LeaveType
+                            {
+                                Name = "Unpaid Leave",
+                                IsPaid = false,
+                                DefaultDays = 0, // Unlimited, no balance needed
+                                Description = "Leave without pay for extended absence"
+                            }
+                        };
+
+                        dbContext.LeaveTypes.AddRange(leaveTypes);
+                        await dbContext.SaveChangesAsync();
+                    }
                 }
             }
             catch (Exception ex)

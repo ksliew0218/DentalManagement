@@ -1,0 +1,97 @@
+@model DentalManagement.ViewModels.LeaveApprovalViewModel
+@{
+    ViewData["Title"] = Model.Status == LeaveRequestStatus.Approved ? "Approve Leave Request" : "Reject Leave Request";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var leaveRequest = ViewBag.LeaveRequest as DoctorLeaveRequest;
+    var actionText = Model.Status == LeaveRequestStatus.Approved ? "Approve" : "Reject";
+    var btnClass = Model.Status == LeaveRequestStatus.Approved ? "btn-success" : "btn-danger";
+    var iconClass = Model.Status == LeaveRequestStatus.Approved ? "fa-check" : "fa-times";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        @actionText Leave Request for Dr. @leaveRequest.Doctor.FirstName @leaveRequest.Doctor.LastName
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Doctor:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            Dr. @leaveRequest.Doctor.FirstName @leaveRequest.Doctor.LastName
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Leave Type:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @leaveRequest.LeaveType.Name (@(leaveRequest.LeaveType.IsPaid ? "Paid" : "Unpaid"))
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Duration:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @leaveRequest.StartDate.ToString("yyyy-MM-dd") to @leaveRequest.EndDate.ToString("yyyy-MM-dd")
+                            (@leaveRequest.TotalDays days)
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Requested On:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @leaveRequest.RequestDate.ToString("yyyy-MM-dd HH:mm")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Reason:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @(string.IsNullOrEmpty(leaveRequest.Reason) ? "N/A" : leaveRequest.Reason)
+                        </div>
+                    </div>
+
+                    <form asp-action="ApproveReject" method="post">
+                        <input type="hidden" asp-for="LeaveRequestId" value="@leaveRequest.Id" />
+                        <input type="hidden" asp-for="Status" value="@Model.Status" />
+                        
+                        <div class="form-group">
+                            <label asp-for="Comments">Comments:</label>
+                            <textarea asp-for="Comments" class="form-control" rows="3" 
+                                      placeholder="Add comments for the doctor..."></textarea>
+                            <span asp-validation-for="Comments" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn @btnClass">
+                                <i class="fas @iconClass"></i> @actionText Request
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

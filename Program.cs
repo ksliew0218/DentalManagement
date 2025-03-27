@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
+using DentalManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,9 @@ builder.Services.AddControllersWithViews();
 
 // Add Razor Pages support (required for Identity)
 builder.Services.AddRazorPages();
+
+// Register application services
+builder.Services.AddScoped<LeaveManagementService>();
 
 // Configure Authorization
 builder.Services.AddAuthorization(options =>

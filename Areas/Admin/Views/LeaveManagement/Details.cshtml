@@ -1,0 +1,156 @@
+@model DentalManagement.Models.DoctorLeaveRequest
+@{
+    ViewData["Title"] = "Leave Request Details";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Leave Request Details</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        Leave Request from Dr. @Model.Doctor.FirstName @Model.Doctor.LastName
+                    </h6>
+                    <div>
+                        @switch (Model.Status)
+                        {
+                            case LeaveRequestStatus.Pending:
+                                <span class="badge badge-warning">Pending</span>
+                                break;
+                            case LeaveRequestStatus.Approved:
+                                <span class="badge badge-success">Approved</span>
+                                break;
+                            case LeaveRequestStatus.Rejected:
+                                <span class="badge badge-danger">Rejected</span>
+                                break;
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Doctor:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            Dr. @Model.Doctor.FirstName @Model.Doctor.LastName
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Email:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.Doctor.User.Email
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Leave Type:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.LeaveType.Name (@(Model.LeaveType.IsPaid ? "Paid" : "Unpaid"))
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Start Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.StartDate.ToString("yyyy-MM-dd")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>End Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.EndDate.ToString("yyyy-MM-dd")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Total Days:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.TotalDays
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Request Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.RequestDate.ToString("yyyy-MM-dd HH:mm")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Reason:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @(string.IsNullOrEmpty(Model.Reason) ? "N/A" : Model.Reason)
+                        </div>
+                    </div>
+                    
+                    @if (Model.Status != LeaveRequestStatus.Pending)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Processed By:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.ApprovedByUser != null ? Model.ApprovedByUser.Email : "N/A")
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Processed Date:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.ApprovalDate.HasValue ? Model.ApprovalDate.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")
+                            </div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.Comments))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <strong>Comments:</strong>
+                                </div>
+                                <div class="col-md-8">
+                                    @Model.Comments
+                                </div>
+                            </div>
+                        }
+                    }
+                    
+                    <div class="form-group mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        @if (Model.Status == LeaveRequestStatus.Pending)
+                        {
+                            <a asp-action="Approve" asp-route-id="@Model.Id" class="btn btn-success">
+                                <i class="fas fa-check"></i> Approve
+                            </a>
+                            <a asp-action="Reject" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="fas fa-times"></i> Reject
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

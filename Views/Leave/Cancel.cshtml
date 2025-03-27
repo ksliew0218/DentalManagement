@@ -1,0 +1,63 @@
+@model DentalManagement.Models.DoctorLeaveRequest
+@{
+    ViewData["Title"] = "Cancel Leave Request";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Cancel Leave Request</h6>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-danger mb-4">Are you sure you want to cancel this leave request?</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Leave Type:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.LeaveType.Name
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Start Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.StartDate.ToString("yyyy-MM-dd")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>End Date:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.EndDate.ToString("yyyy-MM-dd")
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Total Days:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @Model.TotalDays
+                        </div>
+                    </div>
+                    
+                    <form asp-action="Cancel" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-danger">Confirm Cancel</button>
+                            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
