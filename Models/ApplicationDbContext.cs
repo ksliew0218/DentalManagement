@@ -22,17 +22,19 @@ namespace DentalManagement.Models
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<DoctorTreatment> DoctorTreatments { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
-        
         // Add Appointment DbSet
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<LeaveType> LeaveTypes { get; set; }
+        public DbSet<LeaveAllocation> LeaveAllocations { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure DoctorTreatment composite key
+            // Configure DoctorTreatment (using Id as primary key instead of composite key)
             modelBuilder.Entity<DoctorTreatment>()
-                .HasKey(dt => new { dt.DoctorId, dt.TreatmentTypeId });
+                .HasKey(dt => dt.Id);
 
             // Configure DoctorTreatment relationships
             modelBuilder.Entity<DoctorTreatment>()
@@ -86,6 +88,64 @@ namespace DentalManagement.Models
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                    
+            // Configure Leave related DateTime fields with DateTimeKind.Utc
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.StartDate)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.EndDate)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.DateRequested)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.DateActioned)
+                .HasConversion(
+                    v => v.HasValue ? v.Value : DateTime.UtcNow, 
+                    v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<LeaveAllocation>()
+                .Property(la => la.DateCreated)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<LeaveAllocation>()
+                .Property(la => la.DateModified)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            // Configure nullable string properties for leave management
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.RequestComments)
+                .IsRequired(false);
+                
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.ApproverComments)
+                .IsRequired(false);
+                
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.ApproverId)
+                .IsRequired(false);
+                
+            modelBuilder.Entity<LeaveRequest>()
+                .Property(lr => lr.DocumentPath)
+                .IsRequired(false);
+                
+            modelBuilder.Entity<LeaveType>()
+                .Property(lt => lt.Description)
+                .IsRequired(false);
         }
 
         // Ensure UTC DateTime values when saving to database

@@ -100,9 +100,6 @@ namespace DentalManagement.Migrations
                     b.Property<int>("Gender")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -132,7 +129,7 @@ namespace DentalManagement.Migrations
                     b.HasIndex("UserID")
                         .IsUnique();
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.DoctorTreatment", b =>
@@ -162,7 +159,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("TreatmentTypeId");
 
-                    b.ToTable("DoctorTreatments");
+                    b.ToTable("DoctorTreatments", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.Patient", b =>
@@ -212,7 +209,7 @@ namespace DentalManagement.Migrations
                     b.HasIndex("UserID")
                         .IsUnique();
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.TimeSlot", b =>
@@ -239,7 +236,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("TimeSlots");
+                    b.ToTable("TimeSlots", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.TreatmentType", b =>
@@ -280,7 +277,7 @@ namespace DentalManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TreatmentTypes");
+                    b.ToTable("TreatmentTypes", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.User", b =>

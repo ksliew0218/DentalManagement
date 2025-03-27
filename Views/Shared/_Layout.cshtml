@@ -76,6 +76,19 @@
                                     </a>
                                 </li>
                             }
+                            else if (currentUser?.Role == UserRole.Doctor) // Doctor navigation
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="Doctor" asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-speedometer2"></i> Doctor Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index">
+                                        <i class="bi bi-clock"></i> My Time Slots
+                                    </a>
+                                </li>
+                            }
                         }
 
                         <li class="nav-item">
