@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DentalManagement.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class LeaveManagementController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -32,6 +32,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         // GET: Admin/LeaveManagement
         public async Task<IActionResult> Index(string status = "Pending")
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             // Parse the status
             if (!Enum.TryParse<LeaveRequestStatus>(status, true, out var leaveStatus))
             {
@@ -60,6 +66,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         // GET: Admin/LeaveManagement/Details/5
         public async Task<IActionResult> Details(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             var leaveRequest = await _context.DoctorLeaveRequests
                 .Include(l => l.Doctor)
                     .ThenInclude(d => d.User)
@@ -72,12 +84,31 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            // Get time slots during the leave period
+            var timeSlots = await _context.TimeSlots
+                .Where(ts => ts.DoctorId == leaveRequest.DoctorId &&
+                           ts.StartTime.Date >= leaveRequest.StartDate.Date &&
+                           ts.StartTime.Date <= leaveRequest.EndDate.Date)
+                .ToListAsync();
+                
+            var bookedTimeSlots = timeSlots.Where(ts => ts.IsBooked).ToList();
+            
+            ViewBag.TotalTimeSlots = timeSlots.Count;
+            ViewBag.BookedTimeSlots = bookedTimeSlots.Count;
+            ViewBag.TimeSlots = timeSlots;
+
             return View(leaveRequest);
         }
 
         // GET: Admin/LeaveManagement/Approve/5
         public async Task<IActionResult> Approve(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             var leaveRequest = await _context.DoctorLeaveRequests
                 .Include(l => l.Doctor)
                     .ThenInclude(d => d.User)
@@ -102,6 +133,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         // GET: Admin/LeaveManagement/Reject/5
         public async Task<IActionResult> Reject(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             var leaveRequest = await _context.DoctorLeaveRequests
                 .Include(l => l.Doctor)
                     .ThenInclude(d => d.User)
@@ -128,6 +165,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveReject(LeaveApprovalViewModel model)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             if (!ModelState.IsValid)
             {
                 var leaveRequest = await _context.DoctorLeaveRequests
@@ -140,10 +183,29 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return View(model);
             }
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            // If approving, check for existing booked time slots during leave period
+            if (model.Status == LeaveRequestStatus.Approved)
             {
-                return NotFound();
+                var leaveRequest = await _context.DoctorLeaveRequests
+                    .FirstOrDefaultAsync(l => l.Id == model.LeaveRequestId);
+                
+                if (leaveRequest != null)
+                {
+                    // Check for existing time slots that are already booked
+                    var bookedTimeSlots = await _context.TimeSlots
+                        .Where(ts => ts.DoctorId == leaveRequest.DoctorId &&
+                                   ts.StartTime.Date >= leaveRequest.StartDate.Date &&
+                                   ts.StartTime.Date <= leaveRequest.EndDate.Date &&
+                                   ts.IsBooked)
+                        .ToListAsync();
+                    
+                    if (bookedTimeSlots.Any())
+                    {
+                        // We're still proceeding with approval, but we'll warn the admin
+                        TempData["WarningMessage"] = $"Warning: There are {bookedTimeSlots.Count} booked time slots during this leave period. " +
+                                                    "You may need to reschedule affected appointments.";
+                    }
+                }
             }
 
             // Process the approval/rejection
@@ -155,6 +217,27 @@ namespace DentalManagement.Areas.Admin.Controllers
 
             if (result.Success)
             {
+                if (model.Status == LeaveRequestStatus.Approved)
+                {
+                    // Check how many time slots were affected
+                    var leaveRequest = await _context.DoctorLeaveRequests
+                        .Include(l => l.Doctor)
+                        .FirstOrDefaultAsync(l => l.Id == model.LeaveRequestId);
+                        
+                    if (leaveRequest != null)
+                    {
+                        var affectedTimeSlots = await _context.TimeSlots
+                            .CountAsync(ts => ts.DoctorId == leaveRequest.DoctorId &&
+                                           ts.StartTime.Date >= leaveRequest.StartDate.Date &&
+                                           ts.StartTime.Date <= leaveRequest.EndDate.Date);
+                        
+                        if (affectedTimeSlots > 0)
+                        {
+                            TempData["InfoMessage"] = $"{affectedTimeSlots} time slots have been marked as unavailable during the leave period.";
+                        }
+                    }
+                }
+                
                 TempData["SuccessMessage"] = result.Message;
             }
             else
@@ -168,6 +251,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         // GET: Admin/LeaveManagement/ManageBalances
         public async Task<IActionResult> ManageBalances(int? doctorId)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             if (doctorId.HasValue)
             {
                 var doctor = await _context.Doctors
@@ -203,6 +292,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateBalance(int id, decimal remainingDays)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             var leaveBalance = await _context.DoctorLeaveBalances
                 .Include(lb => lb.Doctor)
                 .Include(lb => lb.LeaveType)
@@ -223,6 +318,12 @@ namespace DentalManagement.Areas.Admin.Controllers
         // GET: Admin/LeaveManagement/Initialize/5 (doctor ID)
         public async Task<IActionResult> Initialize(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Role != UserRole.Admin)
+            {
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+            
             var doctor = await _context.Doctors
                 .Include(d => d.User)
                 .FirstOrDefaultAsync(d => d.Id == id);

@@ -3,130 +3,273 @@
     ViewData["Title"] = "Leave Request Details";
 }
 
-<div class="container-fluid">
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Leave Request Details</h6>
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Leave Management</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Request Details</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow border-0 rounded-3 mb-4">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold">
+                        <i class="bi bi-file-text me-2"></i>Leave Request Details
+                    </h5>
+                    
+                    <div>
+                        @switch (Model.Status)
+                        {
+                            case LeaveRequestStatus.Pending:
+                                <span class="badge bg-warning text-dark px-3 py-2">
+                                    <i class="bi bi-hourglass-split me-1"></i>Pending Approval
+                                </span>
+                                break;
+                            case LeaveRequestStatus.Approved:
+                                <span class="badge bg-success px-3 py-2">
+                                    <i class="bi bi-check-circle me-1"></i>Approved
+                                </span>
+                                break;
+                            case LeaveRequestStatus.Rejected:
+                                <span class="badge bg-danger px-3 py-2">
+                                    <i class="bi bi-x-circle me-1"></i>Rejected
+                                </span>
+                                break;
+                        }
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Leave Type:</strong>
+                
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm h-100 border-0">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Leave Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">Leave Type:</span>
+                                            <span class="fw-bold">@Model.LeaveType.Name</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">Type:</span>
+                                            <span>
+                                                @if (Model.LeaveType.IsPaid)
+                                                {
+                                                    <span class="badge bg-success">Paid Leave</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Unpaid Leave</span>
+                                                }
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">Start Date:</span>
+                                            <span>@Model.StartDate.ToString("MMMM dd, yyyy")</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">End Date:</span>
+                                            <span>@Model.EndDate.ToString("MMMM dd, yyyy")</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">Duration:</span>
+                                            <span class="fw-bold">@Model.TotalDays day@(Model.TotalDays != 1 ? "s" : "")</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">Requested On:</span>
+                                            <span>@Model.RequestDate.ToString("MMM dd, yyyy HH:mm")</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-8">
-                            @Model.LeaveType.Name (@(Model.LeaveType.IsPaid ? "Paid" : "Unpaid"))
+                        
+                        <div class="col-lg-6 mt-3 mt-lg-0">
+                            <div class="card shadow-sm h-100 border-0">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Status Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model.Status == LeaveRequestStatus.Pending)
+                                    {
+                                        <div class="alert alert-info mb-3">
+                                            <i class="bi bi-info-circle me-2"></i>This request is awaiting admin approval.
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-center mb-3">
+                                            <div class="text-center">
+                                                <div class="mb-3">
+                                                    <i class="bi bi-hourglass-split text-warning" style="font-size: 3rem;"></i>
+                                                </div>
+                                                <h5>Pending Approval</h5>
+                                                <p class="text-muted small">Your request has been submitted and is awaiting review</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline mt-4">
+                                            <div class="timeline-item">
+                                                <div class="timeline-item-marker bg-success"></div>
+                                                <div class="timeline-item-content">
+                                                    <span class="fw-bold">Request Submitted</span>
+                                                    <br>
+                                                    <small class="text-muted">@Model.RequestDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-item">
+                                                <div class="timeline-item-marker bg-warning"></div>
+                                                <div class="timeline-item-content">
+                                                    <span class="fw-bold">Awaiting Review</span>
+                                                    <br>
+                                                    <small class="text-muted">Admin will review your request</small>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-item opacity-50">
+                                                <div class="timeline-item-marker bg-secondary"></div>
+                                                <div class="timeline-item-content">
+                                                    <span class="fw-bold">Decision</span>
+                                                    <br>
+                                                    <small class="text-muted">Pending</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between px-0">
+                                                <span class="text-muted">Status:</span>
+                                                <span>
+                                                    @if (Model.Status == LeaveRequestStatus.Approved)
+                                                    {
+                                                        <span class="badge bg-success">Approved</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">Rejected</span>
+                                                    }
+                                                </span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between px-0">
+                                                <span class="text-muted">Processed By:</span>
+                                                <span>@(Model.ApprovedByUser != null ? Model.ApprovedByUser.Email : "N/A")</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between px-0">
+                                                <span class="text-muted">Processed On:</span>
+                                                <span>@(Model.ApprovalDate.HasValue ? Model.ApprovalDate.Value.ToString("MMM dd, yyyy HH:mm") : "N/A")</span>
+                                            </li>
+                                        </ul>
+                                        
+                                        <div class="mt-3">
+                                            <h6>Admin Comments:</h6>
+                                            <div class="p-3 bg-light rounded">
+                                                @if (string.IsNullOrEmpty(Model.Comments))
+                                                {
+                                                    <span class="text-muted fst-italic">No comments provided</span>
+                                                }
+                                                else
+                                                {
+                                                    <p class="mb-0">@Model.Comments</p>
+                                                }
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline mt-4">
+                                            <div class="timeline-item">
+                                                <div class="timeline-item-marker bg-success"></div>
+                                                <div class="timeline-item-content">
+                                                    <span class="fw-bold">Request Submitted</span>
+                                                    <br>
+                                                    <small class="text-muted">@Model.RequestDate.ToString("MMM dd, yyyy")</small>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-item">
+                                                <div class="timeline-item-marker bg-success"></div>
+                                                <div class="timeline-item-content">
+                                                    <span class="fw-bold">Reviewed by Admin</span>
+                                                    <br>
+                                                    <small class="text-muted">Request processed</small>
+                                                </div>
+                                            </div>
+                                            <div class="timeline-item">
+                                                <div class="timeline-item-marker @(Model.Status == LeaveRequestStatus.Approved ? "bg-success" : "bg-danger")"></div>
+                                                <div class="timeline-item-content">
+                                                    <span class="fw-bold">@(Model.Status == LeaveRequestStatus.Approved ? "Approved" : "Rejected")</span>
+                                                    <br>
+                                                    <small class="text-muted">@(Model.ApprovalDate.HasValue ? Model.ApprovalDate.Value.ToString("MMM dd, yyyy") : "N/A")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Start Date:</strong>
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Reason for Leave</h6>
                         </div>
-                        <div class="col-md-8">
-                            @Model.StartDate.ToString("yyyy-MM-dd")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>End Date:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @Model.EndDate.ToString("yyyy-MM-dd")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Total Days:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @Model.TotalDays
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Request Date:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @Model.RequestDate.ToString("yyyy-MM-dd HH:mm")
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Status:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @switch (Model.Status)
+                        <div class="card-body">
+                            @if (string.IsNullOrEmpty(Model.Reason))
                             {
-                                case LeaveRequestStatus.Pending:
-                                    <span class="badge badge-warning">Pending</span>
-                                    break;
-                                case LeaveRequestStatus.Approved:
-                                    <span class="badge badge-success">Approved</span>
-                                    break;
-                                case LeaveRequestStatus.Rejected:
-                                    <span class="badge badge-danger">Rejected</span>
-                                    break;
+                                <p class="text-muted fst-italic">No reason provided</p>
+                            }
+                            else
+                            {
+                                <p class="mb-0">@Model.Reason</p>
                             }
                         </div>
                     </div>
                     
-                    @if (Model.Status != LeaveRequestStatus.Pending)
-                    {
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Processed By:</strong>
-                            </div>
-                            <div class="col-md-8">
-                                @(Model.ApprovedByUser != null ? Model.ApprovedByUser.Email : "N/A")
-                            </div>
-                        </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="back-button">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
                         
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Processed Date:</strong>
-                            </div>
-                            <div class="col-md-8">
-                                @(Model.ApprovalDate.HasValue ? Model.ApprovalDate.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")
-                            </div>
-                        </div>
-                    }
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <strong>Reason:</strong>
-                        </div>
-                        <div class="col-md-8">
-                            @(string.IsNullOrEmpty(Model.Reason) ? "N/A" : Model.Reason)
-                        </div>
-                    </div>
-                    
-                    @if (!string.IsNullOrEmpty(Model.Comments))
-                    {
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Admin Comments:</strong>
-                            </div>
-                            <div class="col-md-8">
-                                @Model.Comments
-                            </div>
-                        </div>
-                    }
-                    
-                    <div class="form-group mt-3">
-                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
                         @if (Model.Status == LeaveRequestStatus.Pending)
                         {
-                            <a asp-action="Cancel" asp-route-id="@Model.Id" class="btn btn-danger">Cancel Request</a>
+                            <a asp-action="Cancel" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="bi bi-x-circle me-1"></i>Cancel Request
+                            </a>
                         }
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 1.5rem;
+        border-left: 1px solid #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-item-marker {
+        position: absolute;
+        left: -0.65rem;
+        top: 0.25rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+    
+    .timeline-item-content {
+        padding-left: 1rem;
+    }
+</style> 

@@ -9,8 +9,8 @@ namespace DentalManagement.ViewModels
     public class DoctorLeaveViewModel
     {
         public Doctor Doctor { get; set; }
-        public List<DoctorLeaveBalance> LeaveBalances { get; set; }
-        public List<DoctorLeaveRequest> LeaveRequests { get; set; }
+        public List<DoctorLeaveBalance> LeaveBalances { get; set; } = new List<DoctorLeaveBalance>();
+        public List<DoctorLeaveRequest> LeaveRequests { get; set; } = new List<DoctorLeaveRequest>();
     }
     
     // View model for leave application form

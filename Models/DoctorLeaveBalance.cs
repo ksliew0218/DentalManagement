@@ -21,6 +21,9 @@ namespace DentalManagement.Models
         [Required]
         public decimal RemainingDays { get; set; }
         
+        [Required]
+        public decimal TotalDays { get; set; } = 0; // Default allocation days for this leave type
+        
         public int Year { get; set; } // To track leave balances by year
     }
 } 

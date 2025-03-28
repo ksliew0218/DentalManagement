@@ -10,24 +10,28 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DentalManagement.Controllers
 {
-    [Authorize(Roles = "Doctor")]
+    [Authorize]
     public class LeaveController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly LeaveManagementService _leaveService;
+        private readonly ILogger<LeaveController> _logger;
 
         public LeaveController(
             ApplicationDbContext context,
             UserManager<User> userManager,
-            LeaveManagementService leaveService)
+            LeaveManagementService leaveService,
+            ILogger<LeaveController> logger)
         {
             _context = context;
             _userManager = userManager;
             _leaveService = leaveService;
+            _logger = logger;
         }
 
         // GET: Leave
@@ -37,6 +41,12 @@ namespace DentalManagement.Controllers
             if (user == null)
             {
                 return NotFound();
+            }
+
+            // Check if user is a doctor
+            if (user.Role != UserRole.Doctor)
+            {
+                return RedirectToAction("AccessDenied", "Home");
             }
 
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);
@@ -71,6 +81,12 @@ namespace DentalManagement.Controllers
                 return NotFound();
             }
 
+            // Check if user is a doctor
+            if (user.Role != UserRole.Doctor)
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);
             if (doctor == null)
             {
@@ -80,7 +96,11 @@ namespace DentalManagement.Controllers
             // Get leave types for dropdown
             ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
 
-            return View(new LeaveRequestViewModel { DoctorId = doctor.Id });
+            return View(new LeaveRequestViewModel { 
+                DoctorId = doctor.Id,
+                StartDate = DateTime.UtcNow.Date.AddDays(1),
+                EndDate = DateTime.UtcNow.Date.AddDays(1)
+            });
         }
 
         // POST: Leave/Apply
@@ -88,47 +108,97 @@ namespace DentalManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(LeaveRequestViewModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
-                return View(model);
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
+                    return View(model);
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if user is a doctor
+                if (user.Role != UserRole.Doctor)
+                {
+                    return RedirectToAction("AccessDenied", "Home");
+                }
+
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);
+                if (doctor == null || doctor.Id != model.DoctorId)
+                {
+                    return NotFound("Doctor profile not found");
+                }
+
+                // Validate dates
+                if (model.EndDate < model.StartDate)
+                {
+                    ModelState.AddModelError("EndDate", "End date cannot be before start date");
+                    ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
+                    return View(model);
+                }
+
+                if (model.StartDate < DateTime.UtcNow.Date)
+                {
+                    ModelState.AddModelError("StartDate", "Start date cannot be in the past");
+                    ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
+                    return View(model);
+                }
+
+                // Check for duplicate leave requests
+                var existingRequest = await _context.DoctorLeaveRequests
+                    .AnyAsync(lr => lr.DoctorId == doctor.Id && 
+                                   lr.Status == LeaveRequestStatus.Pending &&
+                                   ((lr.StartDate <= model.StartDate && lr.EndDate >= model.StartDate) ||
+                                    (lr.StartDate <= model.EndDate && lr.EndDate >= model.EndDate) ||
+                                    (lr.StartDate >= model.StartDate && lr.EndDate <= model.EndDate)));
+
+                if (existingRequest)
+                {
+                    ModelState.AddModelError("", "You already have a pending leave request for this date range");
+                    ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
+                    return View(model);
+                }
+
+                // Create leave request
+                var leaveRequest = new DoctorLeaveRequest
+                {
+                    DoctorId = doctor.Id,
+                    LeaveTypeId = model.LeaveTypeId,
+                    StartDate = model.StartDate,
+                    EndDate = model.EndDate,
+                    Reason = model.Reason ?? "No reason provided",
+                    DocumentPath = null, // Document is optional
+                    Status = LeaveRequestStatus.Pending,
+                    RequestDate = DateTime.UtcNow,
+                    ApprovedById = null, // Will be set when approved/rejected
+                    ApprovalDate = null,
+                    Comments = null // Will be set when approved/rejected
+                };
+
+                // Process the request
+                var result = await _leaveService.ProcessLeaveRequestAsync(leaveRequest);
+
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = result.Message;
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("", result.Message);
+                    ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
+                    return View(model);
+                }
             }
-
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            catch (Exception ex)
             {
-                return NotFound();
-            }
-
-            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);
-            if (doctor == null || doctor.Id != model.DoctorId)
-            {
-                return NotFound("Doctor profile not found");
-            }
-
-            // Create leave request
-            var leaveRequest = new DoctorLeaveRequest
-            {
-                DoctorId = doctor.Id,
-                LeaveTypeId = model.LeaveTypeId,
-                StartDate = model.StartDate,
-                EndDate = model.EndDate,
-                Reason = model.Reason,
-                Status = LeaveRequestStatus.Pending,
-                RequestDate = DateTime.UtcNow
-            };
-
-            // Process the request
-            var result = await _leaveService.ProcessLeaveRequestAsync(leaveRequest);
-
-            if (result.Success)
-            {
-                TempData["SuccessMessage"] = result.Message;
-                return RedirectToAction(nameof(Index));
-            }
-            else
-            {
-                ModelState.AddModelError("", result.Message);
+                _logger.LogError(ex, "Error applying for leave");
+                ModelState.AddModelError("", "An error occurred while processing your request. Please try again.");
                 ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
                 return View(model);
             }
@@ -141,6 +211,12 @@ namespace DentalManagement.Controllers
             if (user == null)
             {
                 return NotFound();
+            }
+
+            // Check if user is a doctor
+            if (user.Role != UserRole.Doctor)
+            {
+                return RedirectToAction("AccessDenied", "Home");
             }
 
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);
@@ -171,6 +247,12 @@ namespace DentalManagement.Controllers
                 return NotFound();
             }
 
+            // Check if user is a doctor
+            if (user.Role != UserRole.Doctor)
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);
             if (doctor == null)
             {
@@ -197,6 +279,12 @@ namespace DentalManagement.Controllers
             if (user == null)
             {
                 return NotFound();
+            }
+
+            // Check if user is a doctor
+            if (user.Role != UserRole.Doctor)
+            {
+                return RedirectToAction("AccessDenied", "Home");
             }
 
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserID == user.Id);

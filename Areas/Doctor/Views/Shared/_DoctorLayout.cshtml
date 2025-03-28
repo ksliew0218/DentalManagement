@@ -40,6 +40,10 @@
                    asp-area="Doctor" asp-controller="Treatments" asp-action="Index">
                     <i class="bi bi-clipboard2-pulse me-2"></i> My Treatments
                 </a>
+                <a class="list-group-item list-group-item-action bg-primary text-white p-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Leave" && ViewContext.RouteData.Values["Area"]?.ToString() == null ? "active" : "")" 
+                   asp-area="" asp-controller="Leave" asp-action="Index">
+                    <i class="bi bi-calendar-x me-2"></i> Leave Management
+                </a>
                 <a class="list-group-item list-group-item-action bg-primary text-white p-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Profile" ? "active" : "")" 
                    asp-area="Doctor" asp-controller="Profile" asp-action="Index">
                     <i class="bi bi-person-gear me-2"></i> My Profile

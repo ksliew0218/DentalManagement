@@ -3,6 +3,7 @@ using DentalManagement.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
 using DentalManagement.Services;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,12 @@ builder.Services.AddControllersWithViews();
 
 // Add Razor Pages support (required for Identity)
 builder.Services.AddRazorPages();
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Register application services
 builder.Services.AddScoped<LeaveManagementService>();
@@ -91,26 +98,27 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
 
     try
     {
         if (dbContext.Database.CanConnect())
         {
-            Console.WriteLine("✅ Database connection successful!");
+            logger.LogInformation("✅ Database connection successful!");
 
             // Initialize the database using the existing DbInitializer
             await DentalManagement.Models.DbInitializer.InitializeAsync(services);
             
-            Console.WriteLine("Database initialized!");
+            logger.LogInformation("Database initialized!");
         }
         else
         {
-            Console.WriteLine("❌ Failed to connect to the database.");
+            logger.LogError("❌ Failed to connect to the database.");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Database connection failed: {ex.Message}");
+        logger.LogError(ex, "❌ Database connection failed: {Message}", ex.Message);
     }
 }
 

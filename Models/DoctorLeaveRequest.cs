@@ -38,7 +38,7 @@ namespace DentalManagement.Models
         [StringLength(500)]
         public string Reason { get; set; }
         
-        public string DocumentPath { get; set; } // Path to attached document if any
+        public string? DocumentPath { get; set; } // Path to attached document if any
         
         [Required]
         public LeaveRequestStatus Status { get; set; } = LeaveRequestStatus.Pending;
@@ -46,11 +46,11 @@ namespace DentalManagement.Models
         public DateTime RequestDate { get; set; } = DateTime.UtcNow;
         
         [ForeignKey("ApprovedByUser")]
-        public string ApprovedById { get; set; }
-        public User ApprovedByUser { get; set; }
+        public string? ApprovedById { get; set; }
+        public User? ApprovedByUser { get; set; }
         
         public DateTime? ApprovalDate { get; set; }
         
-        public string Comments { get; set; } // Comments from admin
+        public string? Comments { get; set; } // Comments from admin
     }
 } 

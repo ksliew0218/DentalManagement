@@ -3,6 +3,7 @@ using System;
 using DentalManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DentalManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250327161108_MakeDocumentPathNullable")]
+    partial class MakeDocumentPathNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,9 +151,6 @@ namespace DentalManagement.Migrations
                     b.Property<decimal>("RemainingDays")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("TotalDays")
-                        .HasColumnType("numeric");
-
                     b.Property<int>("Year")
                         .HasColumnType("integer");
 
@@ -175,9 +175,11 @@ namespace DentalManagement.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ApprovedById")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Comments")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("DoctorId")
@@ -670,7 +672,9 @@ namespace DentalManagement.Migrations
                 {
                     b.HasOne("DentalManagement.Models.User", "ApprovedByUser")
                         .WithMany()
-                        .HasForeignKey("ApprovedById");
+                        .HasForeignKey("ApprovedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DentalManagement.Models.Doctor", "Doctor")
                         .WithMany("LeaveRequests")

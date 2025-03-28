@@ -1,0 +1,90 @@
+@model DentalManagement.Models.LeaveType
+@{
+    ViewData["Title"] = "Create Leave Type";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <h2 class="h3 mb-0 text-primary">
+            <i class="bi bi-plus-circle me-2"></i>Create Leave Type
+        </h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 text-primary">
+                        <i class="bi bi-info-circle me-2"></i>Leave Type Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Name</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="IsPaid" class="form-check-input" />
+                                <label asp-for="IsPaid" class="form-check-label">Is Paid Leave</label>
+                            </div>
+                            <span asp-validation-for="IsPaid" class="text-danger"></span>
+                            <small class="text-muted d-block mt-1">
+                                If checked, this leave type will deduct from the employee's leave balance.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="DefaultDays" class="form-label">Default Days</label>
+                            <input asp-for="DefaultDays" class="form-control" type="number" min="1" />
+                            <span asp-validation-for="DefaultDays" class="text-danger"></span>
+                            <small class="text-muted d-block mt-1">
+                                Number of days allocated per year for this leave type.
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-lightbulb me-2"></i>Tips</h5>
+                    <ul class="card-text ps-3">
+                        <li class="mb-2">Common leave types include Annual Leave, Sick Leave, and Maternity Leave.</li>
+                        <li class="mb-2">Set appropriate default days based on company policy.</li>
+                        <li class="mb-2">Add a clear description to help staff understand when to use this leave type.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
