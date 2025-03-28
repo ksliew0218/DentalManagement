@@ -174,9 +174,6 @@
                         <i class="bi bi-calendar-x me-2"></i>
                         <h6 class="m-0 font-weight-bold">Leave Management</h6>
                     </div>
-                    <a asp-area="" asp-controller="Leave" asp-action="Apply" class="btn btn-light btn-sm">
-                        <i class="bi bi-plus-circle me-1"></i>Apply Leave
-                    </a>
                 </div>
                 <div class="card-body p-4">
                     @if (Model.LeaveBalances != null && Model.LeaveBalances.Any())
@@ -284,9 +281,6 @@
                         <i class="bi bi-clock me-2"></i>
                         <h6 class="m-0 font-weight-bold">My Time Slots</h6>
                     </div>
-                    <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Create" class="btn btn-light btn-sm">
-                        <i class="bi bi-plus-circle me-1"></i>Add Time Slot
-                    </a>
                 </div>
                 <div class="card-body p-4">
                     <h6 class="text-primary mb-3"><i class="bi bi-calendar-week me-2"></i>Today's Availability</h6>
