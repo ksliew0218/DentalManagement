@@ -46,6 +46,20 @@ namespace DentalManagement.Services
         // Calculate business days between two dates (excluding weekends)
         public decimal CalculateBusinessDays(DateTime startDate, DateTime endDate)
         {
+            // Convert dates to UTC if they aren't already
+            startDate = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
+            endDate = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
+            
+            // If start and end are the same, and it's a weekday, return 1
+            if (startDate.Date == endDate.Date)
+            {
+                if (startDate.DayOfWeek != DayOfWeek.Saturday && startDate.DayOfWeek != DayOfWeek.Sunday)
+                {
+                    return 1;
+                }
+                return 0;
+            }
+            
             decimal businessDays = 0;
             DateTime currentDate = startDate.Date;
             
@@ -74,6 +88,10 @@ namespace DentalManagement.Services
                 
                 _logger.LogInformation($"Leave request: Start={request.StartDate:yyyy-MM-dd}, End={request.EndDate:yyyy-MM-dd}, Total Days={request.TotalDays}");
                 
+                // Ensure dates are in UTC format
+                request.StartDate = DateTime.SpecifyKind(request.StartDate.Date, DateTimeKind.Utc);
+                request.EndDate = DateTime.SpecifyKind(request.EndDate.Date, DateTimeKind.Utc);
+
                 // Validate dates
                 if (request.EndDate < request.StartDate)
                 {
@@ -232,11 +250,15 @@ namespace DentalManagement.Services
         {
             try
             {
+                // Ensure dates are in UTC format
+                var startDate = DateTime.SpecifyKind(leaveRequest.StartDate.Date, DateTimeKind.Utc);
+                var endDate = DateTime.SpecifyKind(leaveRequest.EndDate.Date, DateTimeKind.Utc);
+                
                 // Get all time slots that fall within the leave period for this doctor
                 var timeSlots = await _context.TimeSlots
                     .Where(ts => ts.DoctorId == leaveRequest.DoctorId &&
-                               ts.StartTime.Date >= leaveRequest.StartDate.Date &&
-                               ts.StartTime.Date <= leaveRequest.EndDate.Date)
+                               ts.StartTime.Date >= startDate.Date &&
+                               ts.StartTime.Date <= endDate.Date)
                     .ToListAsync();
                     
                 if (timeSlots.Any())

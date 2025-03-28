@@ -93,13 +93,13 @@ namespace DentalManagement.Controllers
                 return NotFound("Doctor profile not found");
             }
 
-            // Get leave types for dropdown
+            // Initialize with default dates
             ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
-
-            return View(new LeaveRequestViewModel { 
+            return View(new LeaveRequestViewModel
+            {
                 DoctorId = doctor.Id,
-                StartDate = DateTime.UtcNow.Date.AddDays(1),
-                EndDate = DateTime.UtcNow.Date.AddDays(1)
+                StartDate = DateTime.SpecifyKind(DateTime.UtcNow.Date.AddDays(1), DateTimeKind.Utc),
+                EndDate = DateTime.SpecifyKind(DateTime.UtcNow.Date.AddDays(1), DateTimeKind.Utc)
             });
         }
 
@@ -142,20 +142,24 @@ namespace DentalManagement.Controllers
                     return View(model);
                 }
 
-                if (model.StartDate < DateTime.UtcNow.Date)
+                if (model.StartDate.Date < DateTime.UtcNow.Date)
                 {
                     ModelState.AddModelError("StartDate", "Start date cannot be in the past");
                     ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
                     return View(model);
                 }
 
+                // Normalize dates to UTC for duplicate check
+                var utcStartDate = DateTime.SpecifyKind(model.StartDate.Date, DateTimeKind.Utc);
+                var utcEndDate = DateTime.SpecifyKind(model.EndDate.Date, DateTimeKind.Utc);
+
                 // Check for duplicate leave requests
                 var existingRequest = await _context.DoctorLeaveRequests
                     .AnyAsync(lr => lr.DoctorId == doctor.Id && 
                                    lr.Status == LeaveRequestStatus.Pending &&
-                                   ((lr.StartDate <= model.StartDate && lr.EndDate >= model.StartDate) ||
-                                    (lr.StartDate <= model.EndDate && lr.EndDate >= model.EndDate) ||
-                                    (lr.StartDate >= model.StartDate && lr.EndDate <= model.EndDate)));
+                                   ((lr.StartDate <= utcStartDate && lr.EndDate >= utcStartDate) ||
+                                    (lr.StartDate <= utcEndDate && lr.EndDate >= utcEndDate) ||
+                                    (lr.StartDate >= utcStartDate && lr.EndDate <= utcEndDate)));
 
                 if (existingRequest)
                 {
@@ -169,8 +173,8 @@ namespace DentalManagement.Controllers
                 {
                     DoctorId = doctor.Id,
                     LeaveTypeId = model.LeaveTypeId,
-                    StartDate = model.StartDate,
-                    EndDate = model.EndDate,
+                    StartDate = DateTime.SpecifyKind(model.StartDate.Date, DateTimeKind.Utc),
+                    EndDate = DateTime.SpecifyKind(model.EndDate.Date, DateTimeKind.Utc),
                     Reason = model.Reason ?? "No reason provided",
                     DocumentPath = null, // Document is optional
                     Status = LeaveRequestStatus.Pending,
@@ -260,6 +264,7 @@ namespace DentalManagement.Controllers
             }
 
             var leaveRequest = await _context.DoctorLeaveRequests
+                .Include(l => l.LeaveType)
                 .FirstOrDefaultAsync(l => l.Id == id && l.DoctorId == doctor.Id && l.Status == LeaveRequestStatus.Pending);
 
             if (leaveRequest == null)
@@ -303,6 +308,9 @@ namespace DentalManagement.Controllers
 
             leaveRequest.Status = LeaveRequestStatus.Rejected;
             leaveRequest.Comments = "Cancelled by doctor";
+            leaveRequest.ApprovalDate = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
+            leaveRequest.ApprovedById = user.Id;
+            
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Leave request cancelled successfully";
