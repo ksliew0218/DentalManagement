@@ -1,0 +1,256 @@
+/* Doctor Dashboard Styles */
+
+/* General Styles */
+body {
+    background-color: #f8f9fc;
+}
+
+#wrapper {
+    overflow-x: hidden;
+}
+
+/* Sidebar Styles */
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 250px;
+    transition: margin 0.25s ease-out;
+    z-index: 1;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.2rem;
+}
+
+#sidebar-wrapper .list-group-item {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Active and hover states for sidebar items */
+#sidebar-wrapper .list-group-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-left: 4px solid rgba(255, 255, 255, 0.5);
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-left: 4px solid #fff;
+    font-weight: 600;
+}
+
+/* Main Content Area */
+#page-content-wrapper {
+    min-width: 100vw;
+    flex: 1;
+}
+
+/* Toggle Button */
+#sidebarToggle {
+    transition: all 0.3s;
+}
+
+#sidebarToggle:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* For Sidebar Toggle */
+body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
+    margin-left: -250px;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    #page-content-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
+
+    body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
+        margin-left: -250px;
+    }
+}
+
+/* Card styling */
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    border-radius: 0.35rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    box-shadow: 0 0.25rem 2rem 0 rgba(58, 59, 69, 0.2);
+}
+
+.card-header {
+    border-top-left-radius: 0.35rem !important;
+    border-top-right-radius: 0.35rem !important;
+    font-weight: 500;
+}
+
+/* Calendar styling */
+.fc-event {
+    border-radius: 3px;
+    border: none !important;
+    cursor: pointer;
+    font-size: 0.85em;
+    padding: 2px 4px;
+}
+
+.fc-daygrid-event {
+    padding: 3px;
+    margin: 2px 0;
+}
+
+.fc-time-grid-event {
+    border-left: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.fc-event.available {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.fc-event.booked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.fc-button {
+    font-weight: 500 !important;
+    border-radius: 0.25rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc-button-active {
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125) !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+}
+
+.fc th {
+    padding: 10px 0;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card .card-body {
+    padding: 1.5rem;
+}
+
+.dashboard-card .icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.dashboard-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card .count {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Card colors */
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #0d6efd, #0a58ca);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(45deg, #198754, #146c43);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(45deg, #0dcaf0, #31d2f2);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(45deg, #ffc107, #ffca2c);
+}
+
+/* Profile styling */
+.profile-initials {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: white;
+}
+
+/* Table styling */
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.table-light th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+.table-hover tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+.badge.rounded-pill {
+    padding-right: 0.8em;
+    padding-left: 0.8em;
+}
+
+/* Button styling */
+.btn {
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Modal styling */
+.modal-content {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+} 

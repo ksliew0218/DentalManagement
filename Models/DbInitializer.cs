@@ -1,79 +1,127 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DentalManagement.Models;
 
-public class DbInitializer
+namespace DentalManagement.Models
 {
-    public static async Task Initialize(IServiceProvider serviceProvider, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+    public static class DbInitializer
     {
-        try
+        public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            // Check if userManager or roleManager is null and try to get from serviceProvider
-            userManager ??= serviceProvider.GetRequiredService<UserManager<User>>();
-            roleManager ??= serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-            if (userManager.Users.All(u => u.UserName != "admin@gmail.com"))
+            try
             {
-                var admin = new User
+                using (var scope = serviceProvider.CreateScope())
                 {
-                    UserName = "admin@gmail.com",
-                    Email = "admin@gmail.com",
-                    Role = UserRole.Admin,
-                    IsActive = true,
-                    EmailConfirmed = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-                var result = await userManager.CreateAsync(admin, "Admin123!");
-
-                if (result.Succeeded)
-                {
+                    // Create database if it doesn't exist
+                    await dbContext.Database.EnsureCreatedAsync();
+                    
+                    // Ensure all roles exist
                     await EnsureRoleExistsAsync(roleManager, UserRole.Admin.ToString());
-
-                    await userManager.AddToRoleAsync(admin, UserRole.Admin.ToString());
-                    Console.WriteLine("Admin user created successfully");
-                }
-                else
-                {
-                    Console.WriteLine("Failed to create Admin user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
-                }
-            }
-            else
-            {
-                Console.WriteLine("Admin user already exists");
-                
-                // Check if the admin is in the Admin role
-                var admin = await userManager.FindByEmailAsync("admin@gmail.com");
-                if (admin != null)
-                {
-                    await EnsureRoleExistsAsync(roleManager, UserRole.Admin.ToString());
-                    if (!(await userManager.IsInRoleAsync(admin, UserRole.Admin.ToString())))
+                    await EnsureRoleExistsAsync(roleManager, UserRole.Doctor.ToString());
+                    await EnsureRoleExistsAsync(roleManager, UserRole.Patient.ToString());
+                    
+                    // Ensure admin account exists
+                    const string adminEmail = "admin@dentalclinic.com";
+                    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+                    
+                    if (adminUser == null)
                     {
-                        await userManager.AddToRoleAsync(admin, UserRole.Admin.ToString());
-                        Console.WriteLine("Added existing admin user to Admin role");
+                        // Create default admin account
+                        adminUser = new User
+                        {
+                            UserName = adminEmail,
+                            Email = adminEmail,
+                            EmailConfirmed = true,
+                            IsActive = true,
+                            Role = UserRole.Admin
+                        };
+                        
+                        var result = await userManager.CreateAsync(adminUser, "Admin@123");
+                        
+                        if (result.Succeeded)
+                        {
+                            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
+                            Console.WriteLine("Default admin account created");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to create default admin account: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                        }
+                    }
+                    else
+                    {
+                        // Ensure the existing admin user is in the Admin role
+                        if (!await userManager.IsInRoleAsync(adminUser, UserRole.Admin.ToString()))
+                        {
+                            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
+                            Console.WriteLine("Added existing admin user to Admin role");
+                        }
+                    }
+
+                    // Seed leave types
+                    if (!dbContext.LeaveTypes.Any())
+                    {
+                        var leaveTypes = new List<LeaveType>
+                        {
+                            new LeaveType
+                            {
+                                Name = "Annual Leave",
+                                IsPaid = true,
+                                DefaultDays = 14,
+                                Description = "Regular annual leave for vacation"
+                            },
+                            new LeaveType
+                            {
+                                Name = "Sick Leave",
+                                IsPaid = true,
+                                DefaultDays = 10,
+                                Description = "Leave for illness and medical reasons"
+                            },
+                            new LeaveType
+                            {
+                                Name = "Bereavement Leave",
+                                IsPaid = true,
+                                DefaultDays = 3,
+                                Description = "Leave for the death of a family member"
+                            },
+                            new LeaveType
+                            {
+                                Name = "Unpaid Leave",
+                                IsPaid = false,
+                                DefaultDays = 0, // Unlimited, no balance needed
+                                Description = "Leave without pay for extended absence"
+                            }
+                        };
+
+                        dbContext.LeaveTypes.AddRange(leaveTypes);
+                        await dbContext.SaveChangesAsync();
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while initializing the database: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred while initializing the database: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
-        }
-    }
 
-    private static async Task EnsureRoleExistsAsync(RoleManager<IdentityRole> roleManager, string roleName)
-    {
-        var role = await roleManager.FindByNameAsync(roleName);
-        if (role == null)
+        private static async Task EnsureRoleExistsAsync(RoleManager<IdentityRole> roleManager, string roleName)
         {
-            role = new IdentityRole(roleName);
-            await roleManager.CreateAsync(role);
-            Console.WriteLine($"Created role: {roleName}");
+            var role = await roleManager.FindByNameAsync(roleName);
+            if (role == null)
+            {
+                role = new IdentityRole(roleName);
+                await roleManager.CreateAsync(role);
+                Console.WriteLine($"Created role: {roleName}");
+            }
         }
     }
 }

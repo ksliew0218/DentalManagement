@@ -1,0 +1,512 @@
+@model IEnumerable<DentalManagement.Models.TimeSlot>
+
+@{
+    ViewData["Title"] = "My Schedule Calendar";
+    Layout = "~/Areas/Doctor/Views/Shared/_DoctorLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading with Navigation -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a href="@Url.Action("Index", "Dashboard", new { area = "Doctor" })" class="btn btn-outline-primary me-3">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <h1 class="h3 text-gray-800">My Time Slots</h1>
+        </div>
+        <div class="btn-group">
+            <a href="@Url.Action("Index", "TimeSlots", new { area = "Doctor" })" class="btn btn-outline-primary">
+                <i class="bi bi-list"></i> List View
+            </a>
+            <a href="@Url.Action("Calendar", "TimeSlots", new { area = "Doctor" })" class="btn btn-primary">
+                <i class="bi bi-calendar3"></i> Calendar View
+            </a>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- View Controls -->
+    <div class="card shadow mb-3">
+        <div class="card-header py-3 d-flex justify-content-between bg-light">
+            <h6 class="m-0 text-primary d-flex align-items-center">
+                <i class="bi bi-sliders me-2"></i> Calendar Options
+            </h6>
+        </div>
+        <div class="card-body py-3">
+            <div class="row align-items-center">
+                <div class="col-md-12">
+                    <label class="mb-2">Calendar View:</label>
+                    <div class="btn-group" role="group">
+                        <button type="button" id="dayView" class="btn btn-outline-primary">
+                            <i class="bi bi-calendar-day me-1"></i> Day
+                        </button>
+                        <button type="button" id="weekView" class="btn btn-outline-primary active">
+                            <i class="bi bi-calendar-week me-1"></i> Week
+                        </button>
+                        <button type="button" id="monthView" class="btn btn-outline-primary">
+                            <i class="bi bi-calendar-month me-1"></i> Month
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="bi bi-calendar3 me-2"></i>Calendar View
+            </h6>
+            <div>
+                <button id="todayButton" class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-calendar-check"></i> Today
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div id="calendar"></div>
+        </div>
+    </div>
+
+    <!-- Schedule Legend Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-light">
+            <h6 class="m-0 text-primary">Schedule Legend</h6>
+        </div>
+        <div class="card-body py-3">
+            <div class="d-flex flex-wrap">
+                <div class="d-flex align-items-center me-4 mb-2">
+                    <span class="badge bg-success rounded-pill px-3 py-2 me-2" style="background-color: #20c997 !important;">
+                        <i class="bi bi-calendar-plus me-1"></i> Available
+                    </span>
+                    <span>Slot is open and can be booked by patients</span>
+                </div>
+                <div class="d-flex align-items-center me-4 mb-2">
+                    <span class="badge bg-warning rounded-pill px-3 py-2 me-2" style="background-color: #fd7e14 !important;">
+                        <i class="bi bi-calendar-check me-1"></i> Booked
+                    </span>
+                    <span>Slot has been booked by a patient</span>
+                </div>
+            </div>
+            <div class="mt-3 border-top pt-3">
+                <p class="text-muted mb-0"><i class="bi bi-info-circle me-2"></i> Note: Time slots are created by administrators. Please contact them if you need to make changes to your schedule.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+    <style>
+        /* Calendar styles */
+        #calendar {
+            height: 700px;
+            width: 100%;
+            background-color: white;
+            border-radius: 0 0 0.25rem 0.25rem;
+        }
+        
+        .fc-header-toolbar {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        
+        .fc-event {
+            cursor: pointer;
+            border-radius: 6px !important;
+            margin: 3px 0;
+            font-size: 0.85em;
+            padding: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            border: none !important;
+            transition: all 0.2s ease;
+        }
+        
+        .fc-event.available {
+            background-color: #20c997 !important;
+            border-color: #20c997 !important;
+            color: white !important;
+        }
+        
+        .fc-event.booked {
+            background-color: #fd7e14 !important;
+            border-color: #fd7e14 !important;
+            color: white !important;
+        }
+        
+        /* Month view specific styles */
+        .month-view-event {
+            font-size: 0.8em;
+            margin-bottom: 3px !important;
+            padding: 3px 5px !important;
+            border-radius: 4px !important;
+        }
+        
+        .fc-daygrid-event {
+            white-space: normal !important;
+        }
+        
+        .fc-daygrid-day-events {
+            max-height: none !important;
+            position: relative;
+            padding: 2px;
+        }
+        
+        .fc-daygrid-day-frame {
+            min-height: 120px;
+        }
+        
+        .fc-daygrid-day {
+            max-height: none !important;
+        }
+        
+        .fc-daygrid-day-top {
+            justify-content: center;
+            padding: 5px 0;
+        }
+        
+        .fc-daygrid-day-number {
+            float: none !important;
+            margin: 0 !important;
+            padding: 2px !important;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 600 !important;
+        }
+        
+        .fc-day-today .fc-daygrid-day-number {
+            background-color: #0d6efd;
+            color: white !important;
+        }
+        
+        .fc-button-primary {
+            background-color: #0d6efd !important;
+            border-color: #0a58ca !important;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .fc-button-primary:hover {
+            background-color: #0a58ca !important;
+            border-color: #0a58ca !important;
+        }
+        
+        .fc-col-header-cell-cushion, .fc-daygrid-day-number {
+            color: #495057;
+            text-decoration: none !important;
+            font-weight: 500;
+        }
+        
+        .fc-day-today {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+        }
+        
+        /* Enhanced styles for time slots */
+        .fc-timegrid-slot {
+            height: 3em !important;
+        }
+        
+        .fc-timegrid-slot-lane {
+            border: 1px dashed #e3e6f0;
+        }
+        
+        .fc-timegrid-now-indicator-line {
+            border-color: #dc3545;
+            z-index: 5;
+            border-width: 2px;
+        }
+        
+        .fc-timegrid-now-indicator-arrow {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .fc-col-header-cell {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            padding: 10px 0;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05rem;
+        }
+        
+        .fc-timegrid-slot-label {
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .fc-timegrid-axis {
+            background-color: #f8f9fa;
+        }
+        
+        /* Custom hover effect for time slots */
+        .fc-event:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+        
+        /* Badge styles */
+        .badge {
+            font-weight: 500;
+        }
+        
+        /* Button styles */
+        .btn-group .btn {
+            box-shadow: none;
+        }
+        
+        /* Card styling */
+        .card-header {
+            border-bottom: 0;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1) !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            let currentView = 'timeGridWeek';
+            
+            // Make sure the element exists before trying to initialize
+            if (!calendarEl) {
+                console.error('Calendar element not found');
+                return;
+            }
+            
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: currentView,
+                headerToolbar: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: '' // We'll handle this with our custom buttons
+                },
+                height: 700,
+                themeSystem: 'bootstrap5',
+                allDaySlot: false,
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                slotDuration: '00:30:00',
+                slotLabelInterval: '01:00:00',
+                nowIndicator: true,
+                navLinks: true,
+                dayMaxEvents: false, // Show all events without "+more" link
+                snapDuration: '00:05:00', // Allows for more precise time selection
+                businessHours: {
+                    daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
+                    startTime: '09:00',
+                    endTime: '18:00',
+                },
+                views: {
+                    dayGridMonth: {
+                        dayMaxEventRows: 0, // Show all events in month view
+                        eventTimeFormat: { // Format for month view
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            meridiem: 'short'
+                        }
+                    }
+                },
+                events: [
+                    @foreach (var slot in Model)
+                    {
+                        var status = slot.IsBooked ? "booked" : "available";
+                        var title = slot.IsBooked ? "Booked" : "Available";
+                        var displayTime = $"{slot.StartTime.ToLocalTime():h:mm tt} - {slot.EndTime.ToLocalTime():h:mm tt}";
+                        
+                        <text>
+                        {
+                            title: '@title',
+                            start: '@slot.StartTime.ToString("yyyy-MM-ddTHH:mm:ss")',
+                            end: '@slot.EndTime.ToString("yyyy-MM-ddTHH:mm:ss")',
+                            id: '@slot.Id',
+                            classNames: ['@status'],
+                            extendedProps: {
+                                isBooked: @slot.IsBooked.ToString().ToLower(),
+                                displayTime: '@displayTime'
+                            }
+                        },
+                        </text>
+                    }
+                ],
+                eventContent: function(arg) {
+                    // Custom rendering for events in month view
+                    if (arg.view.type === 'dayGridMonth') {
+                        // Create compact display for month view
+                        let content = document.createElement('div');
+                        content.classList.add('d-flex', 'flex-column');
+                        
+                        // Add time
+                        let timeDiv = document.createElement('div');
+                        timeDiv.innerHTML = arg.event.extendedProps.displayTime;
+                        timeDiv.style.fontSize = '0.8em';
+                        
+                        // Add status with icon
+                        let statusDiv = document.createElement('div');
+                        statusDiv.classList.add('mt-1');
+                        if (arg.event.extendedProps.isBooked) {
+                            statusDiv.innerHTML = '<i class="bi bi-calendar-check me-1"></i> Booked';
+                            statusDiv.style.color = '#ffffff';
+                        } else {
+                            statusDiv.innerHTML = '<i class="bi bi-calendar-plus me-1"></i> Available';
+                            statusDiv.style.color = '#ffffff';
+                        }
+                        
+                        content.appendChild(timeDiv);
+                        content.appendChild(statusDiv);
+                        
+                        return { domNodes: [content] };
+                    } else if (arg.view.type.includes('timeGrid')) {
+                        // Enhanced rendering for timeGrid views
+                        let wrapper = document.createElement('div');
+                        wrapper.classList.add('d-flex', 'flex-column', 'h-100', 'justify-content-center');
+                        
+                        let statusEl = document.createElement('div');
+                        statusEl.classList.add('fw-bold', 'text-center');
+                        
+                        if (arg.event.extendedProps.isBooked) {
+                            statusEl.innerHTML = '<i class="bi bi-calendar-check me-1"></i> Booked';
+                        } else {
+                            statusEl.innerHTML = '<i class="bi bi-calendar-plus me-1"></i> Available';
+                        }
+                        
+                        wrapper.appendChild(statusEl);
+                        return { domNodes: [wrapper] };
+                    }
+                    
+                    // Default rendering for other views
+                    return arg.event.title;
+                },
+                eventClassNames: function(arg) {
+                    // Add month-view-event class to events in month view
+                    if (arg.view.type === 'dayGridMonth') {
+                        return ['month-view-event'];
+                    }
+                    return [];
+                },
+                eventClick: function(info) {
+                    const eventId = info.event.id;
+                    const isBooked = info.event.extendedProps.isBooked;
+                    const statusText = isBooked ? "Booked" : "Available";
+                    const startTime = info.event.start.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+                    const endTime = info.event.end.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+                    const date = info.event.start.toLocaleDateString([], {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+                    
+                    // Create a more attractive modal
+                    const modalContent = `
+                        <div class="modal fade" id="slotDetailsModal" tabindex="-1" aria-labelledby="slotDetailsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="slotDetailsModalLabel">Time Slot Details</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <i class="bi bi-calendar-date text-primary me-2"></i>
+                                            <strong>Date:</strong> ${date}
+                                        </div>
+                                        <div class="mb-3">
+                                            <i class="bi bi-clock text-primary me-2"></i>
+                                            <strong>Time:</strong> ${startTime} - ${endTime}
+                                        </div>
+                                        <div class="mb-0">
+                                            <i class="bi bi-info-circle text-primary me-2"></i>
+                                            <strong>Status:</strong> 
+                                            <span class="badge bg-${isBooked ? 'warning' : 'success'} rounded-pill px-3 py-2">
+                                                <i class="bi bi-calendar-${isBooked ? 'check' : 'plus'} me-1"></i> ${statusText}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Remove any existing modal
+                    const existingModal = document.getElementById('slotDetailsModal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+                    
+                    // Add the modal to the document
+                    document.body.insertAdjacentHTML('beforeend', modalContent);
+                    
+                    // Show the modal using Bootstrap
+                    const modal = new bootstrap.Modal(document.getElementById('slotDetailsModal'));
+                    modal.show();
+                },
+                datesSet: function() {
+                    // Add this to ensure proper rendering after view changes
+                    setTimeout(function() {
+                        calendar.updateSize();
+                    }, 100);
+                }
+            });
+            
+            calendar.render();
+            
+            // Make sure calendar is properly sized
+            window.addEventListener('resize', function() {
+                calendar.updateSize();
+            });
+            
+            // Handle custom view buttons
+            document.getElementById('dayView').addEventListener('click', function() {
+                currentView = 'timeGridDay';
+                calendar.changeView(currentView);
+                updateActiveButton(this);
+            });
+            
+            document.getElementById('weekView').addEventListener('click', function() {
+                currentView = 'timeGridWeek';
+                calendar.changeView(currentView);
+                updateActiveButton(this);
+            });
+            
+            document.getElementById('monthView').addEventListener('click', function() {
+                currentView = 'dayGridMonth';
+                calendar.changeView(currentView);
+                updateActiveButton(this);
+            });
+            
+            // Handle today button
+            document.getElementById('todayButton').addEventListener('click', function() {
+                calendar.today();
+            });
+            
+            // Helper function to update active button state
+            function updateActiveButton(activeButton) {
+                const buttons = document.querySelectorAll('.btn-group .btn');
+                buttons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                activeButton.classList.add('active');
+            }
+        });
+    </script>
+}

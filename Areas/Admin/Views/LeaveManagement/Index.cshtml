@@ -1,0 +1,203 @@
+@model DentalManagement.ViewModels.AdminLeaveManagementViewModel
+@{
+    ViewData["Title"] = "Leave Management";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string currentStatus = ViewBag.CurrentStatus ?? "Pending";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="back-button me-3">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <h1 class="h3 mb-0 text-primary">
+                <i class="bi bi-calendar-minus me-2"></i>Leave Management
+            </h1>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <ul class="nav nav-pills" id="leaveStatusTabs" role="tablist">
+                <li class="nav-item me-2">
+                    <a class="nav-link @(currentStatus == "Pending" ? "active bg-warning text-dark" : "text-warning")" 
+                       href="@Url.Action("Index", new { status = "Pending" })" role="tab">
+                        <i class="bi bi-hourglass-split me-1"></i>Pending
+                        <span class="badge bg-white text-warning ms-1 rounded-pill">@Model.PendingRequests.Count</span>
+                    </a>
+                </li>
+                <li class="nav-item me-2">
+                    <a class="nav-link @(currentStatus == "Approved" ? "active bg-success" : "text-success")" 
+                       href="@Url.Action("Index", new { status = "Approved" })" role="tab">
+                        <i class="bi bi-check-circle me-1"></i>Approved
+                        <span class="badge bg-white text-success ms-1 rounded-pill">@Model.ApprovedRequests.Count</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(currentStatus == "Rejected" ? "active bg-danger" : "text-danger")" 
+                       href="@Url.Action("Index", new { status = "Rejected" })" role="tab">
+                        <i class="bi bi-x-circle me-1"></i>Rejected
+                        <span class="badge bg-white text-danger ms-1 rounded-pill">@Model.RejectedRequests.Count</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header py-3 bg-light">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-list-check me-2"></i>
+                        @currentStatus Leave Requests
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="leaveRequestsTable" width="100%" cellspacing="0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Request Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var requests = currentStatus switch
+                                    {
+                                        "Approved" => Model.ApprovedRequests,
+                                        "Rejected" => Model.RejectedRequests,
+                                        _ => Model.PendingRequests
+                                    };
+                                }
+                                
+                                @foreach (var request in requests)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="avatar-placeholder bg-primary text-white rounded-circle me-2">
+                                                    @request.Doctor.FirstName[0]@request.Doctor.LastName[0]
+                                                </span>
+                                                <span>Dr. @request.Doctor.FirstName @request.Doctor.LastName</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(request.LeaveType.IsPaid ? "bg-info" : "bg-secondary")">
+                                                @request.LeaveType.Name
+                                            </span>
+                                        </td>
+                                        <td>@request.StartDate.ToString("MMM dd, yyyy")</td>
+                                        <td>@request.EndDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <span class="badge bg-dark">@request.TotalDays days</span>
+                                        </td>
+                                        <td>@request.RequestDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                
+                                                @if (request.Status == LeaveRequestStatus.Pending)
+                                                {
+                                                    <a asp-action="Approve" asp-route-id="@request.Id" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Approve">
+                                                        <i class="bi bi-check-lg"></i>
+                                                    </a>
+                                                    <a asp-action="Reject" asp-route-id="@request.Id" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Reject">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+            
+            $('#leaveRequestsTable').DataTable({
+                "order": [[5, "desc"]], // Order by request date
+                "pageLength": 10,
+                "language": {
+                    "search": "<i class='bi bi-search'></i> Search:",
+                    "paginate": {
+                        "first": "<i class='bi bi-chevron-double-left'></i>",
+                        "last": "<i class='bi bi-chevron-double-right'></i>",
+                        "next": "<i class='bi bi-chevron-right'></i>",
+                        "previous": "<i class='bi bi-chevron-left'></i>"
+                    }
+                }
+            });
+            
+            // Apply style to DataTables search box
+            $('.dataTables_filter input').addClass('form-control form-control-sm ms-2');
+            $('.dataTables_filter input').attr('placeholder', 'Search...');
+            
+            // Display any success message
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                toastr.success('@TempData["SuccessMessage"]');
+                </text>
+            }
+            
+            // Display any error message
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                toastr.error('@TempData["ErrorMessage"]');
+                </text>
+            }
+            
+            // Display any warning message
+            @if (TempData["WarningMessage"] != null)
+            {
+                <text>
+                toastr.warning('@TempData["WarningMessage"]');
+                </text>
+            }
+            
+            // Display any info message
+            @if (TempData["InfoMessage"] != null)
+            {
+                <text>
+                toastr.info('@TempData["InfoMessage"]');
+                </text>
+            }
+        });
+    </script>
+    
+    <style>
+        .avatar-placeholder {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+    </style>
+} 

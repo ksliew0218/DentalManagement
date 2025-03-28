@@ -37,9 +37,7 @@ namespace DentalManagement.Migrations
                         .HasColumnType("interval");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("integer");
@@ -58,10 +56,8 @@ namespace DentalManagement.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasDefaultValue("Scheduled");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("TreatmentTypeId")
                         .HasColumnType("integer");
@@ -139,6 +135,95 @@ namespace DentalManagement.Migrations
                     b.ToTable("Doctors");
                 });
 
+            modelBuilder.Entity("DentalManagement.Models.DoctorLeaveBalance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LeaveTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("RemainingDays")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalDays")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.ToTable("DoctorLeaveBalances");
+                });
+
+            modelBuilder.Entity("DentalManagement.Models.DoctorLeaveRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ApprovalDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ApprovedById")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("text");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DocumentPath")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LeaveTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalDays")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedById");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.ToTable("DoctorLeaveRequests");
+                });
+
             modelBuilder.Entity("DentalManagement.Models.DoctorTreatment", b =>
                 {
                     b.Property<int>("DoctorId")
@@ -167,6 +252,35 @@ namespace DentalManagement.Migrations
                     b.HasIndex("TreatmentTypeId");
 
                     b.ToTable("DoctorTreatments");
+                });
+
+            modelBuilder.Entity("DentalManagement.Models.LeaveType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DefaultDays")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LeaveTypes");
                 });
 
             modelBuilder.Entity("DentalManagement.Models.Patient", b =>
@@ -509,19 +623,19 @@ namespace DentalManagement.Migrations
                     b.HasOne("DentalManagement.Models.Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DentalManagement.Models.Patient", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DentalManagement.Models.TreatmentType", "TreatmentType")
                         .WithMany()
                         .HasForeignKey("TreatmentTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -540,6 +654,50 @@ namespace DentalManagement.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DentalManagement.Models.DoctorLeaveBalance", b =>
+                {
+                    b.HasOne("DentalManagement.Models.Doctor", "Doctor")
+                        .WithMany("LeaveBalances")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DentalManagement.Models.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("LeaveType");
+                });
+
+            modelBuilder.Entity("DentalManagement.Models.DoctorLeaveRequest", b =>
+                {
+                    b.HasOne("DentalManagement.Models.User", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedById");
+
+                    b.HasOne("DentalManagement.Models.Doctor", "Doctor")
+                        .WithMany("LeaveRequests")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DentalManagement.Models.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("LeaveType");
                 });
 
             modelBuilder.Entity("DentalManagement.Models.DoctorTreatment", b =>
@@ -649,6 +807,10 @@ namespace DentalManagement.Migrations
             modelBuilder.Entity("DentalManagement.Models.Doctor", b =>
                 {
                     b.Navigation("DoctorTreatments");
+
+                    b.Navigation("LeaveBalances");
+
+                    b.Navigation("LeaveRequests");
                 });
 
             modelBuilder.Entity("DentalManagement.Models.TreatmentType", b =>

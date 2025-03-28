@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using DentalManagement.Authorization;
+using System.IO;
+using DentalManagement.Services;
 
 namespace DentalManagement.Controllers
 {
@@ -18,15 +20,18 @@ namespace DentalManagement.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<DoctorController> _logger;
+        private readonly LeaveManagementService _leaveService;
 
         public DoctorController(
             UserManager<User> userManager,
             ApplicationDbContext context,
-            ILogger<DoctorController> logger)
+            ILogger<DoctorController> logger,
+            LeaveManagementService leaveService)
         {
             _userManager = userManager;
             _context = context;
             _logger = logger;
+            _leaveService = leaveService;
         }
 
         // GET: Doctor/Index
@@ -120,10 +125,13 @@ namespace DentalManagement.Controllers
 
                 _context.Doctors.Add(doctor);
                 await _context.SaveChangesAsync();
+                
+                // Initialize leave balances for the new doctor
+                await _leaveService.InitializeDoctorLeaveBalancesAsync(doctor.Id);
 
                 await transaction.CommitAsync();
 
-                TempData["SuccessMessage"] = "Doctor created successfully!";
+                TempData["SuccessMessage"] = "Doctor created successfully with leave balances initialized!";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

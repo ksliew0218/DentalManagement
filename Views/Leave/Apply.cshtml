@@ -1,0 +1,128 @@
+@model DentalManagement.ViewModels.LeaveRequestViewModel
+@{
+    ViewData["Title"] = "Apply for Leave";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <!-- Alert for reminders -->
+            <div class="alert alert-info shadow-sm mb-4" role="alert">
+                <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Important Reminders</h5>
+                <hr>
+                <ul class="mb-0">
+                    <li>All leave requests require admin approval before they are confirmed.</li>
+                    <li>Please submit your leave request at least 7 days in advance when possible.</li>
+                    <li>You will receive a notification once your request is approved or rejected.</li>
+                    <li>You can check the status of your leave requests on the Leave Management dashboard.</li>
+                </ul>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger shadow-sm mb-4" role="alert">
+                    <h5 class="alert-heading"><i class="bi bi-exclamation-circle me-2"></i>Please fix the following errors:</h5>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                </div>
+            }
+
+            <div class="card shadow mb-4 border-0 rounded-3">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h5 class="m-0 font-weight-bold"><i class="bi bi-calendar-plus me-2"></i>Apply for Leave</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Apply" method="post" id="leaveForm">
+                        <input type="hidden" asp-for="DoctorId" />
+
+                        <div class="form-group mb-4">
+                            <label asp-for="LeaveTypeId" class="form-label fw-bold">Leave Type</label>
+                            <select asp-for="LeaveTypeId" class="form-select form-control-lg shadow-sm" asp-items="ViewBag.LeaveTypes"></select>
+                            <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="StartDate" class="form-label fw-bold">Start Date</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                        <input asp-for="StartDate" class="form-control shadow-sm" type="date" id="StartDate" />
+                                    </div>
+                                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                                    <small class="text-muted">First day of leave</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="EndDate" class="form-label fw-bold">End Date</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                        <input asp-for="EndDate" class="form-control shadow-sm" type="date" id="EndDate" />
+                                    </div>
+                                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                                    <small class="text-muted">Last day of leave</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="Reason" class="form-label fw-bold">Reason for Leave</label>
+                            <textarea asp-for="Reason" class="form-control shadow-sm" rows="4" placeholder="Please provide a reason for your leave request..."></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                            <small class="text-muted">Optional, but providing a reason helps with faster approval</small>
+                        </div>
+
+                        <div class="form-group text-end pt-3 border-top">
+                            <a asp-action="Index" class="back-button me-2">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4" id="submitBtn">
+                                <i class="bi bi-send me-1"></i>Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light p-3">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="bi bi-clock-history me-2"></i>
+                        <small>Your request will be reviewed by an administrator. Processing typically takes 1-2 business days.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Set minimum date to today for start date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("StartDate").setAttribute('min', today);
+            
+            // Update end date minimum when start date changes
+            $("#StartDate").change(function() {
+                const startDate = $(this).val();
+                document.getElementById("EndDate").setAttribute('min', startDate);
+                
+                // If end date is before start date, update it
+                if ($("#EndDate").val() < startDate) {
+                    $("#EndDate").val(startDate);
+                }
+            });
+
+            // Initialize with start date value
+            if ($("#StartDate").val()) {
+                document.getElementById("EndDate").setAttribute('min', $("#StartDate").val());
+            }
+            
+            // Prevent double submission
+            $("#leaveForm").submit(function() {
+                $("#submitBtn").prop('disabled', true);
+                $("#submitBtn").html('<i class="bi bi-hourglass-split me-1"></i>Processing...');
+                return true;
+            });
+        });
+    </script>
+} 

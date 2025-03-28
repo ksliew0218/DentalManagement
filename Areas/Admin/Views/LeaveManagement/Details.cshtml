@@ -1,0 +1,259 @@
+@model DentalManagement.Models.DoctorLeaveRequest
+@{
+    ViewData["Title"] = "Leave Request Details";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    
+    var statusClass = Model.Status switch
+    {
+        LeaveRequestStatus.Pending => "warning",
+        LeaveRequestStatus.Approved => "success",
+        LeaveRequestStatus.Rejected => "danger",
+        _ => "secondary"
+    };
+    
+    var statusIcon = Model.Status switch
+    {
+        LeaveRequestStatus.Pending => "bi-hourglass-split",
+        LeaveRequestStatus.Approved => "bi-check-circle-fill",
+        LeaveRequestStatus.Rejected => "bi-x-circle-fill",
+        _ => "bi-question-circle"
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header">
+        <a asp-action="Index" class="back-button">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <h1 class="h3 text-primary">
+            <i class="bi bi-card-text me-2"></i>Leave Request Details
+        </h1>
+        <span class="badge bg-@statusClass ms-3 py-2 px-3 d-flex align-items-center">
+            <i class="bi @statusIcon me-1"></i> @Model.Status
+        </span>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header py-3 bg-light d-flex align-items-center">
+                    <div class="avatar-placeholder bg-primary text-white rounded-circle me-3">
+                        @Model.Doctor.FirstName[0]@Model.Doctor.LastName[0]
+                    </div>
+                    <h6 class="m-0 font-weight-bold text-primary d-flex align-items-center">
+                        Leave Request from Dr. @Model.Doctor.FirstName @Model.Doctor.LastName
+                    </h6>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-person-badge me-2"></i>Doctor Information
+                                    </h6>
+                                    <p class="card-text">
+                                        <strong>Name:</strong> Dr. @Model.Doctor.FirstName @Model.Doctor.LastName<br>
+                                        <strong>Email:</strong> @Model.Doctor.User.Email
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-tag me-2"></i>Leave Type
+                                    </h6>
+                                    <p class="card-text">
+                                        <span class="badge @(Model.LeaveType.IsPaid ? "bg-info" : "bg-secondary")">
+                                            @Model.LeaveType.Name (@(Model.LeaveType.IsPaid ? "Paid" : "Unpaid"))
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-calendar-range me-2"></i>Leave Duration
+                                    </h6>
+                                    <p class="card-text">
+                                        <strong>From:</strong> @Model.StartDate.ToString("MMM dd, yyyy")<br>
+                                        <strong>To:</strong> @Model.EndDate.ToString("MMM dd, yyyy")<br>
+                                        <span class="badge bg-dark mt-1">@Model.TotalDays days</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-clock-history me-2"></i>Request Info
+                                    </h6>
+                                    <p class="card-text">
+                                        <strong>Requested On:</strong> @Model.RequestDate.ToString("MMM dd, yyyy HH:mm")<br>
+                                        <strong>Reason:</strong> @(string.IsNullOrEmpty(Model.Reason) ? "N/A" : Model.Reason)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (Model.Status != LeaveRequestStatus.Pending)
+                    {
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-@statusClass bg-opacity-10 py-2">
+                                <h6 class="mb-0 text-@statusClass">
+                                    <i class="bi @statusIcon me-2"></i>Processing Details
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-2">
+                                            <strong>Processed By:</strong> 
+                                            @(Model.ApprovedByUser != null ? Model.ApprovedByUser.Email : "N/A")
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Processed Date:</strong> 
+                                            @(Model.ApprovalDate.HasValue ? Model.ApprovalDate.Value.ToString("MMM dd, yyyy HH:mm") : "N/A")
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @if (!string.IsNullOrEmpty(Model.Comments))
+                                        {
+                                            <p class="mb-2"><strong>Comments:</strong></p>
+                                            <div class="p-2 bg-light rounded">
+                                                @Model.Comments
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    <!-- Time Slots Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-info bg-opacity-10 py-2">
+                            <h6 class="mb-0 text-info">
+                                <i class="bi bi-calendar-event me-2"></i>Time Slots During Leave Period
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            @if (ViewBag.TotalTimeSlots > 0)
+                            {
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="badge rounded-pill bg-primary me-2 py-2 px-3">@ViewBag.TotalTimeSlots</div>
+                                    <span>total time slots during this period</span>
+                                    
+                                    @if (ViewBag.BookedTimeSlots > 0)
+                                    {
+                                        <div class="badge rounded-pill bg-danger ms-3 me-2 py-2 px-3">@ViewBag.BookedTimeSlots</div>
+                                        <span>already booked</span>
+                                    }
+                                </div>
+                                
+                                @if (Model.Status == LeaveRequestStatus.Approved)
+                                {
+                                    <div class="alert alert-success d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+                                        <div>All time slots during this period have been marked as unavailable.</div>
+                                    </div>
+                                }
+                                
+                                @if (ViewBag.TimeSlots.Count <= 10)
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Start Time</th>
+                                                    <th>End Time</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var slot in ViewBag.TimeSlots)
+                                                {
+                                                    <tr>
+                                                        <td>@slot.StartTime.ToString("MMM dd, yyyy")</td>
+                                                        <td>@slot.StartTime.ToString("hh:mm tt")</td>
+                                                        <td>@slot.EndTime.ToString("hh:mm tt")</td>
+                                                        <td>
+                                                            <span class="badge @(slot.IsBooked ? "bg-danger" : "bg-success")">
+                                                                @(slot.IsBooked ? "Booked" : "Available")
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info d-flex align-items-center">
+                                        <i class="bi bi-info-circle-fill fs-5 me-3"></i>
+                                        <div>There are too many time slots to display (Total: @ViewBag.TotalTimeSlots)</div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill fs-5 me-3"></i>
+                                    <div>No time slots found during this leave period.</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="back-button">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                        
+                        @if (Model.Status == LeaveRequestStatus.Pending)
+                        {
+                            <div>
+                                <a asp-action="Approve" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                                    <i class="bi bi-check-circle me-1"></i> Approve
+                                </a>
+                                <a asp-action="Reject" asp-route-id="@Model.Id" class="btn btn-danger">
+                                    <i class="bi bi-x-circle me-1"></i> Reject
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .bg-opacity-10 {
+            --bs-bg-opacity: 0.1;
+        }
+    </style>
+} 

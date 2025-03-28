@@ -115,26 +115,29 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-            if (result.Succeeded)
-            {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user != null)
+                if (result.Succeeded)
                 {
-                    if (user.Role == UserRole.Admin)
+                    _logger.LogInformation("User logged in successfully.");
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    
+                    if (user != null)
                     {
+                        // Use a simple switch statement to determine redirect path
+                        string redirectUrl = user.Role switch
+                        {
+                            UserRole.Admin => "/Admin/Dashboard",
+                            UserRole.Doctor => "/Doctor/Dashboard",
+                            UserRole.Patient => "/Patient/Dashboard",
+                            _ => "/"
+                        };
                         
-                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
-                        
+                        _logger.LogInformation($"Redirecting user with role {user.Role} to {redirectUrl}");
+                        return LocalRedirect(redirectUrl);
                     }
-                    else if (user.Role == UserRole.Patient)
-                    {
-
-                        return RedirectToAction("Index", "Dashboard", new { area = "Patient" });
-                    }
+                    
+                    // Default redirect if user info can't be retrieved
+                    return LocalRedirect("/");
                 }
-
-                return RedirectToPage("/Index");
-            }
                 if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });

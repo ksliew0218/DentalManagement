@@ -44,6 +44,10 @@ namespace DentalManagement.Models
 
         [Required]
         public StatusType Status { get; set; } // Active/Inactive
+        
+        // Navigation properties
         public List<DoctorTreatment> DoctorTreatments { get; set; } = new();
+        public List<DoctorLeaveBalance> LeaveBalances { get; set; } = new();
+        public List<DoctorLeaveRequest> LeaveRequests { get; set; } = new();
     }
 }

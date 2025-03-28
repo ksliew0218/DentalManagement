@@ -1,0 +1,141 @@
+@model DentalManagement.ViewModels.LeaveApprovalViewModel
+@{
+    ViewData["Title"] = Model.Status == LeaveRequestStatus.Approved ? "Approve Leave Request" : "Reject Leave Request";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var leaveRequest = ViewBag.LeaveRequest as DoctorLeaveRequest;
+    var actionText = Model.Status == LeaveRequestStatus.Approved ? "Approve" : "Reject";
+    var btnClass = Model.Status == LeaveRequestStatus.Approved ? "btn-success" : "btn-danger";
+    var iconClass = Model.Status == LeaveRequestStatus.Approved ? "bi-check-circle" : "bi-x-circle";
+    var accentColor = Model.Status == LeaveRequestStatus.Approved ? "success" : "danger";
+}
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="back-button">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <h1 class="h3 mb-0 text-@accentColor">
+            <i class="bi @(Model.Status == LeaveRequestStatus.Approved ? "bi-check-circle" : "bi-x-circle") me-2"></i>
+            @ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header py-3 bg-light d-flex align-items-center">
+                    <div class="avatar-placeholder bg-primary text-white rounded-circle me-3">
+                        @leaveRequest.Doctor.FirstName[0]@leaveRequest.Doctor.LastName[0]
+                    </div>
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        @actionText Leave Request for Dr. @leaveRequest.Doctor.FirstName @leaveRequest.Doctor.LastName
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-person-badge me-2"></i>Doctor
+                                    </h6>
+                                    <p class="card-text">Dr. @leaveRequest.Doctor.FirstName @leaveRequest.Doctor.LastName</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-tag me-2"></i>Leave Type
+                                    </h6>
+                                    <p class="card-text">
+                                        <span class="badge @(leaveRequest.LeaveType.IsPaid ? "bg-info" : "bg-secondary")">
+                                            @leaveRequest.LeaveType.Name (@(leaveRequest.LeaveType.IsPaid ? "Paid" : "Unpaid"))
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-calendar-range me-2"></i>Leave Duration
+                                    </h6>
+                                    <p class="card-text">
+                                        <strong>From:</strong> @leaveRequest.StartDate.ToString("MMM dd, yyyy")<br>
+                                        <strong>To:</strong> @leaveRequest.EndDate.ToString("MMM dd, yyyy")<br>
+                                        <span class="badge bg-dark mt-1">@leaveRequest.TotalDays days</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <i class="bi bi-clock-history me-2"></i>Request Details
+                                    </h6>
+                                    <p class="card-text">
+                                        <strong>Requested On:</strong> @leaveRequest.RequestDate.ToString("MMM dd, yyyy HH:mm")<br>
+                                        <strong>Reason:</strong> @(string.IsNullOrEmpty(leaveRequest.Reason) ? "N/A" : leaveRequest.Reason)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Status == LeaveRequestStatus.Approved)
+                    {
+                        <div class="alert alert-warning d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+                            <div>
+                                <strong>Note:</strong> Approving this leave request will mark all time slots during this period as unavailable.
+                                Any existing appointments may need to be rescheduled.
+                            </div>
+                        </div>
+                    }
+
+                    <form asp-action="ApproveReject" method="post">
+                        <input type="hidden" asp-for="LeaveRequestId" value="@leaveRequest.Id" />
+                        <input type="hidden" asp-for="Status" value="@Model.Status" />
+                        
+                        <div class="form-group mb-4">
+                            <label asp-for="Comments" class="form-label">Comments:</label>
+                            <textarea asp-for="Comments" class="form-control" rows="3" 
+                                      placeholder="Add comments for the doctor..."></textarea>
+                            <span asp-validation-for="Comments" class="text-danger"></span>
+                            <div class="form-text">Your comments will be visible to the doctor and help them understand your decision.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <a asp-action="Index" class="back-button">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn @btnClass">
+                                <i class="bi @iconClass me-1"></i> @actionText Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <style>
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+    </style>
+} 

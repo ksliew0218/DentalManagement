@@ -1,0 +1,84 @@
+@model DentalManagement.Models.LeaveType
+@{
+    ViewData["Title"] = "Delete Leave Type";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <h2 class="h3 mb-0 text-danger">
+            <i class="bi bi-trash me-2"></i>Delete Leave Type
+        </h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3 border-danger">
+                <div class="card-header bg-danger bg-opacity-10 py-3">
+                    <h5 class="mb-0 text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Are you sure you want to delete the leave type "<strong>@Model.Name</strong>"? This cannot be undone.
+                    </div>
+                    
+                    <h6 class="mt-4 mb-3">Leave Type Details:</h6>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-3">Name</dt>
+                        <dd class="col-sm-9">@Model.Name</dd>
+                        
+                        <dt class="col-sm-3">Type</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge @(Model.IsPaid ? "bg-info" : "bg-secondary")">
+                                @(Model.IsPaid ? "Paid" : "Unpaid")
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-sm-3">Default Days</dt>
+                        <dd class="col-sm-9">@Model.DefaultDays</dd>
+                        
+                        <dt class="col-sm-3">Description</dt>
+                        <dd class="col-sm-9">@Model.Description</dd>
+                    </dl>
+
+                    <form asp-action="Delete" class="mt-4">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i> Delete Permanently
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Important Note</h5>
+                    <p class="card-text">
+                        You cannot delete a leave type if:
+                    </p>
+                    <ul class="ps-3">
+                        <li class="mb-2">It is being used by any leave requests</li>
+                        <li class="mb-2">It has leave balances associated with it</li>
+                    </ul>
+                    <p class="card-text mt-3">
+                        If you need to remove this leave type from use, consider editing it instead to mark it as inactive.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

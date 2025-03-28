@@ -62,6 +62,34 @@
                                         <i class="bi bi-calendar-week"></i> Doctor Slots
                                     </a>
                                 </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-calendar-check"></i> Appointments
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Appointment" asp-action="Index">
+                                                <i class="bi bi-list-ul"></i> All Appointments
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Appointment" asp-action="Calendar">
+                                                <i class="bi bi-calendar-week"></i> Calendar View
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Appointment" asp-action="Dashboard">
+                                                <i class="bi bi-speedometer2"></i> Appointment Dashboard
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Appointment" asp-action="Create">
+                                                <i class="bi bi-plus-circle"></i> New Appointment
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
                             }
                             else if (isPatient) // Patient navigation
                             {
@@ -73,6 +101,24 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-area="Patient" asp-controller="Appointments" asp-action="Index">
                                         <i class="bi bi-calendar-check"></i> Appointments
+                                    </a>
+                                </li>
+                            }
+                            else if (currentUser?.Role == UserRole.Doctor) // Doctor navigation
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="Doctor" asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-speedometer2"></i> Doctor Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index">
+                                        <i class="bi bi-clock"></i> My Time Slots
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Appointment" asp-action="Calendar">
+                                        <i class="bi bi-calendar-week"></i> My Schedule
                                     </a>
                                 </li>
                             }

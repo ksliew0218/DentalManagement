@@ -1,7 +1,10 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
 using Microsoft.AspNetCore.Http;    
+using Microsoft.AspNetCore.Identity;
+using System;
+using DentalManagement.Services;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +31,15 @@ builder.Services.AddControllersWithViews();
 
 // Add Razor Pages support (required for Identity)
 builder.Services.AddRazorPages();
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// Register application services
+builder.Services.AddScoped<LeaveManagementService>();
 
 // Configure Authorization
 builder.Services.AddAuthorization(options =>
@@ -66,41 +78,29 @@ var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.
 app.Urls.Add(urls);
 
 // Configure the HTTP request pipeline
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseDeveloperExceptionPage();
-    
-    // In development, middleware to write unhandled exceptions to the console
-    app.Use(async (context, next) =>
-    {
-        try
-        {
-            await next();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Unhandled exception: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
-            throw; // Re-throw to be handled by the developer exception page
-        }
-    });
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Add area routes for both `Admin` and `Patient`
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 // Add default route
 app.MapControllerRoute(
@@ -115,26 +115,27 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    var userManager = services.GetRequiredService<UserManager<User>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
 
     try
     {
         if (dbContext.Database.CanConnect())
         {
-            Console.WriteLine("✅ Database connection successful!");
+            logger.LogInformation("✅ Database connection successful!");
 
-            // Run DbInitializer with correct parameters
-            await DbInitializer.Initialize(services, userManager, roleManager);
+            // Initialize the database using the existing DbInitializer
+            await DentalManagement.Models.DbInitializer.InitializeAsync(services);
+            
+            logger.LogInformation("Database initialized!");
         }
         else
         {
-            Console.WriteLine("❌ Failed to connect to the database.");
+            logger.LogError("❌ Failed to connect to the database.");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Database connection failed: {ex.Message}");
+        logger.LogError(ex, "❌ Database connection failed: {Message}", ex.Message);
     }
 }
 

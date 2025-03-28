@@ -1,0 +1,107 @@
+@model IEnumerable<DentalManagement.Models.LeaveType>
+@{
+    ViewData["Title"] = "Manage Leave Types";
+}
+
+<div class="container-fluid py-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h3 text-primary"><i class="bi bi-tags me-2"></i>Manage Leave Types</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Create New Leave Type
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-light py-3">
+            <h5 class="mb-0 text-primary">
+                <i class="bi bi-list-check me-2"></i>Available Leave Types
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="leaveTypesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Default Days</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>
+                                    <span class="badge @(item.IsPaid ? "bg-info" : "bg-secondary")">
+                                        @(item.IsPaid ? "Paid" : "Unpaid")
+                                    </span>
+                                </td>
+                                <td>@item.DefaultDays</td>
+                                <td>@item.Description</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+            
+            $('#leaveTypesTable').DataTable({
+                "order": [[0, "asc"]], // Order by name
+                "pageLength": 10,
+                "language": {
+                    "search": "<i class='bi bi-search'></i> Search:",
+                    "paginate": {
+                        "first": "<i class='bi bi-chevron-double-left'></i>",
+                        "last": "<i class='bi bi-chevron-double-right'></i>",
+                        "next": "<i class='bi bi-chevron-right'></i>",
+                        "previous": "<i class='bi bi-chevron-left'></i>"
+                    }
+                }
+            });
+            
+            // Apply style to DataTables search box
+            $('.dataTables_filter input').addClass('form-control form-control-sm ms-2');
+            $('.dataTables_filter input').attr('placeholder', 'Search...');
+        });
+    </script>
+} 
