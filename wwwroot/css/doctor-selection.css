@@ -1,0 +1,431 @@
+/* Doctor Selection Styles */
+
+/* Treatment Summary Styles */
+.treatment-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid var(--primary-color);
+}
+
+.summary-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(71, 105, 247, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-icon i {
+  font-size: 1.4rem;
+  color: var(--primary-color);
+}
+
+.summary-details {
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.summary-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.summary-meta {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.summary-meta .separator {
+  margin: 0 8px;
+  color: var(--text-muted);
+}
+
+/* Any Available Doctor Option */
+.any-doctor-option {
+  margin-bottom: 28px;
+}
+
+.doctor-card.any-available {
+  background: rgba(71, 105, 247, 0.05);
+  border: 1px dashed rgba(71, 105, 247, 0.3);
+}
+
+.doctor-card.any-available .doctor-avatar {
+  background: white;
+}
+
+.doctor-card.any-available .doctor-avatar i {
+  font-size: 1.8rem;
+  color: var(--primary-color);
+}
+
+/* Doctor Selection Header */
+.selection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.selection-header h3 {
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-dropdown label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.filter-dropdown select {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.filter-dropdown select:hover {
+  border-color: var(--primary-color);
+}
+
+/* Doctors Grid */
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.doctor-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
+  padding: 24px;
+  gap: 20px;
+  position: relative;
+  border: 1px solid var(--border-color);
+}
+
+.doctor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(71, 105, 247, 0.3);
+}
+
+.doctor-card.selected {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 8px 20px rgba(71, 105, 247, 0.15);
+}
+
+.doctor-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--hover-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.doctor-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doctor-avatar .doctor-icon {
+  font-size: 2.5rem;
+  color: var(--text-muted);
+}
+
+.doctor-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.doctor-credentials {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.doctor-credentials div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.doctor-credentials i {
+  color: var(--primary-color);
+  opacity: 0.8;
+}
+
+.experience,
+.qualifications {
+  position: relative;
+  padding-left: 5px;
+}
+
+.doctor-details {
+  flex: 1;
+  position: relative;
+}
+
+.doctor-details h3 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.doctor-specialization {
+  margin-bottom: 10px;
+}
+
+.specialty-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(71, 105, 247, 0.1);
+  color: var(--primary-color);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.doctor-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.doctor-info .info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.doctor-info .info-item i {
+  color: var(--warning-color);
+  font-size: 0.9rem;
+}
+
+.doctor-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* Remove these sections */
+.doctor-stats,
+.stat-item,
+.stat-value,
+.stat-label,
+.rating-badge {
+  display: none;
+}
+
+/* Enhanced select button without depending on those elements */
+.select-doctor-btn {
+  background: var(--hover-bg);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.select-doctor-btn i {
+  transition: transform 0.2s ease;
+}
+
+.select-doctor-btn:hover {
+  background: rgba(71, 105, 247, 0.1);
+}
+
+.select-doctor-btn:hover i {
+  transform: translateX(4px);
+}
+
+.doctor-card.selected .select-doctor-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Optional: Fill the gap left by removed elements with better spacing */
+.doctor-credentials {
+  margin-bottom: 8px;
+}
+
+/* Doctor availability indicator */
+.availability-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.availability-indicator.busy {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.availability-indicator i {
+  font-size: 0.8rem;
+}
+
+/* Empty state styling improvements */
+.empty-doctors-state {
+  text-align: center;
+  padding: 40px;
+  background: rgba(71, 105, 247, 0.05);
+  border-radius: 16px;
+  grid-column: 1 / -1;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.empty-doctors-state h3 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.empty-doctors-state p {
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto 20px;
+}
+
+.back-to-treatments {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 10px 20px;
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.back-to-treatments:hover {
+  background: rgba(71, 105, 247, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .doctors-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .doctors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .selection-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .filter-dropdown {
+    width: 100%;
+  }
+
+  .filter-dropdown select {
+    width: 100%;
+  }
+
+  .doctor-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .doctor-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .treatment-summary {
+    flex-direction: column;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .summary-details {
+    width: 100%;
+  }
+
+  .summary-meta {
+    justify-content: center;
+  }
+}

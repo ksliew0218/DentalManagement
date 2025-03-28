@@ -737,3 +737,38 @@ td {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+/* Sidebar and main content transition */
+.sidebar {
+  width: 280px; 
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.main-content {
+  margin-left: 280px; 
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 280px); 
+}
+
+.sidebar.collapsed ~ .main-content,
+.sidebar.collapsed ~ #contentContainer .main-content {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .sidebar.collapsed ~ .main-content,
+  .sidebar.collapsed ~ #contentContainer .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}

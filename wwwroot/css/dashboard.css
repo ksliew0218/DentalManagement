@@ -199,41 +199,6 @@
   padding-right: 20px;
 }
 
-/* Sidebar and main content transition */
-.sidebar {
-  width: 280px; 
-  transition: width 0.3s ease;
-}
-
-.sidebar.collapsed {
-  width: 80px;
-}
-
-.main-content {
-  margin-left: 280px; 
-  transition: margin-left 0.3s ease;
-  width: calc(100% - 280px); 
-}
-
-.sidebar.collapsed ~ .main-content,
-.sidebar.collapsed ~ #contentContainer .main-content {
-  margin-left: 80px;
-  width: calc(100% - 80px);
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .sidebar.collapsed ~ .main-content,
-  .sidebar.collapsed ~ #contentContainer .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
 .dashboard-container {
   padding: 24px;
   max-width: 1400px;
@@ -1092,33 +1057,6 @@
 
   .empty-treatments-state {
     padding: 32px 16px;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .treatment-type-card {
-    background: rgba(247, 250, 252, 0.05);
-  }
-
-  .treatment-type-card:hover {
-    background: rgba(237, 242, 247, 0.1);
-  }
-
-  .treatment-type-icon {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .treatment-type-content h4 {
-    color: #63b3ed;
-  }
-
-  .treatment-type-content p {
-    color: #a0aec0;
-  }
-
-  .treatment-type-card:hover .treatment-type-content h4 {
-    color: #90cdf4;
   }
 }
 

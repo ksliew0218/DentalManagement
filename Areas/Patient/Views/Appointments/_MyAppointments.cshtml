@@ -1,16 +1,327 @@
+@model DentalManagement.Areas.Patient.Models.AppointmentsListViewModel
 @{
     ViewData["Title"] = "My Appointments";
     Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="page-title">My Appointments</h2>
-            <div class="appointments-content">
-                <!-- Your appointments content here -->
-                <p>View and manage your appointments here.</p>
+<link href="~/css/my-appointments.css" rel="stylesheet" asp-append-version="true">
+
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-calendar-check"></i> My Appointments</h2>
+        <p class="subtitle">Manage your dental appointments</p>
+    </div>
+    
+    <!-- Appointments Actions -->
+    <div class="appointment-actions-bar">
+        <div class="filters-container">
+            <div class="search-container">
+                <i class="bi bi-search"></i>
+                <input type="text" id="appointmentSearch" placeholder="Search treatments or doctors..." class="search-input">
+            </div>
+            
+            <div class="date-filter">
+                <button class="date-filter-btn" id="dateFilterBtn">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Filter by Date</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="date-picker-container" id="datePickerContainer">
+                    <div class="date-picker-header">
+                        <h4>Select Date Range</h4>
+                        <button class="close-date-picker"><i class="bi bi-x"></i></button>
+                    </div>
+                    <div class="date-inputs">
+                        <div class="date-input-group">
+                            <label for="startDate">From</label>
+                            <input type="date" id="startDate" class="date-input">
+                        </div>
+                        <div class="date-input-group">
+                            <label for="endDate">To</label>
+                            <input type="date" id="endDate" class="date-input">
+                        </div>
+                    </div>
+                    <div class="date-shortcuts">
+                        <button class="date-shortcut" data-range="today">Today</button>
+                        <button class="date-shortcut" data-range="week">This Week</button>
+                        <button class="date-shortcut" data-range="month">This Month</button>
+                        <button class="date-shortcut" data-range="all">All Time</button>
+                    </div>
+                    <div class="date-picker-actions">
+                        <button class="apply-date-filter">Apply Filter</button>
+                        <button class="clear-date-filter">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <a href="/Patient/Appointments/Book" class="action-btn schedule-btn">
+            <i class="bi bi-plus-circle"></i>
+            Book New Appointment
+        </a>
+    </div>
+    
+    <!-- Active Filters Display -->
+    <div class="active-filters" id="activeFilters" style="display: none;">
+        <div class="active-filter-label">Active Filters:</div>
+        <div class="active-filter-tags" id="activeFilterTags">
+            <!-- Filter tags will be added here dynamically -->
+        </div>
+        <button class="clear-all-filters" id="clearAllFilters">
+            <i class="bi bi-x-circle"></i>
+            Clear All
+        </button>
+    </div>
+
+    <!-- Appointments Tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-tab="upcoming">
+            <i class="bi bi-calendar-event"></i> Upcoming
+        </button>
+        <button class="filter-tab" data-tab="past">
+            <i class="bi bi-calendar-check"></i> Past
+        </button>
+        <button class="filter-tab" data-tab="cancelled">
+            <i class="bi bi-calendar-x"></i> Cancelled
+        </button>
+    </div>
+
+    <!-- Upcoming Appointments Tab -->
+    <div class="tab-content active" id="upcoming-tab">
+        @if (Model?.UpcomingAppointments != null && Model.UpcomingAppointments.Any(a => a.Status != "Cancelled"))
+        {
+            <div class="appointments-grid">
+                @foreach (var appointment in Model.UpcomingAppointments.Where(a => a.Status != "Cancelled"))
+                {
+                    <div class="appointment-card">
+                        <div class="appointment-header">
+                            <div class="date-box">
+                                <span class="month">@appointment.AppointmentDate.ToString("MMM")</span>
+                                <span class="day">@appointment.AppointmentDate.Day</span>
+                            </div>
+                            <div class="appointment-meta">
+                                <span class="time">
+                                    <i class="bi bi-clock"></i>
+                                    @try
+                                    {
+                                        @appointment.FormattedTime
+                                    }
+                                    catch
+                                    {
+                                        <span>Time not available</span>
+                                    }
+                                </span>
+                                <span class="appointment-status @appointment.StatusClass">
+                                    <i class="bi bi-circle-fill status-icon"></i>
+                                    @appointment.Status
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="treatment-name">@appointment.TreatmentName</h3>
+                        
+                        <div class="doctor-info">
+                            <i class="bi bi-person-badge"></i>
+                            <span>@appointment.DoctorName</span>
+                        </div>
+                        
+                        <div class="appointment-footer">
+                            <a href="@Url.Action("Details", "Appointments", new { area = "Patient", id = appointment.Id })" class="view-details-btn">
+                                <i class="bi bi-eye"></i>
+                                View Details
+                            </a>
+                            @if (appointment.CanCancel)
+                            {
+                                <button class="cancel-appointment-btn" onclick="confirmCancelAppointment(@appointment.Id)">
+                                    <i class="bi bi-x-circle"></i>
+                                    Cancel
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-category-card">
+                <div class="empty-icon">
+                    <i class="bi bi-calendar-plus"></i>
+                </div>
+                <div class="empty-message">
+                    <h3>No Upcoming Appointments</h3>
+                    <p>You don't have any scheduled appointments. Book a new appointment to get started.</p>
+                    <a href="/Patient/Appointments/Book" class="action-btn schedule-btn">
+                        <i class="bi bi-plus-circle"></i>
+                        Book an Appointment
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Past Appointments Tab -->
+    <div class="tab-content" id="past-tab">
+        @if (Model?.PastAppointments != null && Model.PastAppointments.Any())
+        {
+            <div class="appointments-grid">
+                @foreach (var appointment in Model.PastAppointments)
+                {
+                    <div class="appointment-card past">
+                        <div class="appointment-header">
+                            <div class="date-box">
+                                <span class="month">@appointment.AppointmentDate.ToString("MMM")</span>
+                                <span class="day">@appointment.AppointmentDate.Day</span>
+                            </div>
+                            <div class="appointment-meta">
+                                <span class="time">
+                                    <i class="bi bi-clock"></i>
+                                    @try
+                                    {
+                                        @appointment.FormattedTime
+                                    }
+                                    catch
+                                    {
+                                        <span>Time not available</span>
+                                    }
+                                </span>
+                                <span class="appointment-status @appointment.StatusClass">
+                                    <i class="bi bi-circle-fill status-icon"></i>
+                                    @appointment.Status
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="treatment-name">@appointment.TreatmentName</h3>
+                        
+                        <div class="doctor-info">
+                            <i class="bi bi-person-badge"></i>
+                            <span>@appointment.DoctorName</span>
+                        </div>
+                        
+                        <div class="appointment-footer">
+                            <a href="@Url.Action("Details", "Appointments", new { area = "Patient", id = appointment.Id })" class="view-details-btn">
+                                <i class="bi bi-eye"></i>
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-category-card">
+                <div class="empty-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="empty-message">
+                    <h3>No Past Appointments</h3>
+                    <p>You don't have any past appointment records.</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Cancelled Appointments Tab -->
+    <div class="tab-content" id="cancelled-tab">
+        @if (Model?.UpcomingAppointments != null && Model.UpcomingAppointments.Any(a => a.Status == "Cancelled"))
+        {
+            <div class="appointments-grid">
+                @foreach (var appointment in Model.UpcomingAppointments.Where(a => a.Status == "Cancelled"))
+                {
+                    <div class="appointment-card cancelled">
+                        <div class="appointment-header">
+                            <div class="date-box">
+                                <span class="month">@appointment.AppointmentDate.ToString("MMM")</span>
+                                <span class="day">@appointment.AppointmentDate.Day</span>
+                            </div>
+                            <div class="appointment-meta">
+                                <span class="time">
+                                    <i class="bi bi-clock"></i>
+                                    @try
+                                    {
+                                        @appointment.FormattedTime
+                                    }
+                                    catch
+                                    {
+                                        <span>Time not available</span>
+                                    }
+                                </span>
+                                <span class="appointment-status cancelled">
+                                    <i class="bi bi-circle-fill status-icon"></i>
+                                    Cancelled
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="treatment-name">@appointment.TreatmentName</h3>
+                        
+                        <div class="doctor-info">
+                            <i class="bi bi-person-badge"></i>
+                            <span>@appointment.DoctorName</span>
+                        </div>
+                        
+                        <div class="appointment-footer">
+                            <a href="@Url.Action("Details", "Appointments", new { area = "Patient", id = appointment.Id })" class="view-details-btn">
+                                <i class="bi bi-eye"></i>
+                                View Details
+                            </a>
+                            <a href="@Url.Action("Book", "Appointments", new { area = "Patient" })" class="rebook-btn">
+                                <i class="bi bi-arrow-repeat"></i>
+                                Rebook
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-category-card">
+                <div class="empty-icon">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+                <div class="empty-message">
+                    <h3>No Cancelled Appointments</h3>
+                    <p>You don't have any cancelled appointments.</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal" id="cancel-confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-exclamation-triangle"></i> Cancel Appointment</h3>
+                <button class="close-modal-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this appointment?</p>
+                <div class="warning-message">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <p>Cancellations must be made at least 24 hours in advance to avoid a cancellation fee.</p>
+                </div>
+                
+                <form id="cancelAppointmentForm" asp-controller="Appointments" asp-action="Cancel" asp-area="Patient" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="appointmentIdInput" name="id" value="" />
+                    <div class="modal-actions">
+                        <button type="submit" class="action-btn cancel-btn">
+                            <i class="bi bi-check-circle"></i> Yes, Cancel Appointment
+                        </button>
+                        <button type="button" class="action-btn secondary-btn" id="keep-appointment-btn">
+                            <i class="bi bi-x-circle"></i> No, Keep Appointment
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script src="~/js/appointment-filter.js" asp-append-version="true"></script>
+}

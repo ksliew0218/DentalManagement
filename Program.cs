@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
+using Microsoft.AspNetCore.Http;    
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +43,23 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Home/AccessDenied";
 });
 
+
+// Add this in the service configuration section, after other service configurations
+// Add session services
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set session timeout
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true; // Make the session cookie essential
+});
+
+// Add HttpContext accessor
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
+
+// Now you can use app
+app.UseSession();
 
 // Ensure application runs on the configured URL
 var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://0.0.0.0:80";

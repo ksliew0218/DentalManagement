@@ -1,0 +1,179 @@
+@model List<DentalManagement.Areas.Patient.Models.DoctorViewModel>
+@{
+    ViewData["Title"] = "Select Doctor";
+    Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
+}
+
+<head>
+    <!-- Link to custom CSS files -->
+    <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
+    <link href="~/css/doctor-selection.css" rel="stylesheet" asp-append-version="true">
+</head>
+
+<div class="appointment-container">
+    <!-- Add anti-forgery token for form submission -->
+    @Html.AntiForgeryToken()
+    
+    <!-- Hidden field to store treatment data from TempData -->
+    @if (TempData["SelectedTreatment"] != null)
+    {
+        <input type="hidden" id="treatment-data" value="@TempData["SelectedTreatment"]" />
+    }
+
+    <!-- Progress Steps Indicator -->
+    <div class="progress-steps">
+        <div class="step completed">
+            <div class="step-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="step-label">Select Treatment</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step active">
+            <div class="step-icon">
+                <i class="bi bi-2-circle-fill"></i>
+            </div>
+            <div class="step-label">Select Doctor</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-icon">
+                <i class="bi bi-3-circle"></i>
+            </div>
+            <div class="step-label">Choose Date & Time</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-icon">
+                <i class="bi bi-4-circle"></i>
+            </div>
+            <div class="step-label">Confirm</div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-person-badge"></i> Select a Doctor</h2>
+        <p class="subtitle">Choose a specialist for your <span id="selected-treatment-name">@ViewData["TreatmentName"]</span></p>
+    </div>
+
+    <!-- Treatment Summary -->
+    <div class="treatment-summary">
+        <div class="summary-icon">
+            <i class="bi bi-clipboard-check"></i>
+        </div>
+        <div class="summary-details">
+            <div class="summary-label">Selected Treatment</div>
+            <div class="summary-value" id="treatment-name">@ViewData["TreatmentName"]</div>
+            <div class="summary-meta">
+                <span id="treatment-duration">@ViewData["TreatmentDuration"]</span>
+                <span class="separator">•</span>
+                <span id="treatment-price">@ViewData["TreatmentPrice"]</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Any Available Doctor Option -->
+    <div class="any-doctor-option">
+        <div class="doctor-card any-available">
+            <div class="doctor-avatar">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="doctor-details">
+                <h3>Any Available Doctor</h3>
+                <p class="doctor-description">
+                    Select this option to book with the first available doctor for your chosen date and time.
+                </p>
+                <button class="select-doctor-btn">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Selection Header -->
+    <div class="selection-header">
+        <h3>Available Specialists</h3>
+        <div class="filter-dropdown">
+            <label for="specialization-filter">Filter by:</label>
+            <select id="specialization-filter">
+                <option value="all">All Specializations</option>
+                @{
+                    var specializations = Model.Select(d => d.Specialization).Distinct().ToList();
+                    foreach (var specialization in specializations)
+                    {
+                        var specValue = specialization.ToLower().Replace(" ", "");
+                        <option value="@specValue">@specialization</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+
+    <!-- Doctors Grid -->
+    <div class="doctors-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var doctor in Model)
+            {
+                var specializationClass = doctor.Specialization.ToLower().Replace(" ", "");
+                
+                <div class="doctor-card" data-id="@doctor.Id" data-specialization="@specializationClass">
+                    <div class="doctor-avatar">
+                        <img src="@doctor.ProfileImageUrl" alt="@doctor.Name" 
+                            onerror="this.style.display='none'; this.parentNode.innerHTML='<i class=\'bi bi-person-circle doctor-icon\'></i>';">
+                    </div>
+                    <div class="doctor-details">
+                        <div class="doctor-header">
+                            <h3>@doctor.Name</h3>
+                            <div class="specialty-badge">@doctor.Specialization</div>
+                        </div>
+                        
+                        <div class="doctor-credentials">
+                            <div class="experience">
+                                <i class="bi bi-calendar2-check"></i>
+                                <span>@doctor.YearsOfExperience years experience</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(doctor.Qualifications))
+                            {
+                                <div class="qualifications">
+                                    <i class="bi bi-award"></i>
+                                    <span>@doctor.Qualifications</span>
+                                </div>
+                            }
+                        </div>
+
+                        <button class="select-doctor-btn">
+                            Select <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-doctors-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-person-x"></i>
+                </div>
+                <h3>No Doctors Available</h3>
+                <p>We couldn't find any doctors available for this treatment. Please try a different treatment or contact us for assistance.</p>
+                <a href="@Url.Action("Book", "Appointments", new { area = "Patient" })" class="back-to-treatments">
+                    <i class="bi bi-arrow-left"></i> Back to Treatments
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+        <a href="@Url.Action("Book", "Appointments", new { area = "Patient" })" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Treatments
+        </a>
+        <button class="next-btn" disabled>
+            Next: Choose Date & Time <i class="bi bi-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/doctor-selection.js" asp-append-version="true"></script>
+}

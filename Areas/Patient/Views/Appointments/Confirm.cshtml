@@ -1,0 +1,203 @@
+@model DentalManagement.Areas.Patient.Models.AppointmentBookingViewModel
+@{
+    ViewData["Title"] = "Confirm Appointment";
+    Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
+}
+
+<head>
+    <!-- Link to custom CSS files -->
+    <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
+    <link href="~/css/appointment-confirmation.css" rel="stylesheet" asp-append-version="true">
+</head>
+
+<div class="appointment-container">
+    <!-- Progress Steps Indicator -->
+    <div class="progress-steps">
+        <div class="step completed">
+            <div class="step-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="step-label">Select Treatment</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step completed">
+            <div class="step-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="step-label">Select Doctor</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step completed">
+            <div class="step-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="step-label">Choose Date & Time</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step active">
+            <div class="step-icon">
+                <i class="bi bi-4-circle-fill"></i>
+            </div>
+            <div class="step-label">Confirm</div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-check2-circle"></i> Review and Confirm</h2>
+        <p class="subtitle">Please review your appointment details before confirming</p>
+    </div>
+
+    <!-- Display validation errors -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var modelState in ViewData.ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- Create the form for submission -->
+    <form id="confirmBookingForm" asp-controller="Appointments" asp-action="SubmitBooking" asp-area="Patient" method="post">
+        @Html.AntiForgeryToken()
+        
+        <!-- Hidden form fields for the appointment data - CRITICAL fields -->
+        <input type="hidden" name="TreatmentId" id="treatmentId" value="@Model.TreatmentId" />
+        <input type="hidden" name="DoctorId" id="doctorId" value="@Model.DoctorId" />
+        <input type="hidden" name="AppointmentDate" id="appointmentDate" value="@Model.AppointmentDate.ToString("yyyy-MM-dd")" />
+        <input type="hidden" name="AppointmentTime" id="appointmentTime" value="@Model.AppointmentTime" />
+        
+        <!-- Appointment Summary -->
+        <div class="appointment-summary">
+            <div class="summary-card">
+                <div class="card-header">
+                    <h3>Appointment Details</h3>
+                </div>
+                <div class="summary-details">
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Treatment</span>
+                            <span class="detail-value" id="treatment-name">@Model.TreatmentName</span>
+                            <span class="detail-meta" id="treatment-meta">@Model.TreatmentDuration • @Model.TreatmentPrice</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon doctor-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Doctor</span>
+                            <span class="detail-value" id="doctor-name">@Model.DoctorName</span>
+                            <span class="detail-meta" id="doctor-specialization">@Model.DoctorSpecialization</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon date-icon">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Date</span>
+                            <span class="detail-value" id="appointment-date">@Model.AppointmentDate.ToString("dddd, MMMM d, yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon time-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Time</span>
+                            <span class="detail-value" id="appointment-time">
+                                @{
+                                    var time = TimeSpan.Parse(Model.AppointmentTime);
+                                    var isPM = time.Hours >= 12;
+                                    var hour12 = time.Hours % 12;
+                                    if (hour12 == 0) hour12 = 12;
+                                    var formattedTime = $"{hour12}:{time.Minutes:D2} {(isPM ? "PM" : "AM")}";
+                                    @formattedTime
+                                }
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Requests and Notes -->
+            <div class="notes-section">
+                <div class="section-header">
+                    <h3>Special Requests</h3>
+                    <p class="section-subtitle">Optional: Add any special requests or notes for your appointment</p>
+                </div>
+                <textarea id="appointment-notes" name="Notes" placeholder="E.g., I have dental anxiety, please explain procedures before starting. Or any other special needs or concerns.">@Model.Notes</textarea>
+            </div>
+            
+            <!-- Payment Information -->
+            <div class="payment-section">
+                <div class="section-header">
+                    <h3>Payment Information</h3>
+                    <p class="section-subtitle">A deposit is not required. You will pay after your appointment.</p>
+                </div>
+                <div class="payment-info">
+                    <div class="payment-row">
+                        <span class="payment-label">Treatment Cost</span>
+                        <span class="payment-value" id="treatment-cost">@Model.TreatmentPrice</span>
+                    </div>
+                    <div class="payment-row total">
+                        <span class="payment-label">Total Cost</span>
+                        <span class="payment-value" id="estimated-total">@Model.TreatmentPrice</span>
+                    </div>
+                    <div class="payment-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Final cost may vary based on your treatment needs.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cancellation Policy -->
+            <div class="policy-section">
+                <div class="policy-header">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <h3>Cancellation Policy</h3>
+                </div>
+                <p class="policy-content">
+                    Please provide at least <strong>24 hours notice</strong> if you need to cancel or reschedule your appointment. 
+                    Late cancellations or no-shows may incur a fee of <strong>RM 30</strong>.
+                </p>
+                <div class="policy-checkbox">
+                    <input type="checkbox" id="policy-agreement" required>
+                    <label for="policy-agreement">I understand and agree to the cancellation policy</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="navigation-buttons">
+            <a href="@Url.Action("SelectDateTime", "Appointments", new { area = "Patient" })" class="back-btn">
+                <i class="bi bi-arrow-left"></i> Back to Date & Time
+            </a>
+            <button type="submit" class="confirm-btn" id="confirm-btn" disabled>
+                Confirm Appointment <i class="bi bi-check2"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        console.log("Page loaded. Treatment ID: @Model.TreatmentId, Doctor ID: @Model.DoctorId");
+        console.log("Appointment Date: @Model.AppointmentDate, Time: @Model.AppointmentTime");
+    </script>
+    <script src="~/js/appointment-confirmation.js" asp-append-version="true"></script>
+}

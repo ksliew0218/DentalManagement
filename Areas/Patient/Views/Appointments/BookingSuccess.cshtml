@@ -1,0 +1,142 @@
+@{
+    ViewData["Title"] = "Booking Success";
+    Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
+}
+
+<head>
+    <!-- Link to custom CSS files -->
+    <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
+    <link href="~/css/booking-success.css" rel="stylesheet" asp-append-version="true">
+</head>
+
+<div class="booking-success-container">
+    <div class="success-card">
+        <!-- Success Header -->
+        <div class="success-header">
+            <div class="success-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <h1>Appointment Confirmed!</h1>
+            <p class="success-message">Your appointment has been successfully scheduled.</p>
+        </div>
+        
+        <!-- Appointment Details -->
+        <div class="appointment-details">
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Treatment</span>
+                    <span class="detail-value">@ViewData["TreatmentName"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Doctor</span>
+                    <span class="detail-value">@ViewData["DoctorName"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">@ViewData["AppointmentDate"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Time</span>
+                    <span class="detail-value">@ViewData["AppointmentTime"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-hash"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Confirmation Number</span>
+                    <span class="detail-value">@ViewData["AppointmentId"]</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Confirmation Message -->
+        <div class="email-confirmation">
+            <i class="bi bi-envelope-check"></i>
+            <p>We've sent a confirmation email with these details to your registered email address.</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/Patient/Appointments" class="btn-view">
+                <i class="bi bi-calendar-check"></i> View My Appointments
+            </a>
+            <a href="/Patient/Dashboard" class="btn-dashboard">
+                <i class="bi bi-house-door"></i> Return to Dashboard
+            </a>
+        </div>
+        
+        <!-- Appointment Reminders -->
+        <div class="reminder-section">
+            <div class="reminder-header">
+                <i class="bi bi-bell"></i>
+                <h2>Appointment Reminders</h2>
+            </div>
+            <ul class="reminder-list">
+                <li>Please arrive 15 minutes before your scheduled appointment</li>
+                <li>Bring your insurance card and ID</li>
+                <li>If you need to cancel, please do so at least 24 hours in advance</li>
+                <li>For any questions, call us at (123) 456-7890</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add subtle animation to the success card
+    document.addEventListener('DOMContentLoaded', function() {
+        const successCard = document.querySelector('.success-card');
+        const detailItems = document.querySelectorAll('.detail-item');
+        
+        // Animate the card appearance
+        successCard.style.opacity = '0';
+        successCard.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            successCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            successCard.style.opacity = '1';
+            successCard.style.transform = 'translateY(0)';
+        }, 100);
+        
+        // Animate detail items sequentially
+        detailItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, 300 + (index * 100));
+        });
+        
+        // Clear session storage
+        sessionStorage.removeItem('selectedTreatment');
+        sessionStorage.removeItem('selectedDoctor');
+        sessionStorage.removeItem('selectedDateTime');
+        sessionStorage.removeItem('slotIds');
+    });
+</script>

@@ -1,0 +1,157 @@
+@model DentalManagement.Areas.Patient.Models.TreatmentSelectionViewModel
+@using DentalManagement.Areas.Patient.Extensions
+@{
+    ViewData["Title"] = "Book Appointment";
+    Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
+}
+
+<link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
+
+<div class="appointment-container">
+    @Html.AntiForgeryToken()
+    <!-- Progress Steps Indicator -->
+    <div class="progress-steps">
+        <div class="step active">
+            <div class="step-icon">
+                <i class="bi bi-1-circle-fill" aria-hidden="true"></i>
+            </div>
+            <div class="step-label">Select Treatment</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-icon">
+                <i class="bi bi-2-circle" aria-hidden="true"></i>
+            </div>
+            <div class="step-label">Select Doctor</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-icon">
+                <i class="bi bi-3-circle" aria-hidden="true"></i>
+            </div>
+            <div class="step-label">Choose Date & Time</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-icon">
+                <i class="bi bi-4-circle" aria-hidden="true"></i>
+            </div>
+            <div class="step-label">Confirm</div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-calendar-plus" aria-hidden="true"></i> Book an Appointment</h2>
+        <p class="subtitle">Select a treatment to begin</p>
+    </div>
+
+    <!-- Treatment Categories Filter -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-category="all">All Treatments</button>
+        @foreach (var category in Model.Categories)
+        {
+            <button class="filter-tab" data-category="@category.ToLower()">@category</button>
+        }
+    </div>
+
+    <!-- Treatments Grid -->
+    <div class="treatments-grid">
+        @{
+            var categoryCounts = new Dictionary<string, int>();
+            foreach (var category in Model.Categories)
+            {
+                categoryCounts[category.ToLower()] = 0;
+            }
+        }
+
+        @foreach (var treatment in Model.Treatments)
+        {
+            var category = treatment.Category.ToLower();
+            if (categoryCounts.ContainsKey(category))
+            {
+                categoryCounts[category]++;
+            }
+
+            var iconClass = treatment.Name.ToLower() switch
+            {
+                var name when name.Contains("cleaning") => "bi-brush",
+                var name when name.Contains("whitening") => "bi-brightness-high",
+                var name when name.Contains("extraction") => "bi-scissors",
+                var name when name.Contains("root canal") => "bi-tools",
+                var name when name.Contains("crown") => "bi-gem",
+                var name when name.Contains("filling") => "bi-pencil-fill",
+                var name when name.Contains("implant") => "bi-nut",
+                var name when name.Contains("braces") => "bi-layout-three-columns",
+                var name when name.Contains("veneer") => "bi-gem",
+                _ => "bi-plus-circle"
+            };
+
+            <div class="treatment-card" 
+                 data-category="@category" 
+                 data-id="@treatment.Id" 
+                 data-name="@treatment.Name.ToLower()"
+                 data-price="@treatment.Price"
+                 data-duration="@treatment.Duration">
+                <div class="treatment-icon">
+                    @if (!string.IsNullOrEmpty(treatment.ImageUrl))
+                    {
+                        <img src="@treatment.ImageUrl" alt="@treatment.Name" class="treatment-image" 
+                             onerror="this.onerror=null; this.src='/images/treatments/default-treatment.png'; this.classList.add('fallback-image');">
+                    }
+                    else
+                    {
+                        <div class="treatment-icon-placeholder">
+                            <i class="bi @iconClass" aria-hidden="true"></i>
+                        </div>
+                    }
+                </div>
+                <div class="treatment-details">
+                    <h3>@treatment.Name</h3>
+                    <div class="treatment-meta">
+                        <span class="duration"><i class="bi bi-clock" aria-hidden="true"></i> @treatment.Duration min</span>
+                        <span class="price"><i class="bi bi-tag" aria-hidden="true"></i> RM @treatment.Price</span>
+                    </div>
+                    <p class="treatment-description">
+                        @treatment.Description
+                    </p>
+                    <button class="select-treatment-btn" aria-label="Select @treatment.Name treatment">Select</button>
+                </div>
+            </div>
+        }
+
+        <!-- Empty Category Placeholders -->
+        @foreach (var category in Model.Categories)
+        {
+            var categoryLower = category.ToLower();
+            var hasTreatments = Model.Treatments.Any(t => t.Category.ToLower() == categoryLower);
+            
+            if (!hasTreatments)
+            {
+                <div class="empty-category-card" data-category="@categoryLower" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                    </div>
+                    <div class="empty-message">
+                        <h3>No @category Treatments Available</h3>
+                        <p>We're currently updating our @categoryLower treatments. Please check back soon or contact us for more information.</p>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+        <a href="/Patient/Appointments" class="back-btn" aria-label="Go back to appointments">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+        </a>
+        <button class="next-btn" disabled aria-label="Next step">
+            Next <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/appointment-booking.js" asp-append-version="true"></script>
+}
