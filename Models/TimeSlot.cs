@@ -24,5 +24,11 @@ namespace DentalManagement.Models
 
         [Required]
         public bool IsBooked { get; set; } = false;
+        
+        // New field to track which appointment this slot belongs to
+        public int? AppointmentId { get; set; }
+        
+        [ForeignKey("AppointmentId")]
+        public virtual Appointment? Appointment { get; set; }
     }
-} 
+}

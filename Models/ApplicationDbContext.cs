@@ -57,6 +57,14 @@ namespace DentalManagement.Models
                 .HasConversion(
                     v => v, 
                     v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            // Configure TimeSlot relationships
+            modelBuilder.Entity<TimeSlot>()
+                .HasOne(ts => ts.Appointment)
+                .WithMany(a => a.TimeSlots)
+                .HasForeignKey(ts => ts.AppointmentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
 
             // Configure Appointment Relationships
             modelBuilder.Entity<Appointment>()
@@ -86,6 +94,11 @@ namespace DentalManagement.Models
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+            // Add the Duration property to Appointment
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.Duration)
+                .HasDefaultValue(60);
         }
 
         // Ensure UTC DateTime values when saving to database

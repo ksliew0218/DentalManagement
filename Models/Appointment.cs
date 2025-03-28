@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,21 +15,21 @@ namespace DentalManagement.Models
         public int PatientId { get; set; }
         
         [ForeignKey(nameof(PatientId))]
-        public Patient Patient { get; set; }
+        public virtual Patient? Patient { get; set; }
 
         // Doctor Foreign Key
         [Required]
         public int DoctorId { get; set; }
         
         [ForeignKey(nameof(DoctorId))]
-        public Doctor Doctor { get; set; }
+        public virtual Doctor? Doctor { get; set; }
 
         // Treatment Type Foreign Key
         [Required]
         public int TreatmentTypeId { get; set; }
         
         [ForeignKey(nameof(TreatmentTypeId))]
-        public TreatmentType TreatmentType { get; set; }
+        public virtual TreatmentType? TreatmentType { get; set; }
 
         // Appointment Details
         [Required]
@@ -37,10 +38,13 @@ namespace DentalManagement.Models
 
         [Required]
         public TimeSpan AppointmentTime { get; set; }
+        
+        // Duration in minutes - derive from treatment
+        public int Duration { get; set; } = 60;
 
         // Optional notes from patient or doctor
         [StringLength(500)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         // Appointment Status
         [Required]
@@ -49,10 +53,13 @@ namespace DentalManagement.Models
 
         // Tracking fields
         [DataType(DataType.DateTime)]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [DataType(DataType.DateTime)]
         public DateTime? UpdatedAt { get; set; }
+        
+        // Collection of TimeSlots used for this appointment
+        public virtual ICollection<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
 
         // Calculated property for appointment datetime
         [NotMapped]
