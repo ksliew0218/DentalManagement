@@ -43,13 +43,9 @@
         <div class="header-section">
             <div class="logo-section">
                 <img src="/images/Logo/logo2.png" alt="SmileCraft" class="logo logo-expanded">
-                <img src="/images/Logo/logo_round.png" alt="SmileCraft" class="logo logo-collapsed">
             </div>
-            <button class="menu-toggle">
-                <i class="bi bi-list"></i>
-            </button>
+            <!-- Removed menu toggle button -->
         </div>
-
 
         <div class="profile-section">
             <div class="profile-image">
@@ -80,9 +76,7 @@
 
         <div class="sidebar-scroll-area">
         <ul class="nav-menu">
-            <button class="menu-toggle-collapsed">
-                <i class="bi bi-list"></i>
-            </button>
+            <!-- Removed collapsed toggle button -->
             <li>
                 <a href="#" class="nav-link" data-url="@Url.Action("Index", "Dashboard", new { area = "Patient" })">
                     <i class="bi bi-house-door"></i>
@@ -149,15 +143,21 @@
     </nav>
 
     <div id="contentContainer">
-        <main class="main-content">
-            @RenderBody()
-        </main>
+        @RenderBody()
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/patient-dashboard.js"></script>
     <script src="~/js/loading-animation.js"></script>
     <script src="~/js/ajax-loader.js"></script>
+
+    <script>
+        document.querySelectorAll('.nav-menu .nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                loadContent(e, this);
+            });
+        });
+    </script>
 
     @RenderSection("Scripts", required: false)
 </body>

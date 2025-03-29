@@ -1,85 +1,27 @@
-// Use event delegation for navigation links to ensure they work after AJAX loads
 function updateActiveMenu(url = window.location.pathname) {
-  // Normalize URL for better matching
-  url = url.toLowerCase();
-  
-  console.log("Updating active menu for URL:", url);
+  // Store the current path in localStorage for persistence across page refreshes
+  localStorage.setItem('currentActivePath', url);
   
   document.querySelectorAll('.nav-menu .nav-link').forEach((link) => {
-    // Get base URL from data-url attribute
-    const dataUrl = link.getAttribute('data-url');
-    if (!dataUrl) return;
-    
-    const linkUrl = new URL(dataUrl, window.location.origin).pathname.toLowerCase();
-    
-    // Extract parts to match controller
-    const linkParts = linkUrl.split('/').filter(Boolean);
-    const urlParts = url.split('/').filter(Boolean);
-    
-    // Check if controller matches (usually the second part of the URL)
-    const isMatch = linkParts.length >= 2 && urlParts.length >= 2 && 
-                    linkParts[0] === urlParts[0] && // Area matches (Patient)
-                    linkParts[1] === urlParts[1];   // Controller matches (Appointments, Dashboard, etc.)
-    
-    if (isMatch) {
-      console.log("Match found for:", linkUrl);
+    const linkUrl = new URL(
+      link.getAttribute('data-url'),
+      window.location.origin
+    ).pathname;
+
+    // Check if the current URL starts with the menu item URL (for subpages)
+    // Or if it matches exactly
+    if (url === linkUrl || url.startsWith(linkUrl + '/')) {
       link.classList.add('active');
-      link.parentElement.classList.add('active');
-      
-      // Store in localStorage for persistence
-      localStorage.setItem('activeNavUrl', linkUrl);
+      link.parentElement.classList.add('active'); 
     } else {
       link.classList.remove('active');
       link.parentElement.classList.remove('active');
     }
   });
-  
-  // If no match was found, try to restore from localStorage
-  const activeItems = document.querySelectorAll('.nav-menu .nav-link.active');
-  if (activeItems.length === 0) {
-    const storedActiveUrl = localStorage.getItem('activeNavUrl');
-    if (storedActiveUrl) {
-      document.querySelectorAll('.nav-menu .nav-link').forEach((link) => {
-        const dataUrl = link.getAttribute('data-url');
-        if (!dataUrl) return;
-        
-        const linkUrl = new URL(dataUrl, window.location.origin).pathname.toLowerCase();
-        if (linkUrl === storedActiveUrl) {
-          link.classList.add('active');
-          link.parentElement.classList.add('active');
-        }
-      });
-    }
-  }
-}
-
-function showLoadingAnimation() {
-  const loader = document.querySelector('.loading-container');
-  if (loader) {
-    loader.style.display = 'flex';
-    // Trigger reflow
-    void loader.offsetWidth;
-    loader.classList.add('show');
-  }
-}
-
-function hideLoadingAnimation() {
-  const loader = document.querySelector('.loading-container');
-  if (loader) {
-    loader.classList.remove('show');
-    // Wait for transition to complete before hiding
-    setTimeout(() => {
-      if (!loader.classList.contains('show')) {
-        loader.style.display = 'none';
-      }
-    }, 500);
-  }
 }
 
 function loadContent(event, element, pushState = true) {
   if (event) event.preventDefault();
-  
-  // Show loading animation
   showLoadingAnimation();
 
   const url = element
@@ -90,14 +32,20 @@ function loadContent(event, element, pushState = true) {
     url: url,
     type: 'GET',
     success: function (response) {
-      // Update content
-      document.getElementById('contentContainer').innerHTML = `<main class="main-content">${response}</main>`;
-      
-      // Update active menu
+      $('#contentContainer').html(response);
       updateActiveMenu(url);
 
       if (pushState) {
         window.history.pushState({ url }, '', url);
+      }
+
+      // Initialize layout after content is loaded
+      if (typeof initializeLayout === 'function') {
+        initializeLayout();
+      }
+      
+      if (typeof handleResponsiveLayout === 'function') {
+        handleResponsiveLayout();
       }
 
       // Trigger content loaded event
@@ -106,61 +54,97 @@ function loadContent(event, element, pushState = true) {
     },
     error: function (xhr, status, error) {
       console.error('Error loading content:', error);
-      document.getElementById('contentContainer').innerHTML = 
-        '<main class="main-content"><div class="alert alert-danger">Error loading content. Please try again.</div></main>';
+      $('#contentContainer').html(
+        '<div class="alert alert-danger">Error loading content. Please try again.</div>'
+      );
     },
     complete: function () {
-      // Hide loading animation
       hideLoadingAnimation();
     },
   });
 }
 
-// Use event delegation to handle navigation clicks
-document.addEventListener('click', function(e) {
-  // Find closest .nav-link to handle clicks on icons inside the links
-  const navLink = e.target.closest('.nav-menu .nav-link');
-  
-  if (navLink) {
-    // Skip AJAX loading for links with 'no-ajax' class
-    if (!navLink.classList.contains('no-ajax')) {
-      loadContent(e, navLink);
-    }
+function initializeNavigation() {
+  document.querySelectorAll('.nav-menu .nav-link').forEach((link) => {
+    // Remove existing click handlers first
+    link.removeEventListener('click', handleNavClick);
+    
+    // Add new click handler
+    link.addEventListener('click', handleNavClick);
+  });
+}
+
+function handleNavClick(e) {
+  // Skip AJAX loading for links with 'no-ajax' class
+  if (this.classList.contains('no-ajax')) {
+    return true;
   }
-});
+  loadContent(e, this);
+}
+
+// Restore active menu highlighting from localStorage
+function restoreActiveMenuHighlight() {
+  const currentPath = window.location.pathname;
+  const savedActivePath = localStorage.getItem('currentActivePath');
+  
+  // First check if current URL matches any menu item directly
+  let matchFound = highlightMatchingMenuItem(currentPath);
+  
+  // If no match with current path, try with saved path
+  if (!matchFound && savedActivePath && savedActivePath !== currentPath) {
+    highlightMatchingMenuItem(savedActivePath);
+  }
+}
+
+// Helper function to find and highlight the matching menu item
+function highlightMatchingMenuItem(path) {
+  let matchFound = false;
+  
+  document.querySelectorAll('.nav-menu .nav-link').forEach((link) => {
+    const linkUrl = new URL(
+      link.getAttribute('data-url'),
+      window.location.origin
+    ).pathname;
+    
+    // Check if the path matches the menu item URL or if it's a subpage
+    if (path === linkUrl || path.startsWith(linkUrl + '/')) {
+      link.classList.add('active');
+      link.parentElement.classList.add('active');
+      matchFound = true;
+    } else {
+      link.classList.remove('active');
+      link.parentElement.classList.remove('active');
+    }
+  });
+  
+  return matchFound;
+}
 
 // Handle browser back/forward navigation
-window.addEventListener('popstate', function (event) {
+window.addEventListener('popstate', function(event) {
+  const currentPath = window.location.pathname;
+  
+  // Update the active menu based on the current path
+  updateActiveMenu(currentPath);
+  
   if (event.state && event.state.url) {
-    loadContent(null, event.state.url, false);
-  } else {
-    updateActiveMenu();
+    loadContent(null, null, false);
   }
 });
 
-// Initialize on page first load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("DOM Content Loaded - Initializing menu");
-  updateActiveMenu();
+  initializeNavigation();
+  restoreActiveMenuHighlight();
 });
 
-// Run immediately (self-executing function)
-(function() {
-  // Delay just slightly to ensure DOM is ready
-  setTimeout(function() {
-    console.log("Self-executing init - Updating menu");
-    updateActiveMenu();
-  }, 100);
-})();
-
-// Also run when window is fully loaded
-window.addEventListener('load', function() {
-  console.log("Window loaded - Updating menu");
-  updateActiveMenu();
+// Re-initialize after AJAX content loads
+document.addEventListener('contentLoaded', function() {
+  initializeNavigation();
 });
 
-// Make functions globally available
+// Make functions available globally
 window.loadContent = loadContent;
 window.updateActiveMenu = updateActiveMenu;
-window.showLoadingAnimation = showLoadingAnimation;
-window.hideLoadingAnimation = hideLoadingAnimation;
+window.initializeNavigation = initializeNavigation;
+window.restoreActiveMenuHighlight = restoreActiveMenuHighlight;

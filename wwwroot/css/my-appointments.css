@@ -15,14 +15,14 @@
 }
 
 .dashboard-container {
-  padding: 24px;
+  padding: 48px 24px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
 /* Page Header */
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .page-header h2 {
