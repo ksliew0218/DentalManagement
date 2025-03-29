@@ -1,20 +1,24 @@
 // Create DNA loading animation with proper delays
 function createLoadingAnimation() {
   const loadingAnimation = document.querySelector('.loading-animation');
-  for (let i = 0; i < 10; i++) {
-    let parentEl = document.createElement('div');
-    parentEl.classList.add('strand');
-    parentEl.style.opacity = '0'; // Start invisible
-    parentEl.innerHTML = `
-            <div class="top" style="animation-delay:${i * -0.2}s"></div>
-            <div class="bottom" style="animation-delay:${
-              -1.5 - i * 0.2
-            }s"></div>
-        `;
-    loadingAnimation.appendChild(parentEl);
-    // Trigger reflow to ensure smooth animation
-    void parentEl.offsetWidth;
-    parentEl.style.opacity = ''; // Remove opacity to allow animation
+  
+  // Only create the animation if it doesn't already exist
+  if (loadingAnimation && !loadingAnimation.querySelector('.strand')) {
+    for (let i = 0; i < 10; i++) {
+      let parentEl = document.createElement('div');
+      parentEl.classList.add('strand');
+      parentEl.style.opacity = '0'; // Start invisible
+      parentEl.innerHTML = `
+              <div class="top" style="animation-delay:${i * -0.2}s"></div>
+              <div class="bottom" style="animation-delay:${
+                -1.5 - i * 0.2
+              }s"></div>
+          `;
+      loadingAnimation.appendChild(parentEl);
+      // Trigger reflow to ensure smooth animation
+      void parentEl.offsetWidth;
+      parentEl.style.opacity = ''; // Remove opacity to allow animation
+    }
   }
 }
 
@@ -42,27 +46,31 @@ function hideLoadingAnimation() {
 }
 
 // Initialize loading animation
-document.addEventListener('DOMContentLoaded', function () {
+function initializeLoadingAnimation() {
   createLoadingAnimation();
 
-  // Show loading when page starts loading
-  showLoadingAnimation();
+  // Only trigger on first load, not after AJAX navigation
+  if (!window.loadingInitialized) {
+    // Show loading when page starts loading
+    showLoadingAnimation();
 
-  // Hide loading when page is fully loaded
-  window.addEventListener('load', function () {
-    // Longer delay for smoother transition
+    // Hide loading when page is fully loaded
     setTimeout(hideLoadingAnimation, 800);
-  });
+    
+    // Mark as initialized
+    window.loadingInitialized = true;
+  }
+}
 
-  // Show loading on navigation
-  document.addEventListener('click', function (e) {
-    if (e.target.tagName === 'A' && !e.target.hasAttribute('data-no-loading')) {
-      showLoadingAnimation();
-    }
-  });
-});
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeLoadingAnimation);
 
-// For AJAX requests (if using)
+// Make functions globally available
+window.showLoadingAnimation = showLoadingAnimation;
+window.hideLoadingAnimation = hideLoadingAnimation;
+window.createLoadingAnimation = createLoadingAnimation;
+
+// For AJAX requests (if using jQuery)
 $(document)
   .ajaxStart(function () {
     showLoadingAnimation();

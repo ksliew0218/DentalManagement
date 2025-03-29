@@ -1,7 +1,5 @@
 /* Date & Time Selection Page Styles */
 
-
-
 /* Booking Summary */
 .booking-summary {
   display: flex;
@@ -366,6 +364,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 24px;
 }
@@ -378,7 +377,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
 }
 
 .empty-state-illustration i {
@@ -389,6 +388,8 @@
 .no-slots-message p {
   color: #718096;
   margin: 4px 0;
+  width: 100%;
+  text-align: center;
 }
 
 .suggestion {
@@ -403,7 +404,8 @@
   margin-top: 24px;
 }
 
-.back-btn, .next-btn {
+.back-btn,
+.next-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -446,7 +448,7 @@
   .selection-container {
     flex-direction: column;
   }
-  
+
   .calendar-section {
     border-right: none;
     border-bottom: 1px solid #edf2f7;
@@ -454,7 +456,7 @@
     padding-bottom: 24px;
     margin-bottom: 24px;
   }
-  
+
   .booking-summary {
     flex-direction: column;
   }
@@ -464,17 +466,18 @@
   .progress-steps {
     padding: 12px 8px;
   }
-  
+
   .step-label {
     font-size: 0.75rem;
   }
-  
+
   .navigation-buttons {
     flex-direction: column;
     gap: 12px;
   }
-  
-  .back-btn, .next-btn {
+
+  .back-btn,
+  .next-btn {
     width: 100%;
     justify-content: center;
   }

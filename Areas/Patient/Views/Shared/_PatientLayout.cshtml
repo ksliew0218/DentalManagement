@@ -121,7 +121,7 @@
             </li>
             <li>
                 <a href="@Url.Page("/Account/Manage/Index", new { area = "Identity" })" 
-                   class="nav-link" 
+                   class="nav-link no-ajax" 
                    onclick="window.location.href=this.href; return false;">
                     <i class="bi bi-person"></i>
                     <span>Profile & Settings</span>
@@ -159,15 +159,6 @@
     <script src="~/js/loading-animation.js"></script>
     <script src="~/js/ajax-loader.js"></script>
 
-    <script>
-        document.querySelectorAll('.nav-menu .nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                loadContent(e, this);
-            });
-        });
-    </script>
-
     @RenderSection("Scripts", required: false)
 </body>
 </html>
-

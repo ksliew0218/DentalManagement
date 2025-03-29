@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', function () {
+// Wrap all functionality in a function that can be called on page load and after AJAX content loads
+function initializeDashboard() {
   // Function to animate progress bar
   function animateProgressBar() {
     const progressBar = document.querySelector('.progress-fill');
@@ -94,4 +95,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // Initialize all animations
   initializeAnimations();
   addCardRevealAnimation();
-});
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeDashboard);
+
+// Re-initialize after AJAX content loads
+document.addEventListener('contentLoaded', initializeDashboard);

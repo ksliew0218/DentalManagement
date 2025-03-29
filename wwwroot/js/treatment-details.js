@@ -1,5 +1,5 @@
-// treatment-details.js - With Profile Picture Support
-document.addEventListener('DOMContentLoaded', () => {
+// treatment-details.js - With improved initialization for AJAX navigation
+function initializeTreatmentDetails() {
   // Get all Learn More links
   const treatmentCards = document.querySelectorAll('.learn-more-link');
   const treatmentDetailsOverlay = document.getElementById(
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Check if elements exist
   if (!treatmentDetailsOverlay || !treatmentDetailsContent) {
-    console.error('Treatment details overlay or content not found in the DOM');
+    console.log('Treatment details overlay or content not found in the DOM');
     return;
   }
 
@@ -437,4 +437,10 @@ document.addEventListener('DOMContentLoaded', () => {
       closeTreatmentDetails();
     }
   });
-});
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeTreatmentDetails);
+
+// Re-initialize after AJAX content loads
+document.addEventListener('contentLoaded', initializeTreatmentDetails);

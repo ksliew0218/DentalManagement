@@ -1,8 +1,13 @@
-// Appointment Filter Functionality
-document.addEventListener('DOMContentLoaded', function () {
+// Wrap all functionality in a function that can be called on page load and after AJAX navigation
+function initializeAppointmentFilters() {
   // Tab switching functionality
   const tabButtons = document.querySelectorAll('.filter-tab');
   const tabContents = document.querySelectorAll('.tab-content');
+
+  if (!tabButtons.length || !tabContents.length) {
+    // If elements don't exist, exit early
+    return;
+  }
 
   tabButtons.forEach((button) => {
     button.addEventListener('click', function () {
@@ -27,15 +32,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function closeModal() {
     const modal = document.getElementById('cancel-confirmation-modal');
-    modal.classList.remove('show');
-    modal.style.display = 'none';
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
 
-  closeButtons.forEach((button) => {
-    button.addEventListener('click', closeModal);
-  });
+  if (closeButtons.length) {
+    closeButtons.forEach((button) => {
+      button.addEventListener('click', closeModal);
+    });
+  }
 
-  keepAppointmentBtn.addEventListener('click', closeModal);
+  if (keepAppointmentBtn) {
+    keepAppointmentBtn.addEventListener('click', closeModal);
+  }
 
   // Close modal if clicked outside
   window.addEventListener('click', function (event) {
@@ -66,11 +77,21 @@ document.addEventListener('DOMContentLoaded', function () {
   const activeFilterTags = document.getElementById('activeFilterTags');
   const clearAllFilters = document.getElementById('clearAllFilters');
 
-  // Current filters state
-  let currentFilters = {
-    search: '',
-    dateRange: null,
-  };
+  // If required elements don't exist, exit early
+  if (!dateFilterBtn || !datePickerContainer) {
+    return;
+  }
+
+  // Current filters state - initialize as a window property to persist across AJAX loads
+  if (!window.appointmentFilters) {
+    window.appointmentFilters = {
+      search: '',
+      dateRange: null,
+    };
+  }
+  
+  // Reference the current filters for easier reading
+  const currentFilters = window.appointmentFilters;
 
   // Toggle date picker
   dateFilterBtn.addEventListener('click', function () {
@@ -96,16 +117,18 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Close date picker
-  closeDatePicker.addEventListener('click', function () {
-    datePickerContainer.classList.remove('active');
-    dateFilterBtn.classList.remove('active');
-  });
+  if (closeDatePicker) {
+    closeDatePicker.addEventListener('click', function () {
+      datePickerContainer.classList.remove('active');
+      dateFilterBtn.classList.remove('active');
+    });
+  }
 
   // Click outside to close date picker
   document.addEventListener('click', function (event) {
     if (
-      !dateFilterBtn.contains(event.target) &&
-      !datePickerContainer.contains(event.target)
+      dateFilterBtn && !dateFilterBtn.contains(event.target) &&
+      datePickerContainer && !datePickerContainer.contains(event.target)
     ) {
       datePickerContainer.classList.remove('active');
       dateFilterBtn.classList.remove('active');
@@ -113,49 +136,51 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Date shortcuts
-  dateShortcuts.forEach((shortcut) => {
-    shortcut.addEventListener('click', function () {
-      const range = this.getAttribute('data-range');
+  if (dateShortcuts.length) {
+    dateShortcuts.forEach((shortcut) => {
+      shortcut.addEventListener('click', function () {
+        const range = this.getAttribute('data-range');
 
-      // Remove active class from all shortcuts
-      dateShortcuts.forEach((s) => s.classList.remove('active'));
+        // Remove active class from all shortcuts
+        dateShortcuts.forEach((s) => s.classList.remove('active'));
 
-      // Add active class to clicked shortcut
-      this.classList.add('active');
+        // Add active class to clicked shortcut
+        this.classList.add('active');
 
-      // Set date inputs based on shortcut
-      const today = new Date();
-      let startDate = new Date(today);
-      let endDate = new Date(today);
+        // Set date inputs based on shortcut
+        const today = new Date();
+        let startDate = new Date(today);
+        let endDate = new Date(today);
 
-      switch (range) {
-        case 'today':
-          // Start and end date are both today
-          break;
-        case 'week':
-          // Start date is beginning of week (Sunday)
-          startDate.setDate(today.getDate() - today.getDay());
-          // End date is end of week (Saturday)
-          endDate.setDate(startDate.getDate() + 6);
-          break;
-        case 'month':
-          // Start date is 1st of current month
-          startDate.setDate(1);
-          // End date is last day of current month
-          endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-          break;
-        case 'all':
-          // Clear the inputs for all time
-          startDateInput.value = '';
-          endDateInput.value = '';
-          return;
-      }
+        switch (range) {
+          case 'today':
+            // Start and end date are both today
+            break;
+          case 'week':
+            // Start date is beginning of week (Sunday)
+            startDate.setDate(today.getDate() - today.getDay());
+            // End date is end of week (Saturday)
+            endDate.setDate(startDate.getDate() + 6);
+            break;
+          case 'month':
+            // Start date is 1st of current month
+            startDate.setDate(1);
+            // End date is last day of current month
+            endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            break;
+          case 'all':
+            // Clear the inputs for all time
+            startDateInput.value = '';
+            endDateInput.value = '';
+            return;
+        }
 
-      // Format dates for inputs (YYYY-MM-DD)
-      startDateInput.value = formatDateForInput(startDate);
-      endDateInput.value = formatDateForInput(endDate);
+        // Format dates for inputs (YYYY-MM-DD)
+        startDateInput.value = formatDateForInput(startDate);
+        endDateInput.value = formatDateForInput(endDate);
+      });
     });
-  });
+  }
 
   // Helper function to format date for input
   function formatDateForInput(date) {
@@ -173,102 +198,115 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Apply date filter
-  applyDateFilter.addEventListener('click', function () {
-    const startDate = startDateInput.value;
-    const endDate = endDateInput.value;
+  if (applyDateFilter) {
+    applyDateFilter.addEventListener('click', function () {
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
 
-    if (startDate || endDate) {
-      // Determine which shortcut was used (if any)
-      let shortcut = null;
-      dateShortcuts.forEach((s) => {
-        if (s.classList.contains('active')) {
-          shortcut = s.getAttribute('data-range');
-        }
-      });
+      if (startDate || endDate) {
+        // Determine which shortcut was used (if any)
+        let shortcut = null;
+        dateShortcuts.forEach((s) => {
+          if (s.classList.contains('active')) {
+            shortcut = s.getAttribute('data-range');
+          }
+        });
 
-      currentFilters.dateRange = {
-        start: startDate,
-        end: endDate,
-        shortcut: shortcut,
-      };
+        currentFilters.dateRange = {
+          start: startDate,
+          end: endDate,
+          shortcut: shortcut,
+        };
 
-      // Update UI
+        // Update UI
+        updateFilterTags();
+        applyAllFilters();
+
+        // Close date picker
+        datePickerContainer.classList.remove('active');
+        dateFilterBtn.classList.add('active');
+      } else {
+        // If no dates selected, clear the filter
+        clearDateFilterAndUI();
+      }
+    });
+  }
+
+  // Clear date filter button inside date picker
+  if (clearDateFilter) {
+    clearDateFilter.addEventListener('click', function () {
+      // Clear the date inputs and shortcuts
+      startDateInput.value = '';
+      endDateInput.value = '';
+      dateShortcuts.forEach((s) => s.classList.remove('active'));
+
+      // Clear the filter and update UI
+      currentFilters.dateRange = null;
       updateFilterTags();
       applyAllFilters();
 
       // Close date picker
       datePickerContainer.classList.remove('active');
-      dateFilterBtn.classList.add('active');
-    } else {
-      // If no dates selected, clear the filter
-      clearDateFilterAndUI();
-    }
-  });
-
-  // Clear date filter button inside date picker
-  clearDateFilter.addEventListener('click', function () {
-    // Clear the date inputs and shortcuts
-    startDateInput.value = '';
-    endDateInput.value = '';
-    dateShortcuts.forEach((s) => s.classList.remove('active'));
-
-    // Clear the filter and update UI
-    currentFilters.dateRange = null;
-    updateFilterTags();
-    applyAllFilters();
-
-    // Close date picker
-    datePickerContainer.classList.remove('active');
-    dateFilterBtn.classList.remove('active');
-  });
+      dateFilterBtn.classList.remove('active');
+    });
+  }
 
   // Helper function to clear date filter and update UI
   function clearDateFilterAndUI() {
-    startDateInput.value = '';
-    endDateInput.value = '';
+    if (startDateInput) startDateInput.value = '';
+    if (endDateInput) endDateInput.value = '';
+    
     dateShortcuts.forEach((s) => s.classList.remove('active'));
     currentFilters.dateRange = null;
-    dateFilterBtn.classList.remove('active');
+    
+    if (dateFilterBtn) dateFilterBtn.classList.remove('active');
+    
     updateFilterTags();
     applyAllFilters();
   }
 
   // Clear all filters
-  clearAllFilters.addEventListener('click', function () {
-    // Reset filter state
-    currentFilters = {
-      search: '',
-      dateRange: null,
-    };
+  if (clearAllFilters) {
+    clearAllFilters.addEventListener('click', function () {
+      // Reset filter state
+      currentFilters.search = '';
+      currentFilters.dateRange = null;
 
-    // Reset UI
-    document.getElementById('appointmentSearch').value = '';
-    startDateInput.value = '';
-    endDateInput.value = '';
-    dateShortcuts.forEach((s) => s.classList.remove('active'));
-    dateFilterBtn.classList.remove('active');
+      // Reset UI
+      const searchElement = document.getElementById('appointmentSearch');
+      if (searchElement) searchElement.value = '';
+      
+      if (startDateInput) startDateInput.value = '';
+      if (endDateInput) endDateInput.value = '';
+      
+      dateShortcuts.forEach((s) => s.classList.remove('active'));
+      
+      if (dateFilterBtn) dateFilterBtn.classList.remove('active');
 
-    // Hide active filters display
-    activeFilters.style.display = 'none';
+      // Hide active filters display
+      if (activeFilters) activeFilters.style.display = 'none';
 
-    // Show all appointments in the current tab
-    const visibleTab = document.querySelector('.tab-content.active');
-    if (visibleTab) {
-      const cards = visibleTab.querySelectorAll('.appointment-card');
-      cards.forEach((card) => {
-        card.style.display = 'flex';
-      });
+      // Show all appointments in the current tab
+      const visibleTab = document.querySelector('.tab-content.active');
+      if (visibleTab) {
+        const cards = visibleTab.querySelectorAll('.appointment-card');
+        cards.forEach((card) => {
+          card.style.display = 'flex';
+        });
 
-      // Hide empty state
-      const emptyState = visibleTab.querySelector('.empty-category-card');
-      if (emptyState) {
-        emptyState.style.display = 'none';
+        // Hide empty state
+        const emptyState = visibleTab.querySelector('.empty-category-card');
+        if (emptyState) {
+          emptyState.style.display = 'none';
+        }
       }
-    }
-  });
+    });
+  }
 
   // Update filter tags display
   function updateFilterTags() {
+    if (!activeFilterTags) return;
+    
     // Clear existing tags
     activeFilterTags.innerHTML = '';
 
@@ -323,7 +361,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Show/hide active filters section
-    activeFilters.style.display = hasActiveFilters ? 'flex' : 'none';
+    if (activeFilters) {
+      activeFilters.style.display = hasActiveFilters ? 'flex' : 'none';
+    }
   }
 
   // Add a filter tag to the display
@@ -344,7 +384,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (filterKey === 'search') {
         currentFilters.search = '';
-        document.getElementById('appointmentSearch').value = '';
+        const searchElement = document.getElementById('appointmentSearch');
+        if (searchElement) searchElement.value = '';
       } else if (filterKey === 'date') {
         clearDateFilterAndUI();
       }
@@ -461,6 +502,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // Search functionality
   const searchInput = document.getElementById('appointmentSearch');
   if (searchInput) {
+    // Set initial value if search filter exists
+    if (currentFilters.search) {
+      searchInput.value = currentFilters.search;
+    }
+    
     searchInput.addEventListener('input', function () {
       // Update current filter state
       currentFilters.search = this.value.trim();
@@ -470,15 +516,33 @@ document.addEventListener('DOMContentLoaded', function () {
       applyAllFilters();
     });
   }
-});
+  
+  // Apply existing filters on initialization
+  updateFilterTags();
+  applyAllFilters();
+}
 
 // Function for cancel appointment confirmation
 function confirmCancelAppointment(appointmentId) {
   // Set the appointment ID in the hidden form field
-  document.getElementById('appointmentIdInput').value = appointmentId;
+  const appointmentIdInput = document.getElementById('appointmentIdInput');
+  if (appointmentIdInput) {
+    appointmentIdInput.value = appointmentId;
+  }
 
   // Show the modal
   const modal = document.getElementById('cancel-confirmation-modal');
-  modal.classList.add('show');
-  modal.style.display = 'flex'; // Explicitly set display to flex
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.display = 'flex'; // Explicitly set display to flex
+  }
 }
+
+// Make the function globally available
+window.confirmCancelAppointment = confirmCancelAppointment;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initializeAppointmentFilters);
+
+// Re-initialize after AJAX content loads
+document.addEventListener('contentLoaded', initializeAppointmentFilters);
