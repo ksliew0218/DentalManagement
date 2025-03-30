@@ -1,8 +1,69 @@
 ﻿@page
 @model ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Email Confirmed";
+    Layout = "_Layout";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <img src="/images/Logo/logo2.png" alt="SmileCraft" class="img-fluid mb-3" style="max-height: 60px;">
+                        
+                        @if (Model.StatusMessage.Contains("Thank you"))
+                        {
+                            <div class="mb-3">
+                                <span class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                    <i class="bi bi-check-lg fs-1"></i>
+                                </span>
+                            </div>
+                            <h2 class="fw-bold text-primary">Email Verified Successfully!</h2>
+                            <p class="text-muted">Your email has been confirmed and your account is now active.</p>
+                            
+                            <div class="alert alert-success my-4">
+                                <i class="bi bi-check-circle me-2"></i>
+                                @Model.StatusMessage
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <a asp-area="Patient" asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-person me-2"></i> Go to My Dashboard
+                                </a>
+                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Go to Login
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <span class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                    <i class="bi bi-x-lg fs-1"></i>
+                                </span>
+                            </div>
+                            <h2 class="fw-bold text-danger">Verification Failed</h2>
+                            <p class="text-muted">We couldn't verify your email address.</p>
+                            
+                            <div class="alert alert-danger my-4">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                @Model.StatusMessage
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <a asp-page="./ResendEmailConfirmation" class="btn btn-primary">
+                                    <i class="bi bi-envelope me-2"></i> Request New Confirmation Link
+                                </a>
+                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Back to Login
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

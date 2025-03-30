@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using DentalManagement.Models;
+using DentalManagement.Services;
 
 namespace DentalManagement.Areas.Identity.Pages.Account
 {
@@ -26,13 +26,15 @@ namespace DentalManagement.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<User> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
         public RegisterModel(
             UserManager<User> userManager,
             IUserStore<User> userStore,
             SignInManager<User> signInManager,
             ILogger<RegisterModel> logger,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -40,6 +42,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _context = context;
+            _emailService = emailService;
         }
 
         [BindProperty]
@@ -98,6 +101,12 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             public string EmergencyContactPhone { get; set; }
         }
 
+        public async Task OnGetAsync(string returnUrl = null)
+        {
+            ReturnUrl = returnUrl;
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        }
+
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -147,10 +156,32 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 _context.Patients.Add(patient);
                 await _context.SaveChangesAsync();
 
+                // Generate email confirmation token
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                    protocol: Request.Scheme);
+
+                // Use the template-based email instead of the simple one
+                await _emailService.SendConfirmationEmailAsync(
+                    Input.Email,
+                    Input.FirstName,
+                    callbackUrl);
+
                 await transaction.CommitAsync();
 
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return LocalRedirect(returnUrl);
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    return RedirectToPage("./RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                }
+                else
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return LocalRedirect(returnUrl);
+                }
             }
             catch (Exception ex)
             {

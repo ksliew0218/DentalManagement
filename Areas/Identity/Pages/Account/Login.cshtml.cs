@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authorization;
 using DentalManagement.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -31,58 +30,26 @@ namespace DentalManagement.Areas.Identity.Pages.Account
             _logger = logger;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string ErrorMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [EmailAddress]
             public string Email { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Display(Name = "Remember me?")]
             public bool RememberMe { get; set; }
         }
@@ -112,18 +79,30 @@ namespace DentalManagement.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                // Find the user by email first
+                var user = await _userManager.FindByEmailAsync(Input.Email);
+                
+                // Check if email is confirmed if requireConfirmedEmail is enabled
+                if (user != null && !await _userManager.IsEmailConfirmedAsync(user) && 
+                    _userManager.Options.SignIn.RequireConfirmedEmail)
+                {
+                    ModelState.AddModelError(string.Empty, "You must confirm your email before logging in. Please check your email or click the link below to resend the confirmation email.");
+                    return Page();
+                }
+                
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in successfully.");
-                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    var loggedInUser = await _userManager.FindByEmailAsync(Input.Email);
                     
-                    if (user != null)
+                    if (loggedInUser != null)
                     {
                         // Use a simple switch statement to determine redirect path
-                        string redirectUrl = user.Role switch
+                        string redirectUrl = loggedInUser.Role switch
                         {
                             UserRole.Admin => "/Admin/Dashboard",
                             UserRole.Doctor => "/Doctor/Dashboard",
@@ -131,7 +110,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                             _ => "/"
                         };
                         
-                        _logger.LogInformation($"Redirecting user with role {user.Role} to {redirectUrl}");
+                        _logger.LogInformation($"Redirecting user with role {loggedInUser.Role} to {redirectUrl}");
                         return LocalRedirect(redirectUrl);
                     }
                     

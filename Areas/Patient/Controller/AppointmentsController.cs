@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using DentalManagement.Services;
 
 namespace DentalManagement.Areas.Patient.Controllers
 {
@@ -23,15 +24,19 @@ namespace DentalManagement.Areas.Patient.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AppointmentsController> _logger;
+        private readonly IEmailService _emailService;
+
 
         public AppointmentsController(
             ApplicationDbContext context, 
             UserManager<User> userManager,
-            ILogger<AppointmentsController> logger)
+            ILogger<AppointmentsController> logger,
+            IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: Patient/Appointments
@@ -717,7 +722,7 @@ namespace DentalManagement.Areas.Patient.Controllers
             return View(bookingModel);
         }
         
-       // POST: Patient/Appointments/SubmitBooking
+        // POST: Patient/Appointments/SubmitBooking
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitBooking(AppointmentBookingViewModel model)
@@ -880,6 +885,49 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
+                // Send confirmation email
+                try
+                {
+                    // Get complete doctor details for the email
+                    var doctor = await _context.Doctors.FindAsync(appointment.DoctorId);
+                    
+                    if (doctor != null)
+                    {
+                        // Create appointment details for email
+                        var appointmentDetails = new AppointmentDetailViewModel
+                        {
+                            Id = appointment.Id,
+                            TreatmentName = treatment.Name,
+                            DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
+                            DoctorSpecialization = doctor.Specialty,
+                            AppointmentDate = appointment.AppointmentDate,
+                            AppointmentTime = appointment.AppointmentTime,
+                            Status = appointment.Status,
+                            Notes = appointment.Notes,
+                            CreatedOn = appointment.CreatedAt,
+                            TreatmentCost = treatment.Price,
+                            TreatmentDuration = treatment.Duration
+                        };
+                        
+                        // Send confirmation email
+                        await _emailService.SendAppointmentConfirmationEmailAsync(
+                            user.Email,
+                            $"{patient.FirstName} {patient.LastName}",
+                            appointmentDetails);
+                        
+                        _logger.LogInformation($"Appointment confirmation email sent to {user.Email}");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Could not find doctor with ID {appointment.DoctorId} for email notification");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't fail the appointment creation if email fails
+                    _logger.LogError(ex, "Error sending appointment confirmation email");
+                }
+                
                 // Clear session data
                 HttpContext.Session.Remove("SelectedTreatmentId");
                 HttpContext.Session.Remove("SelectedDoctorId");
@@ -995,6 +1043,8 @@ namespace DentalManagement.Areas.Patient.Controllers
         {
             var appointment = await _context.Appointments
                 .Include(a => a.TimeSlots) // Eagerly load associated time slots
+                .Include(a => a.Doctor)
+                .Include(a => a.TreatmentType)
                 .FirstOrDefaultAsync(a => a.Id == id);
             
             if (appointment == null)
@@ -1023,6 +1073,9 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return RedirectToAction(nameof(Index));
             }
             
+            // Store the status before update for email notification logic
+            var previousStatus = appointment.Status;
+            
             // Cancel appointment
             appointment.Status = "Cancelled";
             appointment.UpdatedAt = DateTime.UtcNow;
@@ -1039,6 +1092,41 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
             
             await _context.SaveChangesAsync();
+            
+            // Send cancellation email only if the appointment was previously confirmed/scheduled
+            if (previousStatus == "Scheduled" || previousStatus == "Confirmed")
+            {
+                try
+                {
+                    // Create appointment details for email
+                    var appointmentDetails = new AppointmentDetailViewModel
+                    {
+                        Id = appointment.Id,
+                        TreatmentName = appointment.TreatmentType.Name,
+                        DoctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}",
+                        DoctorSpecialization = appointment.Doctor.Specialty,
+                        AppointmentDate = appointment.AppointmentDate,
+                        AppointmentTime = appointment.AppointmentTime,
+                        Status = "Cancelled",
+                        CreatedOn = appointment.CreatedAt,
+                        TreatmentDuration = appointment.TreatmentType.Duration,
+                        TreatmentCost = appointment.TreatmentType.Price
+                    };
+                    
+                    // Send cancellation email
+                    await _emailService.SendAppointmentCancellationEmailAsync(
+                        user.Email,
+                        $"{patient.FirstName} {patient.LastName}",
+                        appointmentDetails);
+                    
+                    _logger.LogInformation($"Appointment cancellation email sent to {user.Email}");
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't fail the cancellation if email fails
+                    _logger.LogError(ex, "Error sending appointment cancellation email");
+                }
+            }
             
             TempData["SuccessMessage"] = "Your appointment has been cancelled.";
             return RedirectToAction(nameof(Index));

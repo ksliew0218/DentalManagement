@@ -12,10 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Configure email services
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<EmailTemplateService>(); // Add this line for EmailTemplateService
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddHttpContextAccessor(); // Make sure HttpContextAccessor is registered before EmailService
+
 // Configure Identity with complete options
 builder.Services.AddDefaultIdentity<User>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedAccount = true;  // Updated to require confirmed account
+    options.SignIn.RequireConfirmedEmail = true;    // Added to require confirmed email
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
@@ -64,9 +71,6 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true; // Make the session cookie essential
 });
-
-// Add HttpContext accessor
-builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

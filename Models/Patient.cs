@@ -37,5 +37,8 @@ namespace DentalManagement.Models
 
         public string? ProfilePic { get; set; }
 
+        // Add this to your Patient model
+        public bool IsDeleted { get; set; } = false;
+
     }
 }

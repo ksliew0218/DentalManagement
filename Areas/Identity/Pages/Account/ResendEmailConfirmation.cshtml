@@ -1,0 +1,46 @@
+﻿@page
+@model ResendEmailConfirmationModel
+@{
+    ViewData["Title"] = "Resend Email Confirmation";
+    Layout = "_Layout";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <img src="/images/Logo/logo2.png" alt="SmileCraft" class="img-fluid mb-3" style="max-height: 60px;">
+                        <h2 class="fw-bold text-primary">@ViewData["Title"]</h2>
+                        <p class="text-muted">Enter your email to receive a new confirmation link</p>
+                    </div>
+                    
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
+                            <label asp-for="Input.Email">Email address</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-envelope me-2"></i> Send Confirmation Email
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <a asp-page="/Account/Login" class="text-decoration-none">Back to login page</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
