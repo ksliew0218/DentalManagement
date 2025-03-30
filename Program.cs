@@ -17,6 +17,8 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddTransient<EmailTemplateService>(); // Add this line for EmailTemplateService
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddHttpContextAccessor(); // Make sure HttpContextAccessor is registered before EmailService
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddHostedService<AppointmentReminderService>();
 
 // Configure Identity with complete options
 builder.Services.AddDefaultIdentity<User>(options =>

@@ -1,16 +1,500 @@
+@model DentalManagement.Areas.Patient.Models.NotificationsViewModel
 @{
     ViewData["Title"] = "Notifications";
     Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="page-title">Notifications</h2>
-            <div class="notifications-content">
-                <!-- Your notifications content here -->
-                <p>View your notifications and reminders here.</p>
+<link href="~/css/notifications.css" rel="stylesheet" asp-append-version="true">
+
+<div class="dashboard-container">
+    <!-- Success message -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    <!-- Error message -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-circle"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Tabs for Notifications and Preferences -->
+    <ul class="nav nav-tabs notification-tabs" id="notificationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications-pane" type="button" role="tab" aria-controls="notifications-pane" aria-selected="true">
+                <i class="bi bi-bell"></i> Notifications
+                @if (Model.UnreadCount > 0)
+                {
+                    <span class="notification-count">@Model.UnreadCount</span>
+                }
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" data-bs-target="#preferences-pane" type="button" role="tab" aria-controls="preferences-pane" aria-selected="false">
+                <i class="bi bi-gear"></i> Notification Settings
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="notificationTabsContent">
+        <!-- Notifications Tab -->
+        <div class="tab-pane fade show active" id="notifications-pane" role="tabpanel" aria-labelledby="notifications-tab">
+            <!-- Notifications Header -->
+            <div class="notifications-header">
+                <h2>Your Notifications</h2>
+                @if (Model.HasNotifications)
+                {
+                    <form asp-action="ClearAll" method="post" class="clear-all-form">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="clear-all-btn">
+                            <i class="bi bi-trash"></i> Clear All
+                        </button>
+                    </form>
+                }
+            </div>
+            
+            <!-- Notifications List -->
+            <div class="notifications-list">
+                @if (!Model.HasNotifications)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-bell-slash"></i>
+                        </div>
+                        <h3>No Notifications</h3>
+                        <p>You don't have any notifications at the moment.</p>
+                    </div>
+                }
+                else
+                {
+                    foreach (var notification in Model.Notifications)
+                    {
+                        <div class="notification-item @(notification.NotificationType.ToLower().Replace("_", "-"))">
+                            <div class="notification-icon">
+                                @{
+                                    string iconClass = notification.NotificationType.ToLower() switch
+                                    {
+                                        var type when type.Contains("reminder") => "bi-calendar-check",
+                                        var type when type.Contains("appointment_new") => "bi-calendar-plus",
+                                        var type when type.Contains("appointment_cancel") => "bi-calendar-x",
+                                        var type when type.Contains("appointment_reschedule") => "bi-arrow-clockwise",
+                                        var type when type.Contains("promotion") => "bi-megaphone",
+                                        _ => "bi-bell"
+                                    };
+                                }
+                                <i class="bi @iconClass"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">
+                                    @notification.Title
+                                    <span class="notification-time">@notification.CreatedAt.ToString("MMM d, h:mm tt")</span>
+                                </div>
+                                <div class="notification-message">
+                                    @notification.Message
+                                </div>
+                                <div class="notification-actions">
+                                    @if (notification.RelatedEntityId.HasValue && !string.IsNullOrEmpty(notification.ActionController) && !string.IsNullOrEmpty(notification.ActionName))
+                                    {
+                                        <a href="@Url.Action(notification.ActionName, notification.ActionController, new { id = notification.RelatedEntityId })" class="action-link">
+                                            <i class="bi bi-eye"></i> View Details
+                                        </a>
+                                    }
+                                    <form asp-action="MarkAsRead" asp-route-id="@notification.Id" method="post" class="mark-read-form">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="mark-read-btn @(notification.IsRead ? "read" : "")">
+                                            <i class="bi @(notification.IsRead ? "bi-check-circle-fill" : "bi-check-circle")"></i>
+                                            @(notification.IsRead ? "Already Read" : "Mark as Read")
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
+        
+        <!-- Preferences Tab -->
+        <div class="tab-pane fade" id="preferences-pane" role="tabpanel" aria-labelledby="preferences-tab">
+            <form id="notificationPreferencesForm" asp-action="SavePreferences" method="post" class="notification-form">
+                @Html.AntiForgeryToken()
+                
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <h3><i class="bi bi-envelope"></i> Email Notifications</h3>
+                        <p>Choose which emails you'd like to receive</p>
+                    </div>
+                    
+                    <div class="preferences-grid">
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="EmailAppointmentReminders" value="false" />
+                                    <input type="checkbox" name="EmailAppointmentReminders" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.EmailAppointmentReminders ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>Appointment Reminders</h4>
+                                <p>Receive reminders before your scheduled appointments</p>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="EmailNewAppointments" value="false" />
+                                    <input type="checkbox" name="EmailNewAppointments" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.EmailNewAppointments ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>New Appointment Confirmations</h4>
+                                <p>Receive confirmation emails when you book a new appointment</p>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="EmailAppointmentChanges" value="false" />
+                                    <input type="checkbox" name="EmailAppointmentChanges" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.EmailAppointmentChanges ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>Appointment Changes</h4>
+                                <p>Receive notifications when your appointments are changed or cancelled</p>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="EmailPromotions" value="false" />
+                                    <input type="checkbox" name="EmailPromotions" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.EmailPromotions ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>Promotions and News</h4>
+                                <p>Receive updates about promotions, new services, and dental health tips</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="preferences-card">
+                    <div class="card-header">
+                        <h3><i class="bi bi-clock"></i> Reminder Timing</h3>
+                        <p>Choose when you'd like to receive appointment reminders</p>
+                    </div>
+                    
+                    <div class="preferences-grid">
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="Want24HourReminder" value="false" />
+                                    <input type="checkbox" id="Want24HourReminder" name="Want24HourReminder" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.Want24HourReminder ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>24 Hours Before</h4>
+                                <p>Receive a reminder one day before your appointment</p>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="Want48HourReminder" value="false" />
+                                    <input type="checkbox" id="Want48HourReminder" name="Want48HourReminder" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.Want48HourReminder ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>48 Hours Before</h4>
+                                <p>Receive a reminder two days before your appointment</p>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-item">
+                            <div class="switch-container">
+                                <label class="switch">
+                                    <input type="hidden" name="WantWeekReminder" value="false" />
+                                    <input type="checkbox" id="WantWeekReminder" name="WantWeekReminder" 
+                                           value="true" 
+                                           @(Model.NotificationPreferences.WantWeekReminder ? "checked" : "")>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="preference-info">
+                                <h4>One Week Before</h4>
+                                <p>Receive a reminder one week before your appointment</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Future SMS Preferences Section -->
+                <!-- <div class="preferences-card disabled">
+                    <div class="card-header">
+                        <h3><i class="bi bi-chat"></i> SMS Notifications</h3>
+                        <p>Coming soon - We'll be adding SMS notifications in the future</p>
+                    </div>
+                    
+                    <div class="coming-soon">
+                        <div class="coming-soon-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <p>SMS notification features are currently in development and will be available soon. Stay tuned!</p>
+                    </div>
+                </div> -->
+                
+                <div class="form-actions">
+                    <div class="last-updated">Last updated: @Model.NotificationPreferences.LastUpdated.ToString("MMMM d, yyyy 'at' h:mm tt")</div>
+                    <button type="submit" class="save-preferences-btn">
+                        <i class="bi bi-save"></i> Save Preferences
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div> 
+</div>
+
+<style>
+/* Add these styles to make sure the timing options are clickable */
+.timing-preferences {
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.timing-option {
+    cursor: pointer;
+    position: relative;
+    padding: 20px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.timing-option:hover {
+    background-color: #edf2f7;
+}
+
+.timing-option.selected {
+    background-color: rgba(71, 105, 247, 0.1);
+    border-color: #4769f7;
+}
+
+/* Hide actual checkbox */
+.timing-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    z-index: -1;
+}
+
+/* Style for the icon */
+.timing-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    background-color: rgba(71, 105, 247, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+/* Make icon stand out in selected state */
+.timing-option.selected .timing-icon {
+    background-color: rgba(71, 105, 247, 0.2);
+}
+
+.timing-icon i {
+    color: #4769f7;
+    font-size: 1.3rem;
+}
+
+.timing-info {
+    flex: 1;
+}
+
+.timing-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.timing-info p {
+    margin: 0;
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+/* Add a check indicator for selected options */
+.timing-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 25px;
+    height: 25px;
+    background-color: #4769f7;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+</style>
+
+@section Scripts {
+    <script>
+        // Function to toggle timing option
+        function toggleTimingOption(element, checkboxId) {
+            // Get the checkbox
+            const checkbox = document.getElementById(checkboxId);
+            if (!checkbox) return;
+            
+            // Toggle the checkbox state
+            checkbox.checked = !checkbox.checked;
+            
+            // Toggle the selected class
+            if (checkbox.checked) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+            
+            // Find the hidden field
+            const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
+                .find(input => input.name === checkbox.name);
+                
+            // Toggle the hidden field
+            if (hiddenField) {
+                if (checkbox.checked) {
+                    hiddenField.setAttribute('data-orig-name', hiddenField.name);
+                    hiddenField.removeAttribute('name');
+                } else {
+                    const origName = hiddenField.getAttribute('data-orig-name');
+                    if (origName) {
+                        hiddenField.setAttribute('name', origName);
+                    }
+                }
+            }
+        }
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap tabs
+            var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'))
+            triggerTabList.forEach(function (triggerEl) {
+                var tabTrigger = new bootstrap.Tab(triggerEl)
+                
+                triggerEl.addEventListener('click', function (event) {
+                    event.preventDefault()
+                    tabTrigger.show()
+                })
+            });
+            
+            // Initialize all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    // Find the corresponding hidden field with the same name
+                    const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
+                        .find(input => input.name === checkbox.name);
+                    
+                    if (hiddenField) {
+                        // If checkbox is checked, we want the hidden field to be ignored
+                        // We can achieve this by temporarily removing its name attribute
+                        if (checkbox.checked) {
+                            hiddenField.setAttribute('data-orig-name', hiddenField.name);
+                            hiddenField.removeAttribute('name');
+                        } else {
+                            // Restore the name attribute when unchecked
+                            const origName = hiddenField.getAttribute('data-orig-name');
+                            if (origName) {
+                                hiddenField.setAttribute('name', origName);
+                            }
+                        }
+                    }
+                });
+                
+                // Trigger change event to set initial state
+                checkbox.dispatchEvent(new Event('change'));
+            });
+            
+            // AJAX mark as read
+            document.querySelectorAll('.mark-read-form').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    if (!this.querySelector('button').classList.contains('read')) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        const url = this.getAttribute('action');
+                        
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const button = this.querySelector('button');
+                                button.classList.add('read');
+                                button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Read';
+                                 
+                                // Update unread count
+                                const countBadge = document.querySelector('.notification-count');
+                                if (countBadge) {
+                                    const currentCount = parseInt(countBadge.textContent);
+                                    if (currentCount > 1) {
+                                        countBadge.textContent = currentCount - 1;
+                                    } else {
+                                        countBadge.remove();
+                                    }
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error marking notification as read:', error);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

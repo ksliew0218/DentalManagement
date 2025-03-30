@@ -60,6 +60,9 @@ namespace DentalManagement.Models
         
         // Collection of TimeSlots used for this appointment
         public virtual ICollection<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
+        
+        // Add this collection property for reminders
+        public virtual ICollection<AppointmentReminder> Reminders { get; set; } = new List<AppointmentReminder>();
 
         // Calculated property for appointment datetime
         [NotMapped]

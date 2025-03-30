@@ -18,6 +18,7 @@ namespace DentalManagement.Services
         Task SendConfirmationEmailAsync(string email, string firstName, string callbackUrl);
         Task SendAppointmentConfirmationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails);
         Task SendAppointmentCancellationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails);
+        Task SendAppointmentReminderEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails, string reminderType, string templateName);
     }
 
     public class EmailService : IEmailService
@@ -92,12 +93,6 @@ namespace DentalManagement.Services
                 if (!string.IsNullOrEmpty(emailContent))
                 {
                     await SendEmailAsync(email, "Confirm Your SmileCraft Account", emailContent);
-                }
-                else
-                {
-                    // Fallback to old template if the new one fails
-                    var oldTemplate = GetEmailConfirmationTemplate(firstName, encodedUrl);
-                    await SendEmailAsync(email, "Confirm Your SmileCraft Account", oldTemplate);
                 }
             }
             catch (Exception ex)
@@ -188,6 +183,57 @@ namespace DentalManagement.Services
             }
         }
 
+        public async Task SendAppointmentReminderEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails, string reminderType, string templateName)
+        {
+            try
+            {
+                // Get base URL for links
+                var baseUrl = GetBaseUrl();
+                var appointmentDetailsUrl = $"{baseUrl}/Patient/Appointments/Details/{appointmentDetails.Id}";
+                
+                // Prepare template replacements
+                var replacements = new Dictionary<string, string>
+                {
+                    { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
+                    { "AppointmentId", appointmentDetails.Id.ToString() },
+                    { "TreatmentName", appointmentDetails.TreatmentName },
+                    { "AppointmentDate", appointmentDetails.FormattedAppointmentDate },
+                    { "AppointmentTime", appointmentDetails.FormattedAppointmentTime },
+                    { "DoctorName", appointmentDetails.DoctorName },
+                    { "DoctorSpecialization", appointmentDetails.DoctorSpecialization ?? "" },
+                    { "TreatmentDuration", appointmentDetails.TreatmentDuration.ToString() },
+                    { "AppointmentDetailsUrl", appointmentDetailsUrl },
+                    { "ReminderType", reminderType },
+                    { "CurrentYear", DateTime.Now.Year.ToString() }
+                };
+                
+                // Use templateName if provided, otherwise use a default
+                string templateToUse = !string.IsNullOrEmpty(templateName) ? 
+                    templateName : "AppointmentReminder";
+                
+                // Get the email content
+                string emailContent = await _templateService.GetEmailTemplateAsync(templateToUse, replacements);
+                
+                if (!string.IsNullOrEmpty(emailContent))
+                {
+                    // Send the email
+                    string subject = $"Appointment Reminder - Your appointment is {reminderType} away";
+                    await SendEmailAsync(email, subject, emailContent);
+                    
+                    _logger.LogInformation($"Sent {reminderType} reminder email to {email} for appointment {appointmentDetails.Id}");
+                }
+                else
+                {
+                    // Log warning if template not found
+                    _logger.LogWarning($"Failed to generate appointment reminder email content for {email} using template {templateName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending appointment reminder email to {email}");
+            }
+        }
+
         private string GetBaseUrl()
         {
             try
@@ -199,174 +245,6 @@ namespace DentalManagement.Services
             {
                 return "https://www.smilecraftdental.com";  // Fallback if HttpContext is not available
             }
-        }
-
-        // Keep the old template method for fallback
-        private string GetEmailConfirmationTemplate(string firstName, string callbackUrl)
-        {
-            return $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Confirm Your SmileCraft Account</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Outfit:wght@400;500;700&display=swap');
-        
-        body {{
-            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }}
-        .email-container {{
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }}
-        .email-header {{
-            background-color: #ffffff;
-            padding: 30px 24px;
-            text-align: center;
-            border-bottom: 1px solid #f0f0f0;
-        }}
-        .logo-container {{
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-        }}
-        .logo-icon {{
-            color: #C2D8D9;
-            font-size: 24px;
-            margin-right: 10px;
-            display: inline-flex;
-            align-items: center;
-        }}
-        .logo-text {{
-            font-family: 'Outfit', sans-serif;
-            font-weight: 500;
-            font-size: 30px;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            line-height: 1;
-        }}
-        .email-body {{
-            padding: 32px 24px;
-        }}
-        .greeting {{
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #2d3748;
-        }}
-        .message {{
-            font-size: 16px;
-            margin-bottom: 24px;
-            color: #4a5568;
-        }}
-        .cta-button {{
-            display: inline-block;
-            background-color: #333333;
-            color: #ffffff !important;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 16px;
-            padding: 12px 32px;
-            border-radius: 4px;
-            margin: 16px 0 24px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }}
-        .cta-button:hover {{
-            background-color: #000000;
-        }}
-        .guidance {{
-            background-color: #f8f8f8;
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 24px;
-            border-left: 3px solid #333333;
-        }}
-        .guidance-title {{
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #2d3748;
-        }}
-        .help-text {{
-            font-size: 14px;
-            color: #64748b;
-            margin-top: 24px;
-            padding-top: 16px;
-            border-top: 1px solid #e2e8f0;
-        }}
-        .email-footer {{
-            background-color: #f8f8f8;
-            padding: 16px 24px;
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-        }}
-        @media only screen and (max-width: 600px) {{
-            .email-body {{
-                padding: 24px 16px;
-            }}
-            .logo-text {{
-                font-size: 26px;
-            }}
-        }}
-    </style>
-</head>
-<body>
-    <div class='email-container'>
-        <div class='email-header'>
-            <div class='logo-container'>
-                <div class='logo-icon'>🦷</div>
-                <div class='logo-text'>SmileCraft</div>
-            </div>
-        </div>
-        <div class='email-body'>
-            <div class='greeting'>Hello {(string.IsNullOrEmpty(firstName) ? "there" : firstName)},</div>
-            <div class='message'>
-                Thank you for signing up with SmileCraft Dental. To complete your registration and activate your account, please verify your email address by clicking the button below.
-            </div>
-            <div style='text-align: center;'>
-                <a href='{callbackUrl}' class='cta-button'>Verify Email Address</a>
-            </div>
-            <div class='guidance'>
-                <div class='guidance-title'>What happens next?</div>
-                <ul style='padding-left: 20px; margin: 8px 0;'>
-                    <li>After verification, you can log in to your account</li>
-                    <li>Book appointments with our dental specialists</li>
-                    <li>Manage your dental care all in one place</li>
-                </ul>
-            </div>
-            <div class='message'>
-                If you're having trouble with the button above, copy and paste the URL below into your web browser:
-            </div>
-            <div style='word-break: break-all; font-size: 14px; background-color: #f8f8f8; padding: 12px; border-radius: 4px; border: 1px solid #e2e8f0;'>
-                {callbackUrl}
-            </div>
-            <div class='help-text'>
-                If you didn't request this email, please ignore it or contact our support team if you have any concerns.
-            </div>
-        </div>
-        <div class='email-footer'>
-            <p>&copy; {DateTime.Now.Year} SmileCraft Dental. All rights reserved.</p>
-            <p>123 Jalan Besar, Sri Petaling, Malaysia | +60 14-3281137</p>
-        </div>
-    </div>
-</body>
-</html>
-";
         }
     }
 }

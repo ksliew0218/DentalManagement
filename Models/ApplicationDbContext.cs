@@ -25,6 +25,9 @@ namespace DentalManagement.Models
         public DbSet<LeaveType> LeaveTypes { get; set; }
         public DbSet<DoctorLeaveBalance> DoctorLeaveBalances { get; set; }
         public DbSet<DoctorLeaveRequest> DoctorLeaveRequests { get; set; }
+        public DbSet<AppointmentReminder> AppointmentReminders { get; set; }
+        public DbSet<UserNotificationPreferences> UserNotificationPreferences { get; set; }
+        public DbSet<UserNotification> UserNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -99,6 +102,7 @@ namespace DentalManagement.Models
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.Duration)
                 .HasDefaultValue(60);
+
             // Configure DateTime properties for leave management
             modelBuilder.Entity<DoctorLeaveRequest>()
                 .Property(l => l.StartDate)
@@ -123,6 +127,87 @@ namespace DentalManagement.Models
                 .HasConversion(
                     v => v.HasValue ? v.Value : DateTime.MinValue, 
                     v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+           // Configure UserNotification
+            modelBuilder.Entity<UserNotification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v, 
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+                entity.Property(e => e.ReadAt)
+                    .HasConversion(
+                        v => v.HasValue ? v.Value : DateTime.MinValue, 
+                        v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                        
+                entity.Property(e => e.EmailSentAt)
+                    .HasConversion(
+                        v => v.HasValue ? v.Value : DateTime.MinValue, 
+                        v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                        
+                entity.Property(e => e.SmsSentAt)
+                    .HasConversion(
+                        v => v.HasValue ? v.Value : DateTime.MinValue, 
+                        v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+                entity.Property(e => e.Title)
+                    .IsRequired()
+                    .HasMaxLength(200);
+                    
+                entity.Property(e => e.Message)
+                    .IsRequired();
+                    
+                entity.Property(e => e.NotificationType)
+                    .IsRequired()
+                    .HasMaxLength(50);
+            });
+
+            // Configure UserNotificationPreferences
+            modelBuilder.Entity<UserNotificationPreferences>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.Property(e => e.LastUpdated)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v, 
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            });
+
+            // Configure AppointmentReminder
+            modelBuilder.Entity<AppointmentReminder>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.Appointment)
+                    .WithMany(a => a.Reminders)
+                    .HasForeignKey(e => e.AppointmentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.Property(e => e.SentAt)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v, 
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+                entity.Property(e => e.ReminderType)
+                    .IsRequired()
+                    .HasMaxLength(50);
+            });
         }
 
         // Ensure UTC DateTime values when saving to database
