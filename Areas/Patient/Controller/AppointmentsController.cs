@@ -885,47 +885,79 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
-                // Send confirmation email
+                // Send confirmation email based on user preferences
                 try
                 {
-                    // Get complete doctor details for the email
-                    var doctor = await _context.Doctors.FindAsync(appointment.DoctorId);
-                    
-                    if (doctor != null)
+                    // Get the user's notification preferences
+                    var preferences = await _context.UserNotificationPreferences
+                        .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                        
+                    // If no preferences found, create default ones with email notifications enabled
+                    if (preferences == null)
                     {
-                        // Create appointment details for email
-                        var appointmentDetails = new AppointmentDetailViewModel
+                        preferences = new UserNotificationPreferences
                         {
-                            Id = appointment.Id,
-                            TreatmentName = treatment.Name,
-                            DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
-                            DoctorSpecialization = doctor.Specialty,
-                            AppointmentDate = appointment.AppointmentDate,
-                            AppointmentTime = appointment.AppointmentTime,
-                            Status = appointment.Status,
-                            Notes = appointment.Notes,
-                            CreatedOn = appointment.CreatedAt,
-                            TreatmentCost = treatment.Price,
-                            TreatmentDuration = treatment.Duration
+                            UserId = user.Id,
+                            EmailAppointmentReminders = true,
+                            EmailNewAppointments = true,
+                            EmailAppointmentChanges = true,
+                            EmailPromotions = true,
+                            Want24HourReminder = true,
+                            Want48HourReminder = true,
+                            WantWeekReminder = true,
+                            LastUpdated = DateTime.UtcNow
                         };
                         
-                        // Send confirmation email
-                        await _emailService.SendAppointmentConfirmationEmailAsync(
-                            user.Email,
-                            $"{patient.FirstName} {patient.LastName}",
-                            appointmentDetails);
+                        _context.UserNotificationPreferences.Add(preferences);
+                        await _context.SaveChangesAsync();
+                    }
+                    
+                    // Only send confirmation email if user has enabled the preference
+                    if (preferences.EmailNewAppointments)
+                    {
+                        // Get complete doctor details for the email
+                        var doctor = await _context.Doctors.FindAsync(appointment.DoctorId);
                         
-                        _logger.LogInformation($"Appointment confirmation email sent to {user.Email}");
+                        if (doctor != null)
+                        {
+                            // Create appointment details for email
+                            var appointmentDetails = new AppointmentDetailViewModel
+                            {
+                                Id = appointment.Id,
+                                TreatmentName = treatment.Name,
+                                DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
+                                DoctorSpecialization = doctor.Specialty,
+                                AppointmentDate = appointment.AppointmentDate,
+                                AppointmentTime = appointment.AppointmentTime,
+                                Status = appointment.Status,
+                                Notes = appointment.Notes,
+                                CreatedOn = appointment.CreatedAt,
+                                TreatmentCost = treatment.Price,
+                                TreatmentDuration = treatment.Duration
+                            };
+                            
+                            // Send confirmation email
+                            await _emailService.SendAppointmentConfirmationEmailAsync(
+                                user.Email,
+                                $"{patient.FirstName} {patient.LastName}",
+                                appointmentDetails);
+                            
+                            _logger.LogInformation($"Appointment confirmation email sent to {user.Email}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Could not find doctor with ID {appointment.DoctorId} for email notification");
+                        }
                     }
                     else
                     {
-                        _logger.LogWarning($"Could not find doctor with ID {appointment.DoctorId} for email notification");
+                        _logger.LogInformation($"Skipped sending confirmation email to {user.Email} based on user preferences");
                     }
                 }
                 catch (Exception ex)
                 {
                     // Log the error but don't fail the appointment creation if email fails
-                    _logger.LogError(ex, "Error sending appointment confirmation email");
+                    _logger.LogError(ex, "Error handling appointment confirmation notification");
                 }
                 
                 // Clear session data
@@ -1093,38 +1125,70 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             await _context.SaveChangesAsync();
             
-            // Send cancellation email only if the appointment was previously confirmed/scheduled
+            // Send cancellation email based on user preferences
             if (previousStatus == "Scheduled" || previousStatus == "Confirmed")
             {
                 try
                 {
-                    // Create appointment details for email
-                    var appointmentDetails = new AppointmentDetailViewModel
+                    // Get the user's notification preferences
+                    var preferences = await _context.UserNotificationPreferences
+                        .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                        
+                    // If no preferences found, create default ones with email notifications enabled
+                    if (preferences == null)
                     {
-                        Id = appointment.Id,
-                        TreatmentName = appointment.TreatmentType.Name,
-                        DoctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}",
-                        DoctorSpecialization = appointment.Doctor.Specialty,
-                        AppointmentDate = appointment.AppointmentDate,
-                        AppointmentTime = appointment.AppointmentTime,
-                        Status = "Cancelled",
-                        CreatedOn = appointment.CreatedAt,
-                        TreatmentDuration = appointment.TreatmentType.Duration,
-                        TreatmentCost = appointment.TreatmentType.Price
-                    };
+                        preferences = new UserNotificationPreferences
+                        {
+                            UserId = user.Id,
+                            EmailAppointmentReminders = true,
+                            EmailNewAppointments = true,
+                            EmailAppointmentChanges = true,
+                            EmailPromotions = true,
+                            Want24HourReminder = true,
+                            Want48HourReminder = true,
+                            WantWeekReminder = true,
+                            LastUpdated = DateTime.UtcNow
+                        };
+                        
+                        _context.UserNotificationPreferences.Add(preferences);
+                        await _context.SaveChangesAsync();
+                    }
                     
-                    // Send cancellation email
-                    await _emailService.SendAppointmentCancellationEmailAsync(
-                        user.Email,
-                        $"{patient.FirstName} {patient.LastName}",
-                        appointmentDetails);
-                    
-                    _logger.LogInformation($"Appointment cancellation email sent to {user.Email}");
+                    // Only send cancellation email if user has enabled the preference
+                    if (preferences.EmailAppointmentChanges)
+                    {
+                        // Create appointment details for email
+                        var appointmentDetails = new AppointmentDetailViewModel
+                        {
+                            Id = appointment.Id,
+                            TreatmentName = appointment.TreatmentType.Name,
+                            DoctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}",
+                            DoctorSpecialization = appointment.Doctor.Specialty,
+                            AppointmentDate = appointment.AppointmentDate,
+                            AppointmentTime = appointment.AppointmentTime,
+                            Status = "Cancelled",
+                            CreatedOn = appointment.CreatedAt,
+                            TreatmentDuration = appointment.TreatmentType.Duration,
+                            TreatmentCost = appointment.TreatmentType.Price
+                        };
+                        
+                        // Send cancellation email
+                        await _emailService.SendAppointmentCancellationEmailAsync(
+                            user.Email,
+                            $"{patient.FirstName} {patient.LastName}",
+                            appointmentDetails);
+                        
+                        _logger.LogInformation($"Appointment cancellation email sent to {user.Email}");
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"Skipped sending cancellation email to {user.Email} based on user preferences");
+                    }
                 }
                 catch (Exception ex)
                 {
                     // Log the error but don't fail the cancellation if email fails
-                    _logger.LogError(ex, "Error sending appointment cancellation email");
+                    _logger.LogError(ex, "Error handling appointment cancellation notification");
                 }
             }
             

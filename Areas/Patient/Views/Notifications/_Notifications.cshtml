@@ -382,28 +382,121 @@
 
 @section Scripts {
     <script>
-        // Function to toggle timing option
-        function toggleTimingOption(element, checkboxId) {
-            // Get the checkbox
-            const checkbox = document.getElementById(checkboxId);
-            if (!checkbox) return;
-            
-            // Toggle the checkbox state
-            checkbox.checked = !checkbox.checked;
-            
-            // Toggle the selected class
+        // Initialize checkbox and hidden field behavior
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tabs
+    var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'));
+    triggerTabList.forEach(function(triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl);
+        
+        triggerEl.addEventListener('click', function(event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+    
+    // Fix for toggle switches
+    document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+        // Find the corresponding hidden field with the same name
+        const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
+            .find(input => input.name === checkbox.name);
+        
+        if (hiddenField) {
+            // Configure the initial state
             if (checkbox.checked) {
-                element.classList.add('selected');
-            } else {
-                element.classList.remove('selected');
+                // We don't want both the checkbox and hidden field to submit values
+                // So we temporarily disable the hidden field by removing its name
+                hiddenField.setAttribute('data-orig-name', hiddenField.name);
+                hiddenField.removeAttribute('name');
             }
             
-            // Find the hidden field
-            const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
-                .find(input => input.name === checkbox.name);
+            // Set up the change handler
+            checkbox.addEventListener('change', function() {
+                if (checkbox.checked) {
+                    // If checked, disable the hidden field
+                    hiddenField.setAttribute('data-orig-name', hiddenField.name);
+                    hiddenField.removeAttribute('name');
+                } else {
+                    // If unchecked, enable the hidden field
+                    const origName = hiddenField.getAttribute('data-orig-name');
+                    if (origName) {
+                        hiddenField.setAttribute('name', origName);
+                    }
+                }
+            });
+        }
+    });
+    
+    // AJAX mark as read
+    document.querySelectorAll('.mark-read-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            if (!this.querySelector('button').classList.contains('read')) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const url = this.getAttribute('action');
                 
-            // Toggle the hidden field
-            if (hiddenField) {
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const button = this.querySelector('button');
+                        button.classList.add('read');
+                        button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Read';
+                            
+                        // Update unread count
+                        const countBadge = document.querySelector('.notification-count');
+                        if (countBadge) {
+                            const currentCount = parseInt(countBadge.textContent);
+                            if (currentCount > 1) {
+                                countBadge.textContent = currentCount - 1;
+                            } else {
+                                countBadge.remove();
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+            }
+        });
+    });
+});
+
+// Re-initialize after AJAX content loads
+document.addEventListener('contentLoaded', function() {
+    // Re-run the initialization logic after AJAX content loads
+    var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'));
+    triggerTabList.forEach(function(triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl);
+        
+        triggerEl.addEventListener('click', function(event) {
+            event.preventDefault();
+            tabTrigger.show();
+        });
+    });
+    
+    // Initialize checkboxes again
+    document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+        // Find the corresponding hidden field with the same name
+        const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
+            .find(input => input.name === checkbox.name);
+        
+        if (hiddenField) {
+            // Configure the initial state
+            if (checkbox.checked) {
+                hiddenField.setAttribute('data-orig-name', hiddenField.name);
+                hiddenField.removeAttribute('name');
+            }
+            
+            // Set up the change handler
+            checkbox.addEventListener('change', function() {
                 if (checkbox.checked) {
                     hiddenField.setAttribute('data-orig-name', hiddenField.name);
                     hiddenField.removeAttribute('name');
@@ -413,88 +506,9 @@
                         hiddenField.setAttribute('name', origName);
                     }
                 }
-            }
+            });
         }
-    
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Bootstrap tabs
-            var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'))
-            triggerTabList.forEach(function (triggerEl) {
-                var tabTrigger = new bootstrap.Tab(triggerEl)
-                
-                triggerEl.addEventListener('click', function (event) {
-                    event.preventDefault()
-                    tabTrigger.show()
-                })
-            });
-            
-            // Initialize all checkboxes
-            document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
-                checkbox.addEventListener('change', function() {
-                    // Find the corresponding hidden field with the same name
-                    const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
-                        .find(input => input.name === checkbox.name);
-                    
-                    if (hiddenField) {
-                        // If checkbox is checked, we want the hidden field to be ignored
-                        // We can achieve this by temporarily removing its name attribute
-                        if (checkbox.checked) {
-                            hiddenField.setAttribute('data-orig-name', hiddenField.name);
-                            hiddenField.removeAttribute('name');
-                        } else {
-                            // Restore the name attribute when unchecked
-                            const origName = hiddenField.getAttribute('data-orig-name');
-                            if (origName) {
-                                hiddenField.setAttribute('name', origName);
-                            }
-                        }
-                    }
-                });
-                
-                // Trigger change event to set initial state
-                checkbox.dispatchEvent(new Event('change'));
-            });
-            
-            // AJAX mark as read
-            document.querySelectorAll('.mark-read-form').forEach(function(form) {
-                form.addEventListener('submit', function(e) {
-                    if (!this.querySelector('button').classList.contains('read')) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        const url = this.getAttribute('action');
-                        
-                        fetch(url, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                const button = this.querySelector('button');
-                                button.classList.add('read');
-                                button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Read';
-                                 
-                                // Update unread count
-                                const countBadge = document.querySelector('.notification-count');
-                                if (countBadge) {
-                                    const currentCount = parseInt(countBadge.textContent);
-                                    if (currentCount > 1) {
-                                        countBadge.textContent = currentCount - 1;
-                                    } else {
-                                        countBadge.remove();
-                                    }
-                                }
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error marking notification as read:', error);
-                        });
-                    }
-                });
-            });
-        });
+    });
+});
     </script>
 }
