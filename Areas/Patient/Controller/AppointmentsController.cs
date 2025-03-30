@@ -722,6 +722,7 @@ namespace DentalManagement.Areas.Patient.Controllers
             return View(bookingModel);
         }
         
+        
         // POST: Patient/Appointments/SubmitBooking
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -885,7 +886,39 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
-                // Send confirmation email based on user preferences
+                // Get doctor details for notifications
+                var doctor = await _context.Doctors.FindAsync(appointment.DoctorId);
+                var doctorName = doctor != null ? $"Dr. {doctor.FirstName} {doctor.LastName}" : "your doctor";
+                
+                // Format appointment date and time for notifications
+                string formattedDate = appointment.AppointmentDate.ToString("MMMM d, yyyy");
+                
+                // Format time
+                bool isPM = appointment.AppointmentTime.Hours >= 12;
+                int hour12 = appointment.AppointmentTime.Hours % 12;
+                if (hour12 == 0) hour12 = 12;
+                string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
+                
+                // Create in-app notification for new appointment
+                var notification = new UserNotification
+                {
+                    UserId = user.Id,
+                    NotificationType = "Appointment_New",
+                    Title = "New Appointment Confirmed",
+                    Message = $"Your {treatment.Name} appointment with {doctorName} has been scheduled for {formattedDate} at {formattedTime}.",
+                    RelatedEntityId = appointment.Id,
+                    ActionController = "Appointments",
+                    ActionName = "Details",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation($"Created in-app notification for new appointment ID: {appointment.Id}");
+                
+                // Get the user's notification preferences for email
                 try
                 {
                     // Get the user's notification preferences
@@ -915,9 +948,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     // Only send confirmation email if user has enabled the preference
                     if (preferences.EmailNewAppointments)
                     {
-                        // Get complete doctor details for the email
-                        var doctor = await _context.Doctors.FindAsync(appointment.DoctorId);
-                        
                         if (doctor != null)
                         {
                             // Create appointment details for email
@@ -941,6 +971,11 @@ namespace DentalManagement.Areas.Patient.Controllers
                                 user.Email,
                                 $"{patient.FirstName} {patient.LastName}",
                                 appointmentDetails);
+                            
+                            // Update notification to track email sent
+                            notification.EmailSent = true;
+                            notification.EmailSentAt = DateTime.UtcNow;
+                            await _context.SaveChangesAsync();
                             
                             _logger.LogInformation($"Appointment confirmation email sent to {user.Email}");
                         }
@@ -1125,6 +1160,34 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             await _context.SaveChangesAsync();
             
+            // Format appointment date and time for notifications
+            string formattedDate = appointment.AppointmentDate.ToString("MMMM d, yyyy");
+            
+            // Format time
+            bool isPM = appointment.AppointmentTime.Hours >= 12;
+            int hour12 = appointment.AppointmentTime.Hours % 12;
+            if (hour12 == 0) hour12 = 12;
+            string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
+            
+            // Create in-app notification for appointment cancellation
+            var notification = new UserNotification
+            {
+                UserId = user.Id,
+                NotificationType = "Appointment_Cancelled",
+                Title = "Appointment Cancelled",
+                Message = $"Your {appointment.TreatmentType.Name} appointment scheduled for {formattedDate} at {formattedTime} has been cancelled.",
+                RelatedEntityId = appointment.Id,
+                ActionController = "Appointments",
+                ActionName = "Index", // Redirect to appointments list since this one is cancelled
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            _context.UserNotifications.Add(notification);
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation($"Created in-app notification for cancelled appointment ID: {appointment.Id}");
+            
             // Send cancellation email based on user preferences
             if (previousStatus == "Scheduled" || previousStatus == "Confirmed")
             {
@@ -1177,6 +1240,11 @@ namespace DentalManagement.Areas.Patient.Controllers
                             user.Email,
                             $"{patient.FirstName} {patient.LastName}",
                             appointmentDetails);
+                        
+                        // Update notification to track email sent
+                        notification.EmailSent = true;
+                        notification.EmailSentAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
                         
                         _logger.LogInformation($"Appointment cancellation email sent to {user.Email}");
                     }
