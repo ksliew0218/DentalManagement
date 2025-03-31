@@ -69,15 +69,30 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     .OrderBy(r => r.StartDate)
                     .FirstOrDefault();
 
+                // Get appointment counts and upcoming appointments
+                var allAppointments = await _context.Appointments
+                    .Where(a => a.DoctorId == doctor.Id)
+                    .ToListAsync();
+                
+                var upcomingAppointments = allAppointments
+                    .Where(a => a.AppointmentDateTime > DateTime.UtcNow && 
+                                a.Status != "Cancelled" && 
+                                a.Status != "Completed")
+                    .Count();
+                
+                // Get list of patients seen by this doctor
+                var patientIds = allAppointments.Select(a => a.PatientId).Distinct().ToList();
+                var patientCount = patientIds.Count;
+
                 // Create the dashboard view model
                 var model = new DoctorDashboardViewModel
                 {
                     CurrentDoctor = doctor,
                     TreatmentCount = doctor.DoctorTreatments?.Count ?? 0,
                     TimeSlotCount = await _context.TimeSlots.CountAsync(s => s.DoctorId == doctor.Id),
-                    AppointmentCount = 0, // Update once appointments are implemented
-                    PatientCount = 0, // Update once patients for doctors are implemented
-                    UpcomingAppointments = 0, // Update once appointments are implemented
+                    AppointmentCount = allAppointments.Count,
+                    PatientCount = patientCount,
+                    UpcomingAppointments = upcomingAppointments,
                     
                     // Get recent time slots (next 5 days)
                     RecentTimeSlots = await _context.TimeSlots
@@ -101,7 +116,7 @@ namespace DentalManagement.Areas.Doctor.Controllers
                         .OrderBy(s => s.StartTime)
                         .ToListAsync(),
                     
-                    // Get today's appointments (if appointment system is implemented)
+                    // Get today's appointments
                     TodayAppointments = await _context.Appointments
                         .Include(a => a.Patient)
                         .Include(a => a.Doctor)

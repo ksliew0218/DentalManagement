@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Appointment Calendar";
+    Layout = "~/Areas/Doctor/Views/Shared/_DoctorLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Appointment Calendar</h1>
+            <p class="text-muted">View and manage your appointments in calendar format</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Index", "Appointments", new { area = "Doctor" })" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-list fa-sm text-white-50 mr-1"></i> List View
+            </a>
+        </div>
+    </div>
+
+    <!-- Calendar Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-gradient-primary text-white">
+            <h6 class="m-0 font-weight-bold">My Appointment Schedule</h6>
+            <div>
+                <i class="fas fa-calendar-alt fa-sm"></i>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+
+    <!-- Legend Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-light">
+            <h6 class="m-0 font-weight-bold text-primary">Status Legend</h6>
+            <div>
+                <i class="fas fa-info-circle fa-sm text-primary"></i>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <div class="d-flex align-items-center p-2 rounded bg-light">
+                        <div style="width: 20px; height: 20px; background-color: #4e73df; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>Scheduled</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <div class="d-flex align-items-center p-2 rounded bg-light">
+                        <div style="width: 20px; height: 20px; background-color: #1cc88a; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>Confirmed</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <div class="d-flex align-items-center p-2 rounded bg-light">
+                        <div style="width: 20px; height: 20px; background-color: #36b9cc; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>Completed</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-2">
+                    <div class="d-flex align-items-center p-2 rounded bg-light">
+                        <div style="width: 20px; height: 20px; background-color: #e74a3b; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>Cancelled</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+    <style>
+        #calendar {
+            height: 650px;
+        }
+        .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .fc-daygrid-event {
+            white-space: normal;
+            overflow: hidden;
+            padding: 2px 4px;
+        }
+        .fc-day-today {
+            background-color: rgba(78, 115, 223, 0.1) !important;
+        }
+        .fc-header-toolbar {
+            margin-bottom: 1.5em !important;
+        }
+        .fc-button-primary {
+            background-color: #4e73df !important;
+            border-color: #4e73df !important;
+        }
+        .fc-button-primary:hover {
+            background-color: #2e59d9 !important;
+            border-color: #2e59d9 !important;
+        }
+        .event-tooltip {
+            max-width: 250px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .event-tooltip-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var events = @Html.Raw(ViewBag.CalendarEvents);
+            
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                themeSystem: 'bootstrap',
+                selectable: false,
+                selectMirror: true,
+                navLinks: true,
+                dayMaxEvents: true,
+                events: events,
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
+                },
+                eventDidMount: function(info) {
+                    // Add bootstratp tooltip without popper.js dependency
+                    var event = info.event;
+                    var statusClass = getStatusClass(event.extendedProps.status);
+                    
+                    // Create custom tooltip content
+                    var tooltipHtml = '<div class="event-tooltip">' +
+                        '<div class="font-weight-bold mb-1">' + event.title + '</div>' +
+                        '<div><strong>Treatment:</strong> ' + event.extendedProps.treatment + '</div>' +
+                        '<div><strong>Status:</strong> ' + 
+                        '<span class="event-tooltip-status" style="background-color: ' + event.backgroundColor + '">' +
+                        event.extendedProps.status + '</span></div>' +
+                        '<div class="mt-2 small text-muted">Click for more details</div>' +
+                        '</div>';
+                    
+                    // Use jQuery to apply Bootstrap tooltip
+                    $(info.el).tooltip({
+                        title: tooltipHtml,
+                        html: true,
+                        placement: 'top',
+                        container: 'body',
+                        trigger: 'hover',
+                        delay: { show: 200, hide: 100 }
+                    });
+                },
+                eventContent: function(info) {
+                    return {
+                        html: `<div class="fc-event-time">${info.timeText}</div>
+                               <div class="fc-event-title">${info.event.title.split(' - ')[1]}</div>`
+                    };
+                },
+                eventClick: function(info) {
+                    window.location.href = '/Doctor/Appointments/Details/' + info.event.id;
+                }
+            });
+            
+            calendar.render();
+            
+            // Helper function to get appropriate status style class
+            function getStatusClass(status) {
+                switch(status) {
+                    case 'Scheduled': return 'badge-primary';
+                    case 'Confirmed': return 'badge-success';
+                    case 'Completed': return 'badge-info';
+                    case 'Cancelled': return 'badge-danger';
+                    default: return 'badge-primary';
+                }
+            }
+        });
+    </script>
+} 

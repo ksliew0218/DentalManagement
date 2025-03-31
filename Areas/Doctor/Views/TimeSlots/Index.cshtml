@@ -2,87 +2,74 @@
 
 @{
     ViewData["Title"] = "My Time Slots";
+    Layout = "~/Areas/Doctor/Views/Shared/_DoctorLayout.cshtml";
 }
 
-<div class="container-fluid px-0">
-    <!-- Page Heading with Navigation -->
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div class="d-flex align-items-center">
-            <a href="@Url.Action("Index", "Dashboard", new { area = "Doctor" })" class="btn btn-outline-primary me-3">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-            <h1 class="h3 mb-0 text-gray-800">My Time Slots</h1>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+                <i class="bi bi-clock me-2"></i>My Time Slots
+            </h1>
+            <p class="text-muted">Manage your available time slots for appointments</p>
         </div>
-        <div class="btn-group">
-            <a href="@Url.Action("Index", "TimeSlots", new { area = "Doctor" })" class="btn btn-primary">
-                <i class="bi bi-list"></i> List View
+        <div class="d-flex">
+            <a asp-area="Doctor" asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary me-2">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
             </a>
-            <a href="@Url.Action("Calendar", "TimeSlots", new { area = "Doctor" })" class="btn btn-outline-primary">
-                <i class="bi bi-calendar3"></i> Calendar View
+            <a href="@Url.Action("Calendar", "TimeSlots", new { area = "Doctor" })" class="btn btn-primary shadow-sm rounded-pill px-4">
+                <i class="bi bi-calendar3 fa-sm text-white-50 me-2"></i>Calendar View
             </a>
         </div>
     </div>
 
     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @ViewBag.ErrorMessage
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.ErrorMessage
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <!-- Time Slots Table Card -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+    <!-- Time Slots Table -->
+    <div class="card shadow mb-4 border-0 rounded-lg">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <i class="bi bi-clock me-2"></i>
-                <h6 class="m-0 font-weight-bold">Time Slots List</h6>
+                <i class="bi bi-list-ul me-2"></i>
+                <h6 class="m-0 fw-bold">Time Slots List</h6>
             </div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body">
             @if (Model != null && Model.Any())
             {
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
+                    <table class="table table-hover mb-0" id="timeSlotsTable" width="100%" cellspacing="0">
+                        <thead class="bg-light text-gray-800 border-0">
                             <tr>
-                                <th class="px-4 py-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-calendar-date text-primary me-2"></i> Date
-                                    </div>
-                                </th>
-                                <th class="px-4 py-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-clock text-success me-2"></i> Start Time
-                                    </div>
-                                </th>
-                                <th class="px-4 py-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-clock-fill text-danger me-2"></i> End Time
-                                    </div>
-                                </th>
-                                <th class="px-4 py-3 text-center">Status</th>
+                                <th class="fw-bold border-top-0">Date</th>
+                                <th class="fw-bold border-top-0">Start Time</th>
+                                <th class="fw-bold border-top-0">End Time</th>
+                                <th class="fw-bold text-center border-top-0">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var slot in Model)
                             {
                                 <tr>
-                                    <td class="px-4 py-3">
-                                        <span class="fw-medium">@slot.StartTime.ToLocalTime().ToString("dddd, MMM d, yyyy")</span>
-                                    </td>
-                                    <td class="px-4 py-3">@slot.StartTime.ToLocalTime().ToString("h:mm tt")</td>
-                                    <td class="px-4 py-3">@slot.EndTime.ToLocalTime().ToString("h:mm tt")</td>
-                                    <td class="px-4 py-3 text-center">
+                                    <td class="fw-medium align-middle py-3">@slot.StartTime.ToLocalTime().ToString("dddd, MMM d, yyyy")</td>
+                                    <td class="align-middle py-3">@slot.StartTime.ToLocalTime().ToString("h:mm tt")</td>
+                                    <td class="align-middle py-3">@slot.EndTime.ToLocalTime().ToString("h:mm tt")</td>
+                                    <td class="text-center align-middle py-3">
                                         @if (slot.IsBooked)
                                         {
-                                            <span class="badge bg-danger rounded-pill px-3 py-2">
+                                            <span class="status-badge status-cancelled">
                                                 <i class="bi bi-calendar-check me-1"></i> Booked
                                             </span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-success rounded-pill px-3 py-2">
+                                            <span class="status-badge status-confirmed">
                                                 <i class="bi bi-calendar-plus me-1"></i> Available
                                             </span>
                                         }
@@ -95,75 +82,39 @@
             }
             else
             {
-                <div class="text-center py-5">
+                <div class="text-center p-5">
                     <i class="bi bi-calendar-x text-muted" style="font-size: 3.5rem;"></i>
                     <p class="lead mt-3 mb-0">No time slots found.</p>
-                    <p class="text-muted mb-4">Time slots are created by administrators to make you available for appointments.</p>
+                    <p class="text-muted mb-3">Time slots are created by administrators to make you available for appointments.</p>
                 </div>
             }
         </div>
     </div>
     
     <!-- Schedule Legend -->
-    <div class="card shadow">
-        <div class="card-header py-3 bg-light">
-            <h6 class="m-0 text-primary">Status Legend</h6>
+    <div class="card shadow-sm mt-4">
+        <div class="card-header d-flex align-items-center">
+            <i class="bi bi-info-circle me-2"></i>
+            <h6 class="mb-0 fw-bold">Status Legend</h6>
         </div>
         <div class="card-body py-3">
             <div class="d-flex flex-wrap">
                 <div class="d-flex align-items-center me-4 mb-2">
-                    <span class="badge bg-success rounded-pill px-3 py-2 me-2">
+                    <span class="status-badge status-confirmed me-2">
                         <i class="bi bi-calendar-plus me-1"></i> Available
                     </span>
-                    <span>Slot is open and can be booked by patients</span>
+                    <span class="text-muted">Slot is open and can be booked by patients</span>
                 </div>
-                <div class="d-flex align-items-center me-4 mb-2">
-                    <span class="badge bg-danger rounded-pill px-3 py-2 me-2">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="status-badge status-cancelled me-2">
                         <i class="bi bi-calendar-check me-1"></i> Booked
                     </span>
-                    <span>Slot has been booked by a patient</span>
+                    <span class="text-muted">Slot has been booked by a patient</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@section Styles {
-    <style>
-        /* Table styles */
-        .table {
-            font-size: 0.9rem;
-        }
-        
-        .table th {
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.08rem;
-        }
-        
-        .badge {
-            font-weight: 500;
-        }
-        
-        .btn-group .btn {
-            box-shadow: none;
-        }
-        
-        /* Enhanced colors */
-        .table-light {
-            background-color: #f8f9fa;
-        }
-        
-        .table tbody tr:hover {
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-        
-        .fw-medium {
-            font-weight: 500;
-        }
-    </style>
-}
 
 @section Scripts {
     <script>
@@ -171,5 +122,19 @@
         setTimeout(function() {
             $('.alert').alert('close');
         }, 5000);
+        
+        // Initialize DataTable
+        $(document).ready(function() {
+            $('#timeSlotsTable').DataTable({
+                "ordering": true,
+                "info": true,
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "pageLength": 10,
+                "order": [[0, "asc"]]
+            });
+        });
     </script>
 } 

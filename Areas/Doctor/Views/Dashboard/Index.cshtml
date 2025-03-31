@@ -1,16 +1,26 @@
 @model DentalManagement.Areas.Doctor.Models.DoctorDashboardViewModel
 @{
     ViewData["Title"] = "Doctor Dashboard";
+    Layout = "~/Areas/Doctor/Views/Shared/_DoctorLayout.cshtml";
 }
 
 <div class="container-fluid">
-    <div class="page-header mb-4">
-        <h1 class="h3 text-primary">
-            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-        </h1>
-        <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Calendar" class="btn btn-primary">
-            <i class="bi bi-calendar3 me-2"></i>Full Calendar View
-        </a>
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </h1>
+            <p class="text-muted">Welcome, Dr. @(Model.CurrentDoctor?.FirstName ?? "Doctor")</p>
+        </div>
+        <div class="d-flex">
+            <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Calendar" class="btn btn-primary shadow-sm rounded-pill px-4 me-2">
+                <i class="bi bi-calendar3 fa-sm text-white-50 me-2"></i>Schedule
+            </a>
+            <a asp-area="Doctor" asp-controller="Appointments" asp-action="Calendar" class="btn btn-info shadow-sm rounded-pill px-4">
+                <i class="bi bi-calendar-check fa-sm text-white-50 me-2"></i>Appointments
+            </a>
+        </div>
     </div>
 
     @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
@@ -21,10 +31,95 @@
         </div>
     }
 
+    <!-- Stats Cards Row -->
     <div class="row mb-4">
-        <div class="col-xl-3 col-lg-4 col-md-12">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header py-3 bg-primary text-white d-flex align-items-center">
+        <!-- Time Slots Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index" class="text-decoration-none">
+                <div class="card stats-card border-left-primary shadow h-100 py-2 rounded-lg">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Time Slots</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TimeSlotCount</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-clock fa-2x text-primary icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Treatments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a asp-area="Doctor" asp-controller="Treatments" asp-action="Index" class="text-decoration-none">
+                <div class="card stats-card border-left-success shadow h-100 py-2 rounded-lg">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Treatments</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TreatmentCount</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-clipboard2-pulse fa-2x text-success icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+                
+        <!-- Appointments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a asp-area="Doctor" asp-controller="Appointments" asp-action="Index" class="text-decoration-none">
+                <div class="card stats-card border-left-info shadow h-100 py-2 rounded-lg">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Appointments</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.AppointmentCount</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-calendar-check fa-2x text-info icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Patients Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a asp-area="Doctor" asp-controller="Patients" asp-action="Index" class="text-decoration-none">
+                <div class="card stats-card border-left-warning shadow h-100 py-2 rounded-lg">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Patients</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PatientCount</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-vcard fa-2x text-warning icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile and Calendar Row -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-lg-5 col-md-12 mb-4">
+            <!-- Doctor Profile Card -->
+            <div class="card shadow border-0 rounded-lg h-100">
+                <div class="card-header py-3 d-flex align-items-center">
                     <i class="bi bi-person-circle me-2"></i>
                     <h6 class="m-0 font-weight-bold">My Profile</h6>
                 </div>
@@ -38,14 +133,16 @@
                             }
                             else
                             {
-                                <div class="profile-initials rounded-circle mx-auto shadow-sm" style="width: 120px; height: 120px; background-color: #4e73df; color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                                    @(Model.CurrentDoctor.FirstName[0].ToString() + Model.CurrentDoctor.LastName[0].ToString())
+                                <div class="doctor-avatar mx-auto">
+                                    <span class="doctor-initials">
+                                        @(Model.CurrentDoctor.FirstName[0].ToString() + Model.CurrentDoctor.LastName[0].ToString())
+                                    </span>
                                 </div>
                             }
                             <h4 class="mt-3 mb-1">Dr. @Model.CurrentDoctor.FirstName @Model.CurrentDoctor.LastName</h4>
                             <p class="text-muted">@Model.CurrentDoctor.Specialty</p>
                         </div>
-                        <div class="card border-0 shadow-sm mb-3 bg-light">
+                        <div class="card bg-light mb-3">
                             <div class="card-body p-3">
                                 <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-info-circle me-2"></i>Contact Information</h6>
                                 <p class="mb-1"><i class="bi bi-envelope me-2"></i>@Model.CurrentDoctor.User?.Email</p>
@@ -67,133 +164,29 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-9 col-lg-8 col-md-12">
-            <div class="row">
-                <!-- Time Slots Card -->
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card border-0 shadow-sm rounded-3 h-100 bg-gradient-primary text-white">
-                        <div class="card-body py-4">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="card-title text-uppercase mb-2">TIME SLOTS</div>
-                                    <div class="count mb-0">@Model.TimeSlotCount</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-clock icon"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 py-3">
-                            <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                                <span>View Details</span>
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Treatments Card -->
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card border-0 shadow-sm rounded-3 h-100 bg-gradient-success text-white">
-                        <div class="card-body py-4">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="card-title text-uppercase mb-2">TREATMENTS</div>
-                                    <div class="count mb-0">@Model.TreatmentCount</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-clipboard2-pulse icon"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 py-3">
-                            <a asp-area="Doctor" asp-controller="Treatments" asp-action="Index" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                                <span>View Details</span>
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Appointments Card -->
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card border-0 shadow-sm rounded-3 h-100 bg-gradient-info text-white">
-                        <div class="card-body py-4">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="card-title text-uppercase mb-2">APPOINTMENTS</div>
-                                    <div class="count mb-0">@Model.AppointmentCount</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-calendar-check icon"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 py-3">
-                            <a asp-area="Doctor" asp-controller="Appointments" asp-action="Index" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                                <span>View Details</span>
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Leave Requests Card -->
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card dashboard-card border-0 shadow-sm rounded-3 h-100 bg-gradient-warning text-white">
-                        <div class="card-body py-4">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="card-title text-uppercase mb-2">LEAVE REQUESTS</div>
-                                    <div class="count mb-0">@Model.PendingLeaveRequests</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-calendar-x icon"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 py-3">
-                            <a asp-area="" asp-controller="Leave" asp-action="Index" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                                <span>View Details</span>
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Leave Management and Time Slots Row -->
-    <div class="row">
-        <!-- Leave Management Card -->
-        <div class="col-xl-6 col-lg-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+        <div class="col-xl-8 col-lg-7 col-md-12">
+            <!-- Leave Summary -->
+            <div class="card shadow border-0 rounded-lg mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-calendar-x me-2"></i>
-                        <h6 class="m-0 font-weight-bold">Leave Management</h6>
+                        <h6 class="m-0 font-weight-bold">Leave Summary</h6>
                     </div>
+                    <a asp-area="" asp-controller="Leave" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Request Leave
+                    </a>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body p-3">
                     @if (Model.LeaveBalances != null && Model.LeaveBalances.Any())
                     {
-                        <h6 class="text-primary mb-3"><i class="bi bi-calendar-range me-2"></i>Current Leave Balances</h6>
-                        <div class="table-responsive mb-4">
-                            <table class="table table-sm table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Leave Type</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-end">Remaining Days</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var balance in Model.LeaveBalances)
-                                    {
-                                        <tr>
-                                            <td class="fw-medium">@balance.LeaveType.Name</td>
-                                            <td class="text-center">
+                        <div class="row">
+                            @foreach (var balance in Model.LeaveBalances)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-0 bg-light h-100">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">@balance.LeaveType.Name</h6>
                                                 @if (balance.LeaveType.IsPaid)
                                                 {
                                                     <span class="badge bg-success">Paid</span>
@@ -202,148 +195,22 @@
                                                 {
                                                     <span class="badge bg-secondary">Unpaid</span>
                                                 }
-                                            </td>
-                                            <td class="text-end">
-                                                @if (balance.LeaveType.IsPaid)
-                                                {
-                                                    <span class="@(balance.RemainingDays > 5 ? "text-success" : "text-danger") fw-bold">
-                                                        @balance.RemainingDays day(s)
-                                                    </span>
+                                            </div>
+                                            <div class="progress mb-2" style="height: 10px;">
+                                                @{
+                                                    var percentage = balance.LeaveType.IsPaid ? (double)balance.RemainingDays / balance.LeaveType.DefaultDays * 100 : 100;
+                                                    var progressClass = percentage > 50 ? "bg-success" : percentage > 25 ? "bg-warning" : "bg-danger";
                                                 }
-                                                else
-                                                {
-                                                    <span class="text-muted">Unlimited</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        @if (Model.UpcomingLeave != null)
-                        {
-                            <h6 class="text-primary mb-3"><i class="bi bi-calendar-event me-2"></i>Upcoming Leave</h6>
-                            <div class="card border-0 shadow-sm bg-light mb-3">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <span class="badge bg-success me-2">Approved</span>
-                                        <h6 class="mb-0">@Model.UpcomingLeave.LeaveType.Name</h6>
-                                    </div>
-                                    <p class="small mb-1">
-                                        <i class="bi bi-calendar me-1"></i> 
-                                        @Model.UpcomingLeave.StartDate.ToString("MMM dd") - @Model.UpcomingLeave.EndDate.ToString("MMM dd, yyyy")
-                                        <span class="badge bg-dark ms-2">@Model.UpcomingLeave.TotalDays days</span>
-                                    </p>
-                                    <p class="small mb-0 text-truncate">
-                                        <i class="bi bi-chat-left-text me-1"></i> @(string.IsNullOrEmpty(Model.UpcomingLeave.Reason) ? "No reason provided" : Model.UpcomingLeave.Reason)
-                                    </p>
-                                </div>
-                            </div>
-                        }
-                        else if (Model.PendingLeaveRequests > 0)
-                        {
-                            <div class="alert alert-warning d-flex align-items-center mb-0">
-                                <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
-                                <div>You have @Model.PendingLeaveRequests pending leave request(s).</div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="text-center py-3">
-                                <i class="bi bi-calendar-plus text-muted" style="font-size: 2.5rem;"></i>
-                                <p class="text-muted mt-3 mb-3">No upcoming leave scheduled.</p>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="bi bi-exclamation-circle text-muted" style="font-size: 2.5rem;"></i>
-                            <p class="text-muted mt-3">No leave balances available.</p>
-                        </div>
-                    }
-                    
-                    <div class="d-flex justify-content-end mt-3">
-                        <a asp-area="" asp-controller="Leave" asp-action="Index" class="btn btn-outline-primary">
-                            <i class="bi bi-arrow-right me-2"></i>Manage Leave
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Time Slots Card -->
-        <div class="col-xl-6 col-lg-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-3 h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-clock me-2"></i>
-                        <h6 class="m-0 font-weight-bold">My Time Slots</h6>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <h6 class="text-primary mb-3"><i class="bi bi-calendar-week me-2"></i>Today's Availability</h6>
-                    
-                    @if (Model.TodayTimeSlots != null && Model.TodayTimeSlots.Any())
-                    {
-                        <div class="table-responsive mb-4">
-                            <table class="table table-sm table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Start Time</th>
-                                        <th>End Time</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var timeSlot in Model.TodayTimeSlots)
-                                    {
-                                        <tr>
-                                            <td class="fw-medium">@timeSlot.StartTime.ToString("hh:mm tt")</td>
-                                            <td>@timeSlot.EndTime.ToString("hh:mm tt")</td>
-                                            <td>
-                                                @if (timeSlot.IsBooked)
-                                                {
-                                                    <span class="badge bg-danger">Booked</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-success">Available</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info d-flex align-items-center mb-4">
-                            <i class="bi bi-info-circle-fill fs-5 me-3"></i>
-                            <div>You don't have any time slots for today.</div>
-                        </div>
-                    }
-                    
-                    <h6 class="text-primary mb-3"><i class="bi bi-calendar-date me-2"></i>Upcoming Time Slots</h6>
-                    
-                    @if (Model.UpcomingTimeSlots != null && Model.UpcomingTimeSlots.Any())
-                    {
-                        <div class="list-group mb-3">
-                            @foreach (var day in Model.UpcomingTimeSlots.GroupBy(ts => ts.StartTime.Date).Take(3))
-                            {
-                                var date = day.Key;
-                                var slots = day.ToList();
-                                var availableCount = slots.Count(s => !s.IsBooked);
-                                
-                                <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light mb-2 rounded p-3">
-                                    <div>
-                                        <h6 class="mb-1">@date.ToString("dddd, MMM dd")</h6>
-                                        <p class="mb-0 small text-muted">@slots.Count() time slots (@availableCount available)</p>
-                                    </div>
-                                    <div>
-                                        <span class="badge bg-primary rounded-pill">@slots.Count()</span>
+                                                <div class="progress-bar @progressClass" role="progressbar" style="width: @percentage%;" 
+                                                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">Remaining</small>
+                                                <small class="@(balance.RemainingDays > 5 ? "text-success" : "text-danger") fw-bold">
+                                                    @(balance.LeaveType.IsPaid ? $"{balance.RemainingDays} / {balance.LeaveType.DefaultDays} days" : "Unlimited")
+                                                </small>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             }
@@ -352,74 +219,202 @@
                     else
                     {
                         <div class="text-center py-3">
-                            <i class="bi bi-calendar-plus text-muted" style="font-size: 2.5rem;"></i>
-                            <p class="text-muted mt-3 mb-3">No upcoming time slots found.</p>
+                            <i class="bi bi-exclamation-circle text-muted" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0 text-muted">No leave balances available.</p>
                         </div>
                     }
+                </div>
+            </div>
+            
+            <!-- Calendar Widget -->
+            <div class="card shadow border-0 rounded-lg">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        <h6 class="m-0 font-weight-bold">Calendar</h6>
+                    </div>
+                    <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Calendar" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-fullscreen me-1"></i>Full Calendar
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <h6 class="mb-0">@DateTime.Now.ToString("MMMM yyyy")</h6>
+                        <div>
+                            <a href="#" class="btn btn-sm btn-light me-1 rounded-pill">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-primary rounded-pill">Today</a>
+                            <a href="#" class="btn btn-sm btn-light ms-1 rounded-pill">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
                     
-                    <div class="d-flex justify-content-end mt-3">
-                        <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index" class="btn btn-outline-primary">
-                            <i class="bi bi-arrow-right me-2"></i>View Time Slots
-                        </a>
+                    <div class="calendar-container">
+                        <div class="calendar-weekdays">
+                            <div class="weekday">Sun</div>
+                            <div class="weekday">Mon</div>
+                            <div class="weekday">Tue</div>
+                            <div class="weekday">Wed</div>
+                            <div class="weekday">Thu</div>
+                            <div class="weekday">Fri</div>
+                            <div class="weekday">Sat</div>
+                        </div>
+                        <div class="calendar-days">
+                            @{
+                                var today = DateTime.Now;
+                                var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+                                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+                                var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+                                
+                                // Previous month days
+                                for (int i = 0; i < startDayOfWeek; i++)
+                                {
+                                    <div class="calendar-day inactive"></div>
+                                }
+                                
+                                // Current month days
+                                for (int day = 1; day <= lastDayOfMonth.Day; day++)
+                                {
+                                    var currentDate = new DateTime(today.Year, today.Month, day);
+                                    var isToday = currentDate.Date == DateTime.Today;
+                                    var appointmentsCount = Model.TodayAppointments?.Count(a => a.AppointmentDate.Date == currentDate.Date) ?? 0;
+                                    var timeSlotsCount = Model.UpcomingTimeSlots?.Count(t => t.StartTime.Date == currentDate.Date) ?? 0;
+                                    var hasEvents = appointmentsCount > 0 || timeSlotsCount > 0;
+                                    
+                                    <div class="calendar-day @(isToday ? "today" : "") @(hasEvents ? "has-events" : "")">
+                                        <div class="day-number">@day</div>
+                                        @if (appointmentsCount > 0)
+                                        {
+                                            <div class="event-count appt-count" title="@appointmentsCount appointment(s)">
+                                                <i class="bi bi-calendar-check"></i> @appointmentsCount
+                                            </div>
+                                        }
+                                        @if (timeSlotsCount > 0)
+                                        {
+                                            <div class="event-count slot-count" title="@timeSlotsCount time slot(s)">
+                                                <i class="bi bi-clock"></i> @timeSlotsCount
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                
+                                // Next month days to fill the grid
+                                var remainingDays = 42 - (startDayOfWeek + lastDayOfMonth.Day);
+                                for (int i = 0; i < remainingDays; i++)
+                                {
+                                    <div class="calendar-day inactive"></div>
+                                }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Today's Appointments Row -->
+    <!-- Today's Appointments and Time Slots Row -->
     <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+        <!-- Today's Appointments Card -->
+        <div class="col-xl-7 col-lg-6 mb-4">
+            <div class="card shadow border-0 rounded-lg h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-calendar-check me-2"></i>
                         <h6 class="m-0 font-weight-bold">Today's Appointments</h6>
                     </div>
-                    <a asp-area="Doctor" asp-controller="Appointments" asp-action="Index" class="btn btn-light btn-sm">
-                        <i class="bi bi-list me-1"></i>All Appointments
+                    <a asp-area="Doctor" asp-controller="Appointments" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i>View All
                     </a>
                 </div>
-                <div class="card-body p-4">
-                    @if (Model.TodayAppointments != null && Model.TodayAppointments.Any())
+                <div class="card-body p-0">
+                    @if (Model.TodayAppointments == null || !Model.TodayAppointments.Any())
+                    {
+                        <div class="p-4 text-center">
+                            <i class="bi bi-calendar text-muted" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0 text-muted">No appointments scheduled for today.</p>
+                        </div>
+                    }
+                    else
                     {
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light text-gray-800 border-0">
                                     <tr>
-                                        <th>Time</th>
-                                        <th>Patient</th>
-                                        <th>Treatment</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th class="fw-bold border-top-0">Time</th>
+                                        <th class="fw-bold border-top-0">Patient</th>
+                                        <th class="fw-bold border-top-0">Treatment</th>
+                                        <th class="fw-bold border-top-0">Status</th>
+                                        <th class="fw-bold border-top-0">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var appointment in Model.TodayAppointments.OrderBy(a => a.AppointmentTime))
                                     {
                                         <tr>
-                                            <td class="fw-medium">
-                                                @appointment.AppointmentTime.ToString("hh:mm tt") - @appointment.AppointmentTime.Add(TimeSpan.FromMinutes(appointment.TreatmentType.Duration)).ToString("hh:mm tt")
+                                            <td class="align-middle py-3">@appointment.AppointmentTime.Hours.ToString("00"):@appointment.AppointmentTime.Minutes.ToString("00") @(appointment.AppointmentTime.Hours >= 12 ? "PM" : "AM")</td>
+                                            <td class="align-middle py-3">@appointment.Patient?.FirstName @appointment.Patient?.LastName</td>
+                                            <td class="align-middle py-3">@appointment.TreatmentType?.Name</td>
+                                            <td class="align-middle py-3">
+                                                <span class="status-badge @GetStatusBadgeClass(appointment.Status)">
+                                                    @appointment.Status
+                                                </span>
                                             </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-placeholder bg-info text-white rounded-circle me-2">
-                                                        @(appointment.Patient.FirstName[0].ToString() + appointment.Patient.LastName[0].ToString())
-                                                    </div>
-                                                    <div>
-                                                        <div class="fw-medium">@appointment.Patient.FirstName @appointment.Patient.LastName</div>
-                                                        <small class="text-muted">@appointment.Patient.PhoneNumber</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>@appointment.TreatmentType.Name</td>
-                                            <td>
-                                                <span class="badge bg-success">@appointment.Status</span>
-                                            </td>
-                                            <td>
-                                                <a asp-area="Doctor" asp-controller="Appointments" asp-action="Details" asp-route-id="@appointment.Id" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-eye"></i>
+                                            <td class="align-middle py-3">
+                                                <a href="@Url.Action("Details", "Appointments", new { area = "Doctor", id = appointment.Id })" class="btn-details" title="View Details">
+                                                    <i class="bi bi-eye"></i> View
                                                 </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Today's Time Slots -->
+        <div class="col-xl-5 col-lg-6 mb-4">
+            <div class="card shadow border-0 rounded-lg h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clock me-2"></i>
+                        <h6 class="m-0 font-weight-bold">Today's Schedule</h6>
+                    </div>
+                    <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.TodayTimeSlots != null && Model.TodayTimeSlots.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light text-gray-800 border-0">
+                                    <tr>
+                                        <th class="fw-bold border-top-0">Start Time</th>
+                                        <th class="fw-bold border-top-0">End Time</th>
+                                        <th class="fw-bold border-top-0">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var timeSlot in Model.TodayTimeSlots.OrderBy(t => t.StartTime))
+                                    {
+                                        <tr>
+                                            <td class="fw-medium align-middle py-3">@timeSlot.StartTime.ToString("hh:mm tt")</td>
+                                            <td class="align-middle py-3">@timeSlot.EndTime.ToString("hh:mm tt")</td>
+                                            <td class="align-middle py-3">
+                                                @if (timeSlot.IsBooked)
+                                                {
+                                                    <span class="status-badge status-cancelled">Booked</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="status-badge status-confirmed">Available</span>
+                                                }
                                             </td>
                                         </tr>
                                     }
@@ -429,10 +424,9 @@
                     }
                     else
                     {
-                        <div class="text-center py-5">
-                            <i class="bi bi-calendar2-check text-muted" style="font-size: 3rem;"></i>
-                            <h5 class="mt-3 text-muted">No appointments scheduled for today</h5>
-                            <p class="text-muted">You have a clear schedule for the day.</p>
+                        <div class="p-4 text-center">
+                            <i class="bi bi-clock text-muted" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0 text-muted">No time slots available for today.</p>
                         </div>
                     }
                 </div>
@@ -443,99 +437,151 @@
 
 @section Styles {
     <style>
-        /* Enhanced styles for dashboard */
-        .dashboard-card {
-            transition: transform 0.2s;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+        .border-left-primary {
+            border-left: 0.25rem solid #4e73df !important;
         }
         
-        .dashboard-card:hover {
-            transform: translateY(-3px);
+        .border-left-success {
+            border-left: 0.25rem solid #1cc88a !important;
         }
         
-        .dashboard-card .icon {
-            font-size: 3rem;
+        .border-left-info {
+            border-left: 0.25rem solid #36b9cc !important;
+        }
+        
+        .border-left-warning {
+            border-left: 0.25rem solid #f6c23e !important;
+        }
+        
+        .stats-card {
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+        }
+        
+        .stats-card .icon {
             opacity: 0.7;
         }
         
-        .dashboard-card .count {
-            font-size: 2.5rem;
-            font-weight: 700;
+        /* Calendar Styles */
+        .calendar-container {
+            background-color: #fff;
+            border-radius: 0 0 0.5rem 0.5rem;
+            overflow: hidden;
         }
         
-        .dashboard-card .card-title {
-            font-size: 0.9rem;
-            letter-spacing: 0.05rem;
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
         }
         
-        /* Badge styles */
-        .badge {
-            font-weight: 500;
-        }
-        
-        /* Card styles */
-        .card {
-            box-shadow: 0 0.15rem 1rem 0 rgba(58, 59, 69, 0.10) !important;
-            transition: all 0.2s;
-        }
-        
-        .card:hover {
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
-        }
-        
-        .card-header {
-            border-bottom: 0;
-        }
-        
-        /* Button styles */
-        .btn {
-            font-weight: 500;
-        }
-        
-        .btn-outline-primary {
-            border-width: 1px;
-        }
-        
-        .btn-outline-primary:hover {
-            box-shadow: 0 0.15rem 0.5rem 0 rgba(58, 59, 69, 0.15);
-        }
-        
-        /* Table styles */
-        .table th {
+        .weekday {
+            padding: 10px;
+            text-align: center;
             font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
+            font-size: 0.8rem;
+            color: #5a5c69;
         }
         
-        .avatar-placeholder {
-            width: 32px;
-            height: 32px;
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(70px, auto);
+        }
+        
+        .calendar-day {
+            position: relative;
+            min-height: 70px;
+            border-right: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 5px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        
+        .calendar-day:hover {
+            background-color: #f8f9fc;
+        }
+        
+        .calendar-day.inactive {
+            background-color: #f9fafb;
+            color: #d1d3e2;
+        }
+        
+        .calendar-day.today {
+            background-color: #e8f4fe;
+        }
+        
+        .calendar-day.today .day-number {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .day-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-weight: 500;
+        }
+        
+        .event-count {
+            display: flex;
+            align-items: center;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            width: fit-content;
+        }
+        
+        .appt-count {
+            background-color: rgba(78, 115, 223, 0.1);
+            color: #4e73df;
+        }
+        
+        .slot-count {
+            background-color: rgba(54, 185, 204, 0.1);
+            color: #36b9cc;
+        }
+        
+        .doctor-avatar {
+            width: 120px;
+            height: 120px;
+            background-color: #4e73df;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-size: 2.5rem;
             font-weight: bold;
-            font-size: 0.8rem;
-        }
-        
-        .page-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-        
-        .fw-medium {
-            font-weight: 500 !important;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
         }
     </style>
 }
 
-@section Scripts {
-    <script>
-        // Auto-dismiss alerts after 5 seconds
-        setTimeout(function() {
-            $('.alert').alert('close');
-        }, 5000);
-    </script>
+@functions{
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Scheduled" => "status-pending",
+            "Confirmed" => "status-confirmed",
+            "Completed" => "status-confirmed",
+            "Cancelled" => "status-cancelled",
+            "Rescheduled" => "status-pending",
+            "No-Show" => "status-cancelled",
+            _ => "status-pending",
+        };
+    }
 } 

@@ -4,128 +4,294 @@
     Layout = "_DoctorLayout";
 }
 
-<div class="container-fluid py-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-area="Doctor" asp-controller="Dashboard" asp-action="Index">Doctor Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">My Treatments</li>
-        </ol>
-    </nav>
-
+<div class="container-fluid">
+    <!-- Page Heading with Navigation -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2 mb-0">
-            <i class="bi bi-clipboard2-pulse text-primary me-2"></i>
-            My Treatments
+        <h1 class="h3 text-primary fw-bold mb-0">
+            <i class="bi bi-clipboard2-pulse me-2"></i>My Treatments
         </h1>
-        <a asp-area="Doctor" asp-controller="Dashboard" asp-action="Index" class="back-button">
-            <i class="bi bi-arrow-left"></i> Back
+        <a asp-area="Doctor" asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
         </a>
     </div>
-    
-    <div class="card shadow">
-        <div class="card-body">
-            @if (!Model.Any())
-            {
-                <div class="text-center py-5">
-                    <i class="bi bi-exclamation-circle text-muted" style="font-size: 3rem;"></i>
-                    <h3 class="mt-3">No Treatments Assigned</h3>
-                    <p class="text-muted">You don't have any treatments assigned yet. Please contact the administrator.</p>
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 80px;">Image</th>
-                                <th>Treatment</th>
-                                <th>Description</th>
-                                <th>Price</th>
-                                <th>Duration</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(item.TreatmentType.ImageUrl))
-                                        {
-                                            <img src="@item.TreatmentType.ImageUrl" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" alt="@item.TreatmentType.Name" />
-                                        }
-                                        else
-                                        {
-                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                                <i class="bi bi-image text-muted"></i>
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        <span class="fw-bold">@item.TreatmentType.Name</span>
-                                    </td>
-                                    <td>
-                                        @if (string.IsNullOrEmpty(item.TreatmentType.Description))
-                                        {
-                                            <span class="text-muted fst-italic">No description</span>
-                                        }
-                                        else
-                                        {
-                                            @(item.TreatmentType.Description?.Length > 50 
-                                                ? item.TreatmentType.Description.Substring(0, 50) + "..." 
-                                                : item.TreatmentType.Description)
-                                        }
-                                    </td>
-                                    <td>RM @item.TreatmentType.Price.ToString("F2")</td>
-                                    <td>@item.TreatmentType.Duration min</td>
-                                    <td>
-                                        @if (item.IsActive)
-                                        {
-                                            <span class="badge bg-success">Active</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Inactive</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-eye"></i> View Details
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </div>
-    
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Treatment Information</h5>
+
+    <div class="row">
+        <!-- Left sidebar -->
+        <div class="col-md-3">
+            <!-- Treatment Info Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex align-items-center bg-white">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>
+                    <h6 class="mb-0 fw-bold">Treatment Information</h6>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-start">
-                        <div class="bg-light rounded-circle p-3 me-3">
-                            <i class="bi bi-info-circle text-primary fs-4"></i>
+                    <p class="mb-3">
+                        Treatments are assigned to you by administrators. Each treatment has its own specifics such as:
+                    </p>
+                    <div class="mb-2">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="feature-icon me-2">
+                                <i class="bi bi-currency-dollar"></i>
+                            </span>
+                            <span>Price</span>
                         </div>
-                        <div>
-                            <p class="mb-1">
-                                Treatments are assigned to you by administrators. Each treatment has its own specifics such as duration, price, and procedures.
-                            </p>
-                            <p class="mb-0 text-muted">
-                                If you need any modifications to your assigned treatments, please contact the clinic administrator.
-                            </p>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="feature-icon me-2">
+                                <i class="bi bi-hourglass-split"></i>
+                            </span>
+                            <span>Duration</span>
                         </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="feature-icon me-2">
+                                <i class="bi bi-list-check"></i>
+                            </span>
+                            <span>Procedures</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white py-3">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-exclamation-circle me-1"></i> If you need modifications to your assigned treatments, please contact the clinic administrator.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Statistics Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex align-items-center bg-white">
+                    <i class="bi bi-graph-up me-2 text-primary"></i>
+                    <h6 class="mb-0 fw-bold">Treatment Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Total Treatments:</span>
+                        <span class="fw-bold">@Model.Count()</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Active Treatments:</span>
+                        <span class="fw-bold">@Model.Count(t => t.IsActive)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Inactive Treatments:</span>
+                        <span class="fw-bold">@Model.Count(t => !t.IsActive)</span>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Main content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bi bi-list-ul me-2"></i>My Treatment List
+                        </h6>
+                        <span class="badge bg-light text-primary">@Model.Count() Total</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <div class="empty-state-icon mb-3">
+                                <i class="bi bi-clipboard-x"></i>
+                            </div>
+                            <h4 class="text-muted mb-2">No Treatments Assigned</h4>
+                            <p class="text-muted mb-0">You don't have any treatments assigned yet.</p>
+                            <p class="text-muted">Please contact the administrator for assignments.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="border-0" style="width: 80px;">Image</th>
+                                        <th class="border-0">Treatment</th>
+                                        <th class="border-0">Description</th>
+                                        <th class="border-0">Price</th>
+                                        <th class="border-0">Duration</th>
+                                        <th class="border-0">Status</th>
+                                        <th class="border-0">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.TreatmentType.ImageUrl))
+                                                {
+                                                    <div class="treatment-img-wrapper">
+                                                        <img src="@item.TreatmentType.ImageUrl" class="treatment-img" alt="@item.TreatmentType.Name" />
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="treatment-img-wrapper d-flex align-items-center justify-content-center bg-light">
+                                                        <i class="bi bi-image text-muted"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold">@item.TreatmentType.Name</span>
+                                            </td>
+                                            <td>
+                                                @if (string.IsNullOrEmpty(item.TreatmentType.Description))
+                                                {
+                                                    <span class="text-muted fst-italic">No description</span>
+                                                }
+                                                else
+                                                {
+                                                    <span data-bs-toggle="tooltip" title="@item.TreatmentType.Description">
+                                                        @(item.TreatmentType.Description?.Length > 50 
+                                                            ? item.TreatmentType.Description.Substring(0, 50) + "..." 
+                                                            : item.TreatmentType.Description)
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="text-primary fw-medium">RM @item.TreatmentType.Price.ToString("F2")</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-clock me-1 text-muted"></i>
+                                                    <span>@item.TreatmentType.Duration min</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="status-badge status-confirmed">
+                                                        <i class="bi bi-check-circle me-1"></i>Active
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="status-badge status-cancelled">
+                                                        <i class="bi bi-x-circle me-1"></i>Inactive
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye me-1"></i>View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
-</div> 
+</div>
+
+@section Styles {
+    <style>
+        /* Treatment Image Styling */
+        .treatment-img-wrapper {
+            width: 60px;
+            height: 60px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .treatment-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Feature icons */
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(44, 123, 229, 0.1);
+            color: #2c7be5;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-confirmed {
+            background-color: rgba(0, 217, 126, 0.15);
+            color: #00d97e;
+        }
+        
+        .status-cancelled {
+            background-color: rgba(247, 127, 106, 0.15);
+            color: #f77f6a;
+        }
+        
+        /* Empty state icon */
+        .empty-state-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #f9fbfd;
+            color: #95aac9;
+            font-size: 2rem;
+        }
+        
+        /* Table styling */
+        .table thead th {
+            font-weight: 600;
+            color: #6e84a3;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            padding: 1rem;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #edf2f9;
+        }
+        
+        /* Tooltip styling */
+        .tooltip {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .tooltip-inner {
+            padding: 0.5rem 0.75rem;
+            background-color: #12263f;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(18, 38, 63, 0.2);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+} 
