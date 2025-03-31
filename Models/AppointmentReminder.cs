@@ -22,10 +22,10 @@ namespace DentalManagement.Models
         [Required]
         public DateTime SentAt { get; set; }
         
-        // Optional tracking for SMS reminders
-        public bool SentBySMS { get; set; }
+        // Tracking for email reminders
+        public bool SentByEmail { get; set; }
         
-        // Optional tracking for push notifications
+        // Tracking for push notifications
         public bool SentByPushNotification { get; set; }
     }
 }

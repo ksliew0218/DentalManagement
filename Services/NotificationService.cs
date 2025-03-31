@@ -25,6 +25,15 @@ namespace DentalManagement.Services
             string notificationType,
             string title,
             string message);
+        
+        Task<UserNotification> CreateAppointmentReminderNotificationAsync(
+            string userId,
+            int appointmentId,
+            string reminderType,
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            string treatmentName,
+            string doctorName);
             
         Task<bool> MarkAsReadAsync(int notificationId, string userId);
         
@@ -109,6 +118,38 @@ namespace DentalManagement.Services
                 relatedEntityId: appointmentId,
                 actionController: "Appointments",
                 actionName: "Details");
+        }
+        
+        public async Task<UserNotification> CreateAppointmentReminderNotificationAsync(
+            string userId,
+            int appointmentId,
+            string reminderType,
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            string treatmentName,
+            string doctorName)
+        {
+            // Format appointment date and time for notification
+            string formattedDate = appointmentDate.ToString("dddd, MMMM d, yyyy");
+            
+            // Format time
+            bool isPM = appointmentTime.Hours >= 12;
+            int hour12 = appointmentTime.Hours % 12;
+            if (hour12 == 0) hour12 = 12;
+            string formattedTime = $"{hour12}:{appointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
+            
+            // Always use 48-hour reminder
+            string title = "Appointment in 2 Days";
+            string message = $"Your {treatmentName} appointment with {doctorName} is scheduled for {formattedDate} at {formattedTime}. " +
+                            $"This is your 48-hour reminder.";
+                            
+            // Create the notification
+            return await CreateAppointmentNotificationAsync(
+                userId,
+                appointmentId,
+                "AppointmentReminder_48hour",
+                title,
+                message);
         }
         
         public async Task<bool> MarkAsReadAsync(int notificationId, string userId)

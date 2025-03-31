@@ -77,9 +77,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     EmailNewAppointments = true,
                     EmailAppointmentChanges = true,
                     EmailPromotions = true,
-                    Want24HourReminder = true,
-                    Want48HourReminder = true,
-                    WantWeekReminder = true,
                     LastUpdated = DateTime.UtcNow
                 };
 
@@ -93,14 +90,7 @@ namespace DentalManagement.Areas.Patient.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("Patient/Notifications/SavePreferences")]
-        public async Task<IActionResult> SavePreferences(
-            bool EmailAppointmentReminders,
-            bool EmailNewAppointments,
-            bool EmailAppointmentChanges,
-            bool EmailPromotions,
-            bool Want24HourReminder,
-            bool Want48HourReminder,
-            bool WantWeekReminder)
+        public async Task<IActionResult> SavePreferences(UserNotificationPreferences model)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -110,13 +100,10 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
 
             _logger.LogInformation($"SavePreferences called for user {user.Id}");
-            _logger.LogInformation($"Parameters: EmailAppointmentReminders={EmailAppointmentReminders}, " +
-                                   $"EmailNewAppointments={EmailNewAppointments}, " +
-                                   $"EmailAppointmentChanges={EmailAppointmentChanges}, " +
-                                   $"EmailPromotions={EmailPromotions}, " +
-                                   $"Want24HourReminder={Want24HourReminder}, " +
-                                   $"Want48HourReminder={Want48HourReminder}, " +
-                                   $"WantWeekReminder={WantWeekReminder}");
+            _logger.LogInformation($"Parameters: EmailAppointmentReminders={model.EmailAppointmentReminders}, " +
+                               $"EmailNewAppointments={model.EmailNewAppointments}, " +
+                               $"EmailAppointmentChanges={model.EmailAppointmentChanges}, " +
+                               $"EmailPromotions={model.EmailPromotions}");
 
             try 
             {
@@ -130,13 +117,10 @@ namespace DentalManagement.Areas.Patient.Controllers
                     preferences = new UserNotificationPreferences
                     {
                         UserId = user.Id,
-                        EmailAppointmentReminders = EmailAppointmentReminders,
-                        EmailNewAppointments = EmailNewAppointments,
-                        EmailAppointmentChanges = EmailAppointmentChanges,
-                        EmailPromotions = EmailPromotions,
-                        Want24HourReminder = Want24HourReminder,
-                        Want48HourReminder = Want48HourReminder,
-                        WantWeekReminder = WantWeekReminder,
+                        EmailAppointmentReminders = model.EmailAppointmentReminders,
+                        EmailNewAppointments = model.EmailNewAppointments,
+                        EmailAppointmentChanges = model.EmailAppointmentChanges,
+                        EmailPromotions = model.EmailPromotions,
                         LastUpdated = DateTime.UtcNow
                     };
 
@@ -146,13 +130,10 @@ namespace DentalManagement.Areas.Patient.Controllers
                 else
                 {
                     // Update existing preferences
-                    preferences.EmailAppointmentReminders = EmailAppointmentReminders;
-                    preferences.EmailNewAppointments = EmailNewAppointments;
-                    preferences.EmailAppointmentChanges = EmailAppointmentChanges;
-                    preferences.EmailPromotions = EmailPromotions;
-                    preferences.Want24HourReminder = Want24HourReminder;
-                    preferences.Want48HourReminder = Want48HourReminder;
-                    preferences.WantWeekReminder = WantWeekReminder;
+                    preferences.EmailAppointmentReminders = model.EmailAppointmentReminders;
+                    preferences.EmailNewAppointments = model.EmailNewAppointments;
+                    preferences.EmailAppointmentChanges = model.EmailAppointmentChanges;
+                    preferences.EmailPromotions = model.EmailPromotions;
                     preferences.LastUpdated = DateTime.UtcNow;
 
                     _logger.LogInformation($"Updated existing notification preferences for user {user.Id}");

@@ -32,19 +32,6 @@ namespace DentalManagement.Models
         [Display(Name = "Email for Promotions and News")]
         public bool EmailPromotions { get; set; } = true;
         
-        // Timing preferences
-        [Required]
-        [Display(Name = "24-Hour Reminder")]
-        public bool Want24HourReminder { get; set; } = true;
-        
-        [Required]
-        [Display(Name = "48-Hour Reminder")]
-        public bool Want48HourReminder { get; set; } = true;
-        
-        [Required]
-        [Display(Name = "1-Week Reminder")]
-        public bool WantWeekReminder { get; set; } = true;
-        
         [Display(Name = "Last Updated")]
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     }

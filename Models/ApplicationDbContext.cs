@@ -154,10 +154,11 @@ namespace DentalManagement.Models
                         v => v.HasValue ? v.Value : DateTime.MinValue, 
                         v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
                         
-                entity.Property(e => e.SmsSentAt)
-                    .HasConversion(
-                        v => v.HasValue ? v.Value : DateTime.MinValue, 
-                        v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                // Remove the SmsSentAt configuration
+                // entity.Property(e => e.SmsSentAt)
+                //     .HasConversion(
+                //         v => v.HasValue ? v.Value : DateTime.MinValue, 
+                //         v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
                     
                 entity.Property(e => e.Title)
                     .IsRequired()
@@ -170,7 +171,6 @@ namespace DentalManagement.Models
                     .IsRequired()
                     .HasMaxLength(50);
             });
-
             // Configure UserNotificationPreferences
             modelBuilder.Entity<UserNotificationPreferences>(entity =>
             {

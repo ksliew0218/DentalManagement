@@ -101,7 +101,9 @@
                                 <div class="notification-actions">
                                     @if (notification.RelatedEntityId.HasValue && !string.IsNullOrEmpty(notification.ActionController) && !string.IsNullOrEmpty(notification.ActionName))
                                     {
-                                        <a href="@Url.Action(notification.ActionName, notification.ActionController, new { id = notification.RelatedEntityId })" class="action-link">
+                                        <a href="@Url.Action(notification.ActionName, notification.ActionController, new { id = notification.RelatedEntityId })" 
+                                           class="action-link view-details-link" 
+                                           data-notification-id="@notification.Id">
                                             <i class="bi bi-eye"></i> View Details
                                         </a>
                                     }
@@ -125,6 +127,11 @@
             <form id="notificationPreferencesForm" asp-action="SavePreferences" method="post" class="notification-form">
                 @Html.AntiForgeryToken()
                 
+                <!-- Hidden fields for reminder timings (set with default values) -->
+                <input type="hidden" name="Want24HourReminder" value="false" />
+                <input type="hidden" name="Want48HourReminder" value="true" />
+                <input type="hidden" name="WantWeekReminder" value="false" />
+                
                 <div class="preferences-card">
                     <div class="card-header">
                         <h3><i class="bi bi-envelope"></i> Email Notifications</h3>
@@ -144,7 +151,7 @@
                             </div>
                             <div class="preference-info">
                                 <h4>Appointment Reminders</h4>
-                                <p>Receive reminders before your scheduled appointments</p>
+                                <p>Receive reminder 48 hours before your scheduled appointments</p>
                             </div>
                         </div>
                         
@@ -198,78 +205,6 @@
                     </div>
                 </div>
                 
-                <div class="preferences-card">
-                    <div class="card-header">
-                        <h3><i class="bi bi-clock"></i> Reminder Timing</h3>
-                        <p>Choose when you'd like to receive appointment reminders</p>
-                    </div>
-                    
-                    <div class="preferences-grid">
-                        <div class="preference-item">
-                            <div class="switch-container">
-                                <label class="switch">
-                                    <input type="hidden" name="Want24HourReminder" value="false" />
-                                    <input type="checkbox" id="Want24HourReminder" name="Want24HourReminder" 
-                                           value="true" 
-                                           @(Model.NotificationPreferences.Want24HourReminder ? "checked" : "")>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="preference-info">
-                                <h4>24 Hours Before</h4>
-                                <p>Receive a reminder one day before your appointment</p>
-                            </div>
-                        </div>
-                        
-                        <div class="preference-item">
-                            <div class="switch-container">
-                                <label class="switch">
-                                    <input type="hidden" name="Want48HourReminder" value="false" />
-                                    <input type="checkbox" id="Want48HourReminder" name="Want48HourReminder" 
-                                           value="true" 
-                                           @(Model.NotificationPreferences.Want48HourReminder ? "checked" : "")>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="preference-info">
-                                <h4>48 Hours Before</h4>
-                                <p>Receive a reminder two days before your appointment</p>
-                            </div>
-                        </div>
-                        
-                        <div class="preference-item">
-                            <div class="switch-container">
-                                <label class="switch">
-                                    <input type="hidden" name="WantWeekReminder" value="false" />
-                                    <input type="checkbox" id="WantWeekReminder" name="WantWeekReminder" 
-                                           value="true" 
-                                           @(Model.NotificationPreferences.WantWeekReminder ? "checked" : "")>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="preference-info">
-                                <h4>One Week Before</h4>
-                                <p>Receive a reminder one week before your appointment</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Future SMS Preferences Section -->
-                <!-- <div class="preferences-card disabled">
-                    <div class="card-header">
-                        <h3><i class="bi bi-chat"></i> SMS Notifications</h3>
-                        <p>Coming soon - We'll be adding SMS notifications in the future</p>
-                    </div>
-                    
-                    <div class="coming-soon">
-                        <div class="coming-soon-icon">
-                            <i class="bi bi-phone"></i>
-                        </div>
-                        <p>SMS notification features are currently in development and will be available soon. Stay tuned!</p>
-                    </div>
-                </div> -->
-                
                 <div class="form-actions">
                     <div class="last-updated">Last updated: @Model.NotificationPreferences.LastUpdated.ToString("MMMM d, yyyy 'at' h:mm tt")</div>
                     <button type="submit" class="save-preferences-btn">
@@ -281,109 +216,19 @@
     </div>
 </div>
 
-<style>
-/* Add these styles to make sure the timing options are clickable */
-.timing-preferences {
-    padding: 20px 24px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 16px;
-}
-
-.timing-option {
-    cursor: pointer;
-    position: relative;
-    padding: 20px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    background-color: #f8f9fa;
-    border: 2px solid transparent;
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.timing-option:hover {
-    background-color: #edf2f7;
-}
-
-.timing-option.selected {
-    background-color: rgba(71, 105, 247, 0.1);
-    border-color: #4769f7;
-}
-
-/* Hide actual checkbox */
-.timing-checkbox {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    z-index: -1;
-}
-
-/* Style for the icon */
-.timing-icon {
-    width: 45px;
-    height: 45px;
-    border-radius: 10px;
-    background-color: rgba(71, 105, 247, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    flex-shrink: 0;
-}
-
-/* Make icon stand out in selected state */
-.timing-option.selected .timing-icon {
-    background-color: rgba(71, 105, 247, 0.2);
-}
-
-.timing-icon i {
-    color: #4769f7;
-    font-size: 1.3rem;
-}
-
-.timing-info {
-    flex: 1;
-}
-
-.timing-info h4 {
-    margin: 0 0 5px 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #2d3748;
-}
-
-.timing-info p {
-    margin: 0;
-    color: #718096;
-    font-size: 0.9rem;
-}
-
-/* Add a check indicator for selected options */
-.timing-option.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 25px;
-    height: 25px;
-    background-color: #4769f7;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-}
-</style>
-
 @section Scripts {
     <script>
         // Initialize checkbox and hidden field behavior
 document.addEventListener('DOMContentLoaded', function() {
+    initializeNotifications();
+});
+
+// Re-initialize after AJAX content loads
+document.addEventListener('contentLoaded', function() {
+    initializeNotifications();
+});
+
+function initializeNotifications() {
     // Initialize Bootstrap tabs
     var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'));
     triggerTabList.forEach(function(triggerEl) {
@@ -432,83 +277,74 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             if (!this.querySelector('button').classList.contains('read')) {
                 e.preventDefault();
-                const formData = new FormData(this);
-                const url = this.getAttribute('action');
-                
-                fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const button = this.querySelector('button');
-                        button.classList.add('read');
-                        button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Read';
-                            
-                        // Update unread count
-                        const countBadge = document.querySelector('.notification-count');
-                        if (countBadge) {
-                            const currentCount = parseInt(countBadge.textContent);
-                            if (currentCount > 1) {
-                                countBadge.textContent = currentCount - 1;
-                            } else {
-                                countBadge.remove();
-                            }
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error marking notification as read:', error);
-                });
+                markAsReadRequest(form);
             }
-        });
-    });
-});
-
-// Re-initialize after AJAX content loads
-document.addEventListener('contentLoaded', function() {
-    // Re-run the initialization logic after AJAX content loads
-    var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'));
-    triggerTabList.forEach(function(triggerEl) {
-        var tabTrigger = new bootstrap.Tab(triggerEl);
-        
-        triggerEl.addEventListener('click', function(event) {
-            event.preventDefault();
-            tabTrigger.show();
         });
     });
     
-    // Initialize checkboxes again
-    document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
-        // Find the corresponding hidden field with the same name
-        const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
-            .find(input => input.name === checkbox.name);
-        
-        if (hiddenField) {
-            // Configure the initial state
-            if (checkbox.checked) {
-                hiddenField.setAttribute('data-orig-name', hiddenField.name);
-                hiddenField.removeAttribute('name');
-            }
+    // Add click handler to "View Details" links to also mark as read
+    document.querySelectorAll('.view-details-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            // No need to preventDefault since we want navigation to occur
             
-            // Set up the change handler
-            checkbox.addEventListener('change', function() {
-                if (checkbox.checked) {
-                    hiddenField.setAttribute('data-orig-name', hiddenField.name);
-                    hiddenField.removeAttribute('name');
-                } else {
-                    const origName = hiddenField.getAttribute('data-orig-name');
-                    if (origName) {
-                        hiddenField.setAttribute('name', origName);
+            // Get notification ID from data attribute
+            const notificationId = this.getAttribute('data-notification-id');
+            if (notificationId) {
+                // Find the parent notification item
+                const notificationItem = this.closest('.notification-item');
+                // Find the mark as read button in this notification
+                const markAsReadBtn = notificationItem.querySelector('.mark-read-btn');
+                
+                // Only mark as read if not already read
+                if (markAsReadBtn && !markAsReadBtn.classList.contains('read')) {
+                    // Get the form
+                    const form = notificationItem.querySelector('.mark-read-form');
+                    if (form) {
+                        // Create a FormData object
+                        markAsReadRequest(form);
                     }
                 }
-            });
-        }
+            }
+            
+            // Navigation will continue normally
+        });
     });
-});
+}
+
+// Function to make the AJAX request to mark notification as read
+function markAsReadRequest(form) {
+    const formData = new FormData(form);
+    const url = form.getAttribute('action');
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const button = form.querySelector('button');
+            button.classList.add('read');
+            button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Read';
+                
+            // Update unread count
+            const countBadge = document.querySelector('.notification-count');
+            if (countBadge) {
+                const currentCount = parseInt(countBadge.textContent);
+                if (currentCount > 1) {
+                    countBadge.textContent = currentCount - 1;
+                } else {
+                    countBadge.remove();
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error marking notification as read:', error);
+    });
+}
     </script>
 }

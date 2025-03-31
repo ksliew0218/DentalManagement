@@ -723,7 +723,6 @@ namespace DentalManagement.Areas.Patient.Controllers
         }
         
         
-        // POST: Patient/Appointments/SubmitBooking
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitBooking(AppointmentBookingViewModel model)
@@ -935,9 +934,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                             EmailNewAppointments = true,
                             EmailAppointmentChanges = true,
                             EmailPromotions = true,
-                            Want24HourReminder = true,
-                            Want48HourReminder = true,
-                            WantWeekReminder = true,
                             LastUpdated = DateTime.UtcNow
                         };
                         
@@ -1207,9 +1203,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                             EmailNewAppointments = true,
                             EmailAppointmentChanges = true,
                             EmailPromotions = true,
-                            Want24HourReminder = true,
-                            Want48HourReminder = true,
-                            WantWeekReminder = true,
                             LastUpdated = DateTime.UtcNow
                         };
                         
@@ -1373,6 +1366,89 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
             
             return slotIds;
+        }
+
+       // POST: Patient/Appointments/UpdateNotificationPreferences
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateNotificationPreferences(UserNotificationPreferences model)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login", "Account", new { area = "Identity" });
+                }
+                
+                // Get existing preferences
+                var preferences = await _context.UserNotificationPreferences
+                    .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                    
+                // If no preferences found, create new ones
+                if (preferences == null)
+                {
+                    preferences = new UserNotificationPreferences
+                    {
+                        UserId = user.Id,
+                        LastUpdated = DateTime.UtcNow
+                    };
+                    _context.UserNotificationPreferences.Add(preferences);
+                }
+                
+                // Update email preferences
+                preferences.EmailAppointmentReminders = model.EmailAppointmentReminders;
+                preferences.EmailNewAppointments = model.EmailNewAppointments;
+                preferences.EmailAppointmentChanges = model.EmailAppointmentChanges;
+                preferences.EmailPromotions = model.EmailPromotions;
+                preferences.LastUpdated = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = "Notification preferences updated successfully.";
+                
+                // Redirect back to the settings page or wherever appropriate
+                return RedirectToAction("NotificationSettings");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating notification preferences");
+                TempData["ErrorMessage"] = "Failed to update notification preferences.";
+                return RedirectToAction("NotificationSettings");
+            }
+        }
+
+        // GET: Patient/Appointments/NotificationSettings
+        public async Task<IActionResult> NotificationSettings()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+            
+            // Get user's notification preferences
+            var preferences = await _context.UserNotificationPreferences
+                .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                
+            // If no preferences exist, create default ones
+            if (preferences == null)
+            {
+                preferences = new UserNotificationPreferences
+                {
+                    UserId = user.Id,
+                    EmailAppointmentReminders = true,
+                    EmailNewAppointments = true,
+                    EmailAppointmentChanges = true,
+                    EmailPromotions = true,
+                    LastUpdated = DateTime.UtcNow
+                };
+                
+                _context.UserNotificationPreferences.Add(preferences);
+                await _context.SaveChangesAsync();
+            }
+            
+            return View(preferences);
         }
     }
 }
