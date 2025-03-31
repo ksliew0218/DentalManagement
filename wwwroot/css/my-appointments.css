@@ -562,6 +562,16 @@
   color: #e53e3e;
 }
 
+.appointment-status.pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.appointment-status.pending {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: #e53e3e;
+}
+
 .appointment-status .status-icon {
   font-size: 0.5rem;
 }

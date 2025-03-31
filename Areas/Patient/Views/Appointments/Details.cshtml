@@ -40,6 +40,10 @@
                 {
                     <span>This appointment has been cancelled.</span>
                 }
+                else if (Model.Status == "Pending-Payment")
+                {
+                    <span>Your appointment is pending payment. Please complete the payment to confirm your appointment.</span>
+                }
             </p>
         </div>
     </div>
@@ -129,6 +133,12 @@
     
     <!-- Actions Section -->
     <div class="actions-section">
+        @if (Model.Status == "Pending-Payment")
+        {
+            <button class="action-btn payment-btn" onclick="checkAppointmentAvailability(@Model.Id)">
+                <i class="bi bi-credit-card"></i> Proceed to Payment
+            </button>
+        }
         @if (Model.Status != "Cancelled" && Model.Status != "Completed" && Model.CanCancel)
         {
             <button class="action-btn cancel-btn" onclick="confirmCancelAppointment(@Model.Id)">
@@ -144,6 +154,28 @@
         <a href="@Url.Action("Index", "Appointments", new { area = "Patient" })" class="action-btn back-btn">
             <i class="bi bi-arrow-left"></i> Back to Appointments
         </a>
+    </div>
+
+    <!-- Slot Unavailable Modal -->
+    <div class="modal" id="slot-unavailable-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-exclamation-triangle"></i> Time Slot Unavailable</h3>
+                <button class="close-modal-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Unfortunately, the time slot for this appointment is no longer available.</p>
+                <p>Please book a new appointment with an available time slot.</p>
+                <div class="modal-actions">
+                    <a href="@Url.Action("Book", "Appointments", new { area = "Patient" })" class="action-btn">
+                        <i class="bi bi-calendar-plus"></i> Book New Appointment
+                    </a>
+                    <button type="button" id="close-unavailable-modal" class="action-btn cancel-btn">
+                        <i class="bi bi-x-circle"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Cancel Confirmation Modal -->
@@ -207,5 +239,48 @@
                 }
             });
         });
+
+         // Slot availability check
+        function checkAppointmentAvailability(appointmentId) {
+            fetch(`/Patient/Appointments/CheckSlotAvailability/${appointmentId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.isAvailable) {
+                    // Redirect to payment
+                    window.location.href = `/Patient/Appointments/ProceedToPayment/${appointmentId}`;
+                } else {
+                    // Show unavailable modal
+                    const modal = document.getElementById('slot-unavailable-modal');
+                    modal.classList.add('show');
+
+                    // Close modal functionality
+                    const closeBtn = modal.querySelector('.close-modal-btn');
+                    const closeBtnAlt = document.getElementById('close-unavailable-modal');
+                    
+                    function closeModal() {
+                        modal.classList.remove('show');
+                    }
+
+                    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+                    if (closeBtnAlt) closeBtnAlt.addEventListener('click', closeModal);
+
+                    // Close modal when clicking outside
+                    window.addEventListener('click', function(event) {
+                        if (event.target === modal) {
+                            closeModal();
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while checking appointment availability.');
+            });
+        }
     </script>
-} 
+}

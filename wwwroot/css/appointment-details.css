@@ -61,6 +61,11 @@
   border-left: 4px solid #e53e3e;
 }
 
+.status-banner.pending {
+  background-color: rgba(229, 62, 62, 0.1);
+  border-left: 4px solid #e53e3e;
+}
+
 .status-icon {
   padding: 10px;
 }
@@ -85,6 +90,10 @@
   color: #e53e3e;
 }
 
+.status-banner.pending .status-icon i {
+  color: #e53e3e;
+}
+
 .status-text h3 {
   font-size: 1.2rem;
   font-weight: 600;
@@ -104,6 +113,10 @@
 }
 
 .status-banner.cancelled .status-text h3 {
+  color: #e53e3e;
+}
+
+.status-banner.pending .status-text h3 {
   color: #e53e3e;
 }
 
@@ -393,7 +406,6 @@
   margin: 0;
 }
 
-
 .modal-actions {
   display: flex;
   justify-content: center;
@@ -460,4 +472,16 @@
   .card-header h3 {
     font-size: 1.1rem;
   }
+}
+
+.payment-btn {
+  background-color: #48bb78; /* Green background */
+  color: white; /* White text */
+  border: 1px solid #3a9d67; /* Slightly darker green border */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effects */
+}
+
+.payment-btn:hover {
+  background-color: #3a9d67; /* Darker green on hover */
+  transform: translateY(-2px); /* Slight lift effect on hover */
 }

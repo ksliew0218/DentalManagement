@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using DentalManagement.Services;
 using Microsoft.Extensions.Logging;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,17 +15,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Configure email services
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddTransient<EmailTemplateService>(); // Add this line for EmailTemplateService
+builder.Services.AddTransient<EmailTemplateService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
-builder.Services.AddHttpContextAccessor(); // Make sure HttpContextAccessor is registered before EmailService
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<AppointmentReminderService>();
+
+// Configure Stripe and payment services
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // Configure Identity with complete options
 builder.Services.AddDefaultIdentity<User>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true;  // Updated to require confirmed account
-    options.SignIn.RequireConfirmedEmail = true;    // Added to require confirmed email
+    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedEmail = true;
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
@@ -64,19 +71,20 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Home/AccessDenied";
 });
 
-
-// Add this in the service configuration section, after other service configurations
 // Add session services
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set session timeout
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true; // Make the session cookie essential
+    options.Cookie.IsEssential = true;
 });
 
 var app = builder.Build();
 
-// Now you can use app
+// Configure Stripe API key
+StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Value;
+
+// Use session
 app.UseSession();
 
 // Ensure application runs on the configured URL
@@ -91,7 +99,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -128,10 +135,7 @@ using (var scope = app.Services.CreateScope())
         if (dbContext.Database.CanConnect())
         {
             logger.LogInformation("✅ Database connection successful!");
-
-            // Initialize the database using the existing DbInitializer
             await DentalManagement.Models.DbInitializer.InitializeAsync(services);
-            
             logger.LogInformation("Database initialized!");
         }
         else
