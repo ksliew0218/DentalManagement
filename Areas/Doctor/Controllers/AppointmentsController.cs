@@ -165,11 +165,71 @@ namespace DentalManagement.Areas.Doctor.Controllers
             return status switch
             {
                 "Scheduled" => "#4e73df", // Blue
-                "Confirmed" => "#1cc88a", // Green
-                "Completed" => "#36b9cc", // Teal
+                "Completed" => "#1cc88a", // Green
                 "Cancelled" => "#e74a3b", // Red
+                "No-Show" => "#f6c23e", // Yellow
                 _ => "#4e73df", // Default blue
             };
+        }
+
+        // GET: Doctor/Appointments/UpdateStatus/5?status=Completed
+        public async Task<IActionResult> UpdateStatus(int? id, string status)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            // Validate status
+            if (string.IsNullOrEmpty(status) || 
+                (status != "Scheduled" && status != "Completed" && status != "Cancelled" && status != "No-Show"))
+            {
+                TempData["ErrorMessage"] = "Invalid status value provided.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            // Get the current logged-in user
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            // Get the doctor profile for the current user
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.User.Id == user.Id);
+
+            if (doctor == null)
+            {
+                // The current user is not a doctor
+                return RedirectToAction("AccessDenied", "Home", new { area = "" });
+            }
+
+            // Find the appointment
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == id && a.DoctorId == doctor.Id);
+
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Update the appointment status
+                appointment.Status = status;
+                appointment.UpdatedAt = DateTime.Now;
+                
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = $"Appointment status has been updated to {status}.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error updating appointment status: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
         }
     }
 } 

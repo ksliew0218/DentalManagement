@@ -263,7 +263,7 @@
         
         /* Time grid styling */
         .fc-timegrid-slot {
-            height: 40px !important;
+            height: 60px !important; /* 1-hour slots */
             border-color: #e3ebf6 !important;
         }
         
@@ -302,26 +302,35 @@
             min-height: 100px !important;
         }
         
-        /* Custom button styles */
-        .btn-outline-primary {
-            color: #2c7be5 !important;
-            border-color: #d2e2fa !important;
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
         }
         
-        .btn-outline-primary:hover {
-            background-color: #edf2fa !important;
-            border-color: #d2e2fa !important;
-            color: #1a68d1 !important;
+        .status-badge.status-confirmed {
+            background-color: #00d97e;
         }
         
-        .btn-primary {
-            background-color: #2c7be5 !important;
-            border-color: #2c7be5 !important;
+        .status-badge.status-cancelled {
+            background-color: #f6c343;
+            color: #12263f;
         }
         
-        .btn-primary:hover {
-            background-color: #1a68d1 !important;
-            border-color: #1a68d1 !important;
+        /* Modal icon styling */
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
         }
     </style>
 }
@@ -342,13 +351,20 @@
                 slotMinTime: '08:00:00',
                 slotMaxTime: '20:00:00',
                 expandRows: true,
-                slotDuration: '00:15:00',
+                slotDuration: '01:00:00', // Change to 1-hour slots
+                slotLabelFormat: { 
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    omitZeroMinute: true, // Hide :00 for clean display
+                    meridiem: 'short'
+                },
                 dayMaxEvents: true,
                 nowIndicator: true,
                 height: 'auto',
                 eventTimeFormat: {
                     hour: 'numeric',
                     minute: '2-digit',
+                    omitZeroMinute: true, // Hide :00 for clean display
                     meridiem: 'short'
                 },
                 views: {
@@ -507,21 +523,6 @@
                 button.classList.remove('btn-outline-primary');
                 button.classList.add('btn-primary');
             }
-            
-            // Style for icon circles in modal
-            var style = document.createElement('style');
-            style.textContent = `
-                .icon-circle {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 1.2rem;
-                }
-            `;
-            document.head.appendChild(style);
             
             // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
