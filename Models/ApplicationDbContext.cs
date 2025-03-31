@@ -28,6 +28,7 @@ namespace DentalManagement.Models
         public DbSet<AppointmentReminder> AppointmentReminders { get; set; }
         public DbSet<UserNotificationPreferences> UserNotificationPreferences { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -103,6 +104,52 @@ namespace DentalManagement.Models
                 .Property(a => a.Duration)
                 .HasDefaultValue(60);
 
+            // Payment-related configurations for Appointment
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.PaymentStatus)
+                .HasDefaultValue(PaymentStatus.Pending);
+
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.DepositAmount)
+                .HasColumnType("decimal(18,2)");
+
+            // Configure Payment entity
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Appointment)
+                .WithMany(a => a.Payments)
+                .HasForeignKey(p => p.AppointmentId);
+
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Status)
+                .HasMaxLength(50)
+                .HasDefaultValue("pending");
+
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+            // Configure DateTime properties for Payment
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.CreatedAt)
+                .HasConversion(
+                    v => v, 
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.UpdatedAt)
+                .HasConversion(
+                    v => v.HasValue ? v.Value : DateTime.MinValue, 
+                    v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
             // Configure DateTime properties for leave management
             modelBuilder.Entity<DoctorLeaveRequest>()
                 .Property(l => l.StartDate)
@@ -153,12 +200,6 @@ namespace DentalManagement.Models
                     .HasConversion(
                         v => v.HasValue ? v.Value : DateTime.MinValue, 
                         v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                        
-                // Remove the SmsSentAt configuration
-                // entity.Property(e => e.SmsSentAt)
-                //     .HasConversion(
-                //         v => v.HasValue ? v.Value : DateTime.MinValue, 
-                //         v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
                     
                 entity.Property(e => e.Title)
                     .IsRequired()

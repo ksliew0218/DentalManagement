@@ -5,6 +5,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DentalManagement.Models
 {
+    public enum PaymentStatus
+    {
+        Pending,
+        Paid,
+        PartiallyPaid,
+        Refunded,
+        PartiallyRefunded,
+        Failed,
+        Cancelled
+    }
+
     public class Appointment
     {
         [Key]
@@ -51,6 +62,22 @@ namespace DentalManagement.Models
         [StringLength(50)]
         public string Status { get; set; } = "Scheduled";
 
+        // Payment related fields
+        [Required]
+        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
+
+        [DataType(DataType.Currency)]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalAmount { get; set; }
+
+        [DataType(DataType.Currency)]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DepositAmount { get; set; }
+
+        // Stripe Payment Intent ID
+        [StringLength(255)]
+        public string? PaymentIntentId { get; set; }
+
         // Tracking fields
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -60,6 +87,9 @@ namespace DentalManagement.Models
         
         // Collection of TimeSlots used for this appointment
         public virtual ICollection<TimeSlot> TimeSlots { get; set; } = new List<TimeSlot>();
+        
+        // Collection of payments related to this appointment
+        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
         
         // Add this collection property for reminders
         public virtual ICollection<AppointmentReminder> Reminders { get; set; } = new List<AppointmentReminder>();
@@ -91,6 +121,21 @@ namespace DentalManagement.Models
                    (AppointmentDate > DateTime.Today || 
                     (AppointmentDate == DateTime.Today && 
                      AppointmentTime > DateTime.Now.TimeOfDay));
+        }
+
+        // Method to check if appointment is eligible for refund
+        public bool IsEligibleForRefund()
+        {
+            // Check if the appointment is more than 24 hours away
+            DateTime appointmentDateTime = AppointmentDate.Date + AppointmentTime;
+            DateTime now = DateTime.UtcNow;
+            
+            // If payment status is not Paid or PartiallyPaid, not eligible for refund
+            if (PaymentStatus != PaymentStatus.Paid && PaymentStatus != PaymentStatus.PartiallyPaid)
+                return false;
+                
+            // Eligible for refund if more than 24 hours before appointment
+            return (appointmentDateTime - now).TotalHours > 24;
         }
     }
 }
