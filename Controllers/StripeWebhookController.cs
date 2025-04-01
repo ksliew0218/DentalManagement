@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using DentalManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -101,6 +102,54 @@ namespace DentalManagement.Controllers
             {
                 try 
                 {
+                    // Check if we already have a payment record for this session
+                    var existingPayment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.CheckoutSessionId == session.Id);
+                    
+                    if (existingPayment != null)
+                    {
+                        // Update the existing payment record instead of creating a new one
+                        existingPayment.PaymentIntentId = session.PaymentIntentId;
+                        existingPayment.Status = "succeeded";
+                        existingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        // Get receipt URL from the charges
+                        var chargeService = new ChargeService();
+                        var charges = await chargeService.ListAsync(new ChargeListOptions 
+                        { 
+                            PaymentIntent = session.PaymentIntentId 
+                        });
+                        
+                        if (charges?.Data?.Count > 0)
+                        {
+                            existingPayment.ReceiptUrl = charges.Data[0].ReceiptUrl;
+                        }
+                        
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        // Extract payment type from metadata
+                        PaymentType paymentType = PaymentType.Deposit; // Default
+                        if (session.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
+                        {
+                            if (Enum.TryParse(paymentTypeStr, out PaymentType parsedType))
+                            {
+                                paymentType = parsedType;
+                            }
+                        }
+                        
+                        // Record the payment
+                        var payment = await _paymentService.RecordPaymentAsync(
+                            appointmentId, 
+                            session.PaymentIntentId, 
+                            decimal.Parse(session.AmountTotal.ToString()) / 100m, 
+                            paymentType,
+                            "succeeded",
+                            session.Id
+                        );
+                    }
+                    
                     // Find the appointment with all related entities
                     var appointment = await _context.Appointments
                         .Include(a => a.Doctor)
@@ -111,36 +160,41 @@ namespace DentalManagement.Controllers
                     
                     if (appointment != null)
                     {
-                        // Explicitly update appointment status
-                        appointment.Status = "Confirmed";
-                        appointment.PaymentStatus = PaymentStatus.PartiallyPaid;
+                        // Update appointment payment status based on the payment type
+                        PaymentType paymentType = PaymentType.Deposit; // Default
+                        if (session.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
+                        {
+                            if (Enum.TryParse(paymentTypeStr, out PaymentType parsedType))
+                            {
+                                paymentType = parsedType;
+                            }
+                        }
+                        
+                        appointment.PaymentStatus = (paymentType == PaymentType.FullPayment) 
+                            ? PaymentStatus.Paid 
+                            : PaymentStatus.PartiallyPaid;
+                        
+                        // For deposit payments, update status to Confirmed and book slots
+                        if (paymentType == PaymentType.Deposit && appointment.Status != "Confirmed")
+                        {
+                            appointment.Status = "Confirmed";
+                            
+                            // Book time slots for appointments
+                            var slotIds = await FindConsecutiveSlotIdsAsync(
+                                appointment.DoctorId,
+                                appointment.AppointmentDate,
+                                appointment.AppointmentTime,
+                                appointment.Duration
+                            );
+                            
+                            await BookTimeSlotsAsync(appointmentId, slotIds);
+                            
+                            // Create and send notifications
+                            await CreateAppointmentNotification(appointment);
+                        }
+                        
                         appointment.UpdatedAt = DateTime.UtcNow;
-                        
-                        // Record the payment
-                        var payment = await _paymentService.RecordPaymentAsync(
-                            appointmentId, 
-                            session.PaymentIntentId, 
-                            decimal.Parse(session.AmountTotal.ToString()) / 100m, 
-                            PaymentType.Deposit,
-                            "succeeded",
-                            session.Id
-                        );
-                        
-                        // Book time slots
-                        var slotIds = await FindConsecutiveSlotIdsAsync(
-                            appointment.DoctorId,
-                            appointment.AppointmentDate,
-                            appointment.AppointmentTime,
-                            appointment.Duration
-                        );
-                        
-                        await BookTimeSlotsAsync(appointmentId, slotIds);
-                        
-                        // Save changes to the database
                         await _context.SaveChangesAsync();
-                        
-                        // Create and send notifications
-                        await CreateAppointmentNotification(appointment);
                         
                         _logger.LogInformation($"Successfully processed checkout for appointment {appointmentId}");
                     }
@@ -298,7 +352,113 @@ namespace DentalManagement.Controllers
         {
             _logger.LogInformation($"Payment intent {intent.Id} succeeded");
             
-            await _paymentService.UpdatePaymentStatusAsync(intent.Id, "succeeded");
+            try
+            {
+                // Get or determine the payment type from metadata
+                PaymentType paymentType = PaymentType.Deposit; // Default
+                if (intent.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
+                {
+                    if (Enum.TryParse(paymentTypeStr, out PaymentType parsedType))
+                    {
+                        paymentType = parsedType;
+                    }
+                }
+                
+                // Check if a payment record already exists
+                var existingPayment = await _context.Payments
+                    .FirstOrDefaultAsync(p => p.PaymentIntentId == intent.Id);
+                
+                if (existingPayment != null && string.IsNullOrEmpty(existingPayment.ReceiptUrl))
+                {
+                    // Update the existing payment with receipt URL
+                    var chargeService = new ChargeService();
+                    var charges = await chargeService.ListAsync(new ChargeListOptions 
+                    { 
+                        PaymentIntent = intent.Id 
+                    });
+                    
+                    if (charges?.Data?.Count > 0)
+                    {
+                        existingPayment.ReceiptUrl = charges.Data[0].ReceiptUrl;
+                        existingPayment.Status = "succeeded";
+                        existingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        // Update appointment payment status
+                        await _paymentService.UpdateAppointmentPaymentStatusAsync(
+                            existingPayment.AppointmentId, 
+                            existingPayment.PaymentType == PaymentType.FullPayment ? 
+                                PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                        );
+                        
+                        // For deposit payments, also check if we need to update the appointment status
+                        if (existingPayment.PaymentType == PaymentType.Deposit)
+                        {
+                            var appointment = await _context.Appointments
+                                .FindAsync(existingPayment.AppointmentId);
+                                
+                            if (appointment != null && appointment.Status == "Scheduled")
+                            {
+                                appointment.Status = "Confirmed";
+                                appointment.UpdatedAt = DateTime.UtcNow;
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                        
+                        _logger.LogInformation($"Updated payment {existingPayment.Id} with receipt URL");
+                        return;
+                    }
+                }
+                
+                // Look for a pending payment with matching checkout session
+                if (intent.Metadata.TryGetValue("CheckoutSessionId", out string checkoutSessionId))
+                {
+                    var pendingPayment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
+                    
+                    if (pendingPayment != null)
+                    {
+                        // Update the pending payment
+                        pendingPayment.PaymentIntentId = intent.Id;
+                        pendingPayment.Status = "succeeded";
+                        pendingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        // Get receipt URL
+                        var chargeService = new ChargeService();
+                        var charges = await chargeService.ListAsync(new ChargeListOptions 
+                        { 
+                            PaymentIntent = intent.Id 
+                        });
+                        
+                        if (charges?.Data?.Count > 0)
+                        {
+                            pendingPayment.ReceiptUrl = charges.Data[0].ReceiptUrl;
+                        }
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        // Update appointment payment status
+                        await _paymentService.UpdateAppointmentPaymentStatusAsync(
+                            pendingPayment.AppointmentId, 
+                            pendingPayment.PaymentType == PaymentType.FullPayment ? 
+                                PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                        );
+                        
+                        _logger.LogInformation($"Updated pending payment with checkout session {checkoutSessionId}");
+                        return;
+                    }
+                }
+                
+                // If we couldn't find an existing payment record, use the generic method
+                await _paymentService.UpdatePaymentStatusAsync(intent.Id, "succeeded");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error handling payment intent success for {intent.Id}");
+                // Fall back to the generic method
+                await _paymentService.UpdatePaymentStatusAsync(intent.Id, "succeeded");
+            }
         }
         
         private async Task HandlePaymentIntentFailed(PaymentIntent intent)

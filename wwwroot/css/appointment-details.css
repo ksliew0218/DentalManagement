@@ -485,3 +485,37 @@
   background-color: #3a9d67; /* Darker green on hover */
   transform: translateY(-2px); /* Slight lift effect on hover */
 }
+
+/* Payment-related styles */
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.payment-status i {
+  margin-right: 5px;
+}
+
+.payment-status.paid {
+  color: #28a745;
+}
+
+.payment-status.unpaid {
+  color: #dc3545;
+}
+
+.total-icon i {
+  color: #6f42c1;
+}
+
+/* Add these styles to your appointment-details.css file */
+.detail-icon.total-icon {
+  background-color: rgba(111, 66, 193, 0.1);
+  color: #6f42c1;
+}
+
+/* Add more space between cards */
+.details-card + .details-card {
+  margin-top: 1.5rem;
+}

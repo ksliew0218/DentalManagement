@@ -50,7 +50,8 @@ namespace DentalManagement.Areas.Patient.Controllers
             var viewModel = new AppointmentsListViewModel
             {
                 UpcomingAppointments = new List<AppointmentViewModel>(),
-                PastAppointments = new List<AppointmentViewModel>()
+                PastAppointments = new List<AppointmentViewModel>(),
+                CancelledAppointments = new List<AppointmentViewModel>()
             };
 
             try
@@ -63,51 +64,83 @@ namespace DentalManagement.Areas.Patient.Controllers
                     var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
                     if (patient != null)
                     {
-                        // Get appointments
-                        var today = DateTime.UtcNow.Date;  // Use UTC date                        
-                        // Get upcoming appointments
-                        var upcomingAppointments = await _context.Appointments
+                        // Get the current date and time
+                        var now = DateTime.UtcNow;
+                        var today = now.Date;
+
+                        // Get all appointments for this patient
+                        var allAppointments = await _context.Appointments
                             .Include(a => a.Doctor)
                             .Include(a => a.TreatmentType)
-                            .Where(a => a.PatientId == patient.Id && a.AppointmentDate >= today)
+                            .Where(a => a.PatientId == patient.Id)
                             .OrderBy(a => a.AppointmentDate)
                             .ThenBy(a => a.AppointmentTime)
                             .ToListAsync();
-                            
-                        // Get past appointments
-                        var pastAppointments = await _context.Appointments
-                            .Include(a => a.Doctor)
-                            .Include(a => a.TreatmentType)
-                            .Where(a => a.PatientId == patient.Id && a.AppointmentDate < today)
-                            .OrderByDescending(a => a.AppointmentDate)
+
+                        // Process each appointment and categorize it
+                        foreach (var appointment in allAppointments)
+                        {
+                            var appointmentViewModel = new AppointmentViewModel
+                            {
+                                Id = appointment.Id,
+                                TreatmentName = appointment.TreatmentType.Name,
+                                DoctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}",
+                                AppointmentDate = appointment.AppointmentDate,
+                                AppointmentTime = appointment.AppointmentTime,
+                                Status = appointment.Status,
+                                PaymentStatus = appointment.PaymentStatus,
+                                // Can cancel if not already cancelled or completed, and appointment is in the future
+                                CanCancel = appointment.Status != "Cancelled" && 
+                                        appointment.Status != "Completed" && 
+                                        (appointment.AppointmentDate > today || 
+                                        (appointment.AppointmentDate == today && 
+                                            appointment.AppointmentTime > now.TimeOfDay))
+                            };
+
+                            // Categorize appointments
+                            if (appointment.Status == "Cancelled")
+                            {
+                                // All cancelled appointments go to the cancelled tab
+                                viewModel.CancelledAppointments.Add(appointmentViewModel);
+                            }
+                            else if (appointment.Status == "Completed")
+                            {
+                                // All completed appointments go to the past tab
+                                viewModel.PastAppointments.Add(appointmentViewModel);
+                            }
+                            else
+                            {
+                                // Check if appointment is in the past based on date and time
+                                bool isPastAppointment = appointment.AppointmentDate < today || 
+                                                    (appointment.AppointmentDate == today && 
+                                                        appointment.AppointmentTime < now.TimeOfDay);
+
+                                if (isPastAppointment)
+                                {
+                                    viewModel.PastAppointments.Add(appointmentViewModel);
+                                }
+                                else
+                                {
+                                    viewModel.UpcomingAppointments.Add(appointmentViewModel);
+                                }
+                            }
+                        }
+
+                        // Sort the appointment collections
+                        viewModel.UpcomingAppointments = viewModel.UpcomingAppointments
+                            .OrderBy(a => a.AppointmentDate)
                             .ThenBy(a => a.AppointmentTime)
-                            .Take(10) // Limit to 10 past appointments
-                            .ToListAsync();
-                            
-                        // Map to view models
-                        viewModel.UpcomingAppointments = upcomingAppointments.Select(a => new AppointmentViewModel
-                        {
-                            Id = a.Id,
-                            TreatmentName = a.TreatmentType.Name,
-                            DoctorName = $"Dr. {a.Doctor.FirstName} {a.Doctor.LastName}",
-                            AppointmentDate = a.AppointmentDate,
-                            AppointmentTime = a.AppointmentTime,
-                            Status = a.Status,
-                            CanCancel = a.Status != "Cancelled" && a.Status != "Completed" && 
-                                       (a.AppointmentDate > today || 
-                                       (a.AppointmentDate == today && a.AppointmentTime > DateTime.UtcNow.TimeOfDay))
-                        }).ToList();
-                        
-                        viewModel.PastAppointments = pastAppointments.Select(a => new AppointmentViewModel
-                        {
-                            Id = a.Id,
-                            TreatmentName = a.TreatmentType.Name,
-                            DoctorName = $"Dr. {a.Doctor.FirstName} {a.Doctor.LastName}",
-                            AppointmentDate = a.AppointmentDate,
-                            AppointmentTime = a.AppointmentTime,
-                            Status = a.Status,
-                            CanCancel = false
-                        }).ToList();
+                            .ToList();
+
+                        viewModel.PastAppointments = viewModel.PastAppointments
+                            .OrderByDescending(a => a.AppointmentDate)
+                            .ThenByDescending(a => a.AppointmentTime)
+                            .ToList();
+
+                        viewModel.CancelledAppointments = viewModel.CancelledAppointments
+                            .OrderByDescending(a => a.AppointmentDate)
+                            .ThenByDescending(a => a.AppointmentTime)
+                            .ToList();
                     }
                 }
             }
@@ -820,7 +853,9 @@ namespace DentalManagement.Areas.Patient.Controllers
                     Notes = model.Notes ?? "",
                     Status = "Pending-Payment", // New status before payment
                     CreatedAt = DateTime.UtcNow,
-                    PaymentStatus = PaymentStatus.Pending
+                    PaymentStatus = PaymentStatus.Pending,
+                    DepositAmount = depositAmount,
+                    TotalAmount = treatment.Price
                 };
                 
                 // Save the appointment to get an ID
@@ -1224,14 +1259,16 @@ namespace DentalManagement.Areas.Patient.Controllers
         }
         
         // GET: Patient/Appointments/Details/{id}
+        // Additional action for processing remaining payment will be needed
         public async Task<IActionResult> Details(int id)
         {
             var today = DateTime.UtcNow.Date;
             var appointment = await _context.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.TreatmentType)
+                .Include(a => a.Payments) // Include payments related to this appointment
                 .FirstOrDefaultAsync(a => a.Id == id);
-                
+                    
             if (appointment == null)
             {
                 return NotFound();
@@ -1245,6 +1282,33 @@ namespace DentalManagement.Areas.Patient.Controllers
             {
                 return Forbid();
             }
+            
+            // Find payment dates and calculate amounts
+            DateTime? depositPaymentDate = null;
+            DateTime? fullPaymentDate = null;
+            decimal amountPaid = 0;
+            
+            if (appointment.Payments != null && appointment.Payments.Any())
+            {
+                foreach (var payment in appointment.Payments.Where(p => p.Status == "succeeded"))
+                {
+                    // Add to the total paid amount
+                    amountPaid += payment.Amount;
+                    
+                    // Track payment dates based on type
+                    if (payment.PaymentType == PaymentType.Deposit)
+                    {
+                        depositPaymentDate = payment.CreatedAt;
+                    }
+                    else if (payment.PaymentType == PaymentType.FullPayment)
+                    {
+                        fullPaymentDate = payment.CreatedAt;
+                    }
+                }
+            }
+            
+            // Calculate remaining amount
+            decimal remainingAmount = appointment.TotalAmount - amountPaid;
             
             // Create view model
             var viewModel = new AppointmentDetailViewModel
@@ -1261,8 +1325,15 @@ namespace DentalManagement.Areas.Patient.Controllers
                 TreatmentCost = appointment.TreatmentType.Price,
                 TreatmentDuration = appointment.TreatmentType.Duration,
                 CanCancel = appointment.Status != "Cancelled" && appointment.Status != "Completed" && 
-                           (appointment.AppointmentDate > today || 
-                           (appointment.AppointmentDate == today && appointment.AppointmentTime > DateTime.UtcNow.TimeOfDay))
+                        (appointment.AppointmentDate > today || 
+                        (appointment.AppointmentDate == today && appointment.AppointmentTime > DateTime.UtcNow.TimeOfDay)),
+                // Payment related properties
+                PaymentStatus = appointment.PaymentStatus,
+                DepositAmount = appointment.DepositAmount,
+                AmountPaid = amountPaid,
+                RemainingAmount = remainingAmount,
+                LastPaymentDate = depositPaymentDate,
+                FullPaymentDate = fullPaymentDate
             };
             
             return View(viewModel);
@@ -1451,14 +1522,68 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
     }
 }
 
-[HttpGet]
-public async Task<IActionResult> ProceedToPayment(int id)
+    [HttpGet]
+    public async Task<IActionResult> ProceedToPayment(int id)
+    {
+        try 
+        {
+            // Find the appointment
+            var appointment = await _context.Appointments
+                .Include(a => a.TreatmentType)
+                .FirstOrDefaultAsync(a => a.Id == id);
+            
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Index");
+            }
+
+            // Calculate deposit amount (30% of treatment cost)
+            decimal depositAmount = appointment.TreatmentType.Price * 0.3m;
+            
+            // Construct success and cancel URLs
+            string successUrl = Url.Action(
+                "BookingSuccess", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id }, 
+                Request.Scheme
+            );
+            
+            string cancelUrl = Url.Action(
+                "Details", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id }, 
+                Request.Scheme
+            );
+            
+            // Create Stripe checkout session
+            var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
+                appointment.Id, 
+                depositAmount, 
+                successUrl, 
+                cancelUrl
+            );
+            
+            // Redirect to Stripe checkout
+            return Redirect(checkoutUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error proceeding to payment");
+            TempData["ErrorMessage"] = "An error occurred while processing your payment.";
+            return RedirectToAction("Index");
+        }
+    }
+
+    [HttpGet]
+public async Task<IActionResult> ProcessRemainingPayment(int id)
 {
     try 
     {
         // Find the appointment
         var appointment = await _context.Appointments
             .Include(a => a.TreatmentType)
+            .Include(a => a.Payments)
             .FirstOrDefaultAsync(a => a.Id == id);
         
         if (appointment == null)
@@ -1467,14 +1592,33 @@ public async Task<IActionResult> ProceedToPayment(int id)
             return RedirectToAction("Index");
         }
 
-        // Calculate deposit amount (30% of treatment cost)
-        decimal depositAmount = appointment.TreatmentType.Price * 0.3m;
+        // Verify the appointment belongs to the current user
+        var user = await _userManager.GetUserAsync(User);
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
         
+        if (patient == null || appointment.PatientId != patient.Id)
+        {
+            return Forbid();
+        }
+
+        // Calculate the remaining amount to pay
+        decimal amountPaid = appointment.Payments
+            .Where(p => p.Status == "succeeded")
+            .Sum(p => p.Amount);
+        
+        decimal remainingAmount = appointment.TotalAmount - amountPaid;
+        
+        if (remainingAmount <= 0)
+        {
+            TempData["InfoMessage"] = "This appointment has already been fully paid.";
+            return RedirectToAction("Details", new { id = appointment.Id });
+        }
+
         // Construct success and cancel URLs
         string successUrl = Url.Action(
-            "BookingSuccess", 
+            "PaymentSuccess", 
             "Appointments", 
-            new { area = "Patient", id = appointment.Id }, 
+            new { area = "Patient", id = appointment.Id, type = "remaining" }, 
             Request.Scheme
         );
         
@@ -1485,12 +1629,13 @@ public async Task<IActionResult> ProceedToPayment(int id)
             Request.Scheme
         );
         
-        // Create Stripe checkout session
+        // Create Stripe checkout session for the remaining amount
         var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
             appointment.Id, 
-            depositAmount, 
+            remainingAmount, 
             successUrl, 
-            cancelUrl
+            cancelUrl,
+            PaymentType.FullPayment  // Add this parameter to specify payment type
         );
         
         // Redirect to Stripe checkout
@@ -1498,12 +1643,50 @@ public async Task<IActionResult> ProceedToPayment(int id)
     }
     catch (Exception ex)
     {
-        _logger.LogError(ex, "Error proceeding to payment");
+        _logger.LogError(ex, "Error processing remaining payment");
         TempData["ErrorMessage"] = "An error occurred while processing your payment.";
-        return RedirectToAction("Index");
+        return RedirectToAction("Details", new { id = id });
     }
 }
-    }
 
+[HttpGet]
+public async Task<IActionResult> PaymentSuccess(int id, string type)
+{
+    try
+    {
+        var appointment = await _context.Appointments
+            .Include(a => a.TreatmentType)
+            .FirstOrDefaultAsync(a => a.Id == id);
+            
+        if (appointment == null)
+        {
+            return NotFound();
+        }
+
+        // Update appointment payment status to Paid if this was the remaining payment
+        if (type == "remaining")
+        {
+            appointment.Status = "Completed"; // Add this line to update the status to "Completed"
+            appointment.PaymentStatus = PaymentStatus.Paid;
+            appointment.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Payment successful! Your appointment is now fully paid.";
+        }
+        else
+        {
+            TempData["SuccessMessage"] = "Payment successful!";
+        }
+        
+        return RedirectToAction("Details", new { id = id });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"Error in PaymentSuccess method for appointment {id}");
+        TempData["ErrorMessage"] = "There was an issue processing your payment result.";
+        return RedirectToAction("Details", new { id = id });
+    }
+}
+}
     
 }

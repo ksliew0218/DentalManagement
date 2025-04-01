@@ -38,6 +38,12 @@ namespace DentalManagement.Services
         
         public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl)
         {
+            // Call the overloaded method with default payment type (Deposit)
+            return await CreateCheckoutSessionAsync(appointmentId, amount, successUrl, cancelUrl, PaymentType.Deposit);
+        }
+        
+        public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, PaymentType paymentType)
+        {
             try
             {
                 // Get appointment details for the metadata
@@ -56,7 +62,27 @@ namespace DentalManagement.Services
                 // Convert amount to cents/smallest currency unit for Stripe
                 var amountInCents = (long)(amount * 100);
                 
-                // Create line items for checkout - Update description to clearly indicate it's a deposit
+                // Generate appropriate title and description based on payment type
+                string paymentTitle, paymentDescription;
+                
+                if (paymentType == PaymentType.Deposit)
+                {
+                    paymentTitle = $"30% Deposit for {appointment.TreatmentType.Name}";
+                    paymentDescription = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}";
+                }
+                else if (paymentType == PaymentType.FullPayment)
+                {
+                    paymentTitle = $"Remaining Balance for {appointment.TreatmentType.Name}";
+                    paymentDescription = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}";
+                }
+                else
+                {
+                    // Default fallback
+                    paymentTitle = $"Payment for {appointment.TreatmentType.Name}";
+                    paymentDescription = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}";
+                }
+                
+                // Create line items for checkout
                 var lineItems = new List<SessionLineItemOptions>
                 {
                     new SessionLineItemOptions
@@ -67,15 +93,15 @@ namespace DentalManagement.Services
                             Currency = _stripeSettings.Currency ?? "myr", // Use the configured currency
                             ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
-                                Name = $"30% Deposit for {appointment.TreatmentType.Name}",
-                                Description = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}"
+                                Name = paymentTitle,
+                                Description = paymentDescription
                             }
                         },
                         Quantity = 1
                     }
                 };
                 
-                // Create checkout session options
+                // Create checkout session options with PaymentIntentData
                 var options = new SessionCreateOptions
                 {
                     PaymentMethodTypes = new List<string> { "card" },
@@ -84,6 +110,15 @@ namespace DentalManagement.Services
                     SuccessUrl = successUrl,
                     CancelUrl = cancelUrl,
                     CustomerEmail = appointment.Patient.User?.Email,
+                    PaymentIntentData = new SessionPaymentIntentDataOptions
+                    {
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "AppointmentId", appointmentId.ToString() },
+                            { "PaymentType", paymentType.ToString() },
+                            { "IsRemainingPayment", (paymentType == PaymentType.FullPayment).ToString() }
+                        }
+                    },
                     Metadata = new Dictionary<string, string>
                     {
                         { "AppointmentId", appointmentId.ToString() },
@@ -91,7 +126,8 @@ namespace DentalManagement.Services
                         { "DoctorName", $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}" },
                         { "TreatmentType", appointment.TreatmentType.Name },
                         { "AppointmentDate", appointment.AppointmentDate.ToString("yyyy-MM-dd") },
-                        { "AppointmentTime", appointment.AppointmentTime.ToString() }
+                        { "AppointmentTime", appointment.AppointmentTime.ToString() },
+                        { "PaymentType", paymentType.ToString() }
                     }
                 };
                 
@@ -99,12 +135,22 @@ namespace DentalManagement.Services
                 var service = new SessionService();
                 var session = await service.CreateAsync(options);
                 
+                // Check if payment with this checkout session already exists
+                var existingPayment = await _context.Payments
+                    .FirstOrDefaultAsync(p => p.CheckoutSessionId == session.Id);
+                
+                if (existingPayment != null)
+                {
+                    _logger.LogWarning($"Payment with checkout session ID {session.Id} already exists");
+                    return session.Url;
+                }
+                
                 // Record the initial pending payment in our database
                 await RecordPaymentAsync(
                     appointmentId, 
                     null, // PaymentIntentId will be updated after successful payment
                     amount,
-                    PaymentType.Deposit,
+                    paymentType,
                     "pending",
                     session.Id
                 );
@@ -198,6 +244,71 @@ namespace DentalManagement.Services
         {
             try
             {
+                // Check if a payment with this checkout session ID already exists
+                if (!string.IsNullOrEmpty(checkoutSessionId))
+                {
+                    var existingPayment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
+                    
+                    if (existingPayment != null)
+                    {
+                        _logger.LogInformation($"Updating existing payment for checkout session {checkoutSessionId}");
+                        
+                        // Update the existing payment
+                        existingPayment.PaymentIntentId = paymentIntentId ?? existingPayment.PaymentIntentId;
+                        existingPayment.Amount = amount;
+                        existingPayment.Status = status;
+                        existingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        // Update appointment payment status if successful
+                        if (status == "succeeded")
+                        {
+                            await UpdateAppointmentPaymentStatusAsync(
+                                appointmentId, 
+                                paymentType == PaymentType.FullPayment ? 
+                                    PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                            );
+                        }
+                        
+                        return existingPayment;
+                    }
+                }
+                
+                // Check if a payment with this payment intent ID already exists
+                if (!string.IsNullOrEmpty(paymentIntentId))
+                {
+                    var existingPayment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
+                    
+                    if (existingPayment != null)
+                    {
+                        _logger.LogInformation($"Updating existing payment for payment intent {paymentIntentId}");
+                        
+                        // Update the existing payment
+                        existingPayment.CheckoutSessionId = checkoutSessionId ?? existingPayment.CheckoutSessionId;
+                        existingPayment.Amount = amount;
+                        existingPayment.Status = status;
+                        existingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        // Update appointment payment status if successful
+                        if (status == "succeeded")
+                        {
+                            await UpdateAppointmentPaymentStatusAsync(
+                                appointmentId, 
+                                paymentType == PaymentType.FullPayment ? 
+                                    PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                            );
+                        }
+                        
+                        return existingPayment;
+                    }
+                }
+                
+                // Create a new payment record
                 var payment = new Payment
                 {
                     AppointmentId = appointmentId,
@@ -261,18 +372,60 @@ namespace DentalManagement.Services
         {
             try
             {
+                // Try to find the payment by payment intent ID
                 var payment = await _context.Payments
                     .FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
                 
                 if (payment == null)
                 {
-                    _logger.LogWarning($"Payment with intent ID {paymentIntentId} not found");
-                    return;
+                    // If not found by payment intent ID, try to find by checkout session ID
+                    // First get the payment intent from Stripe to find any metadata
+                    var paymentIntentService = new PaymentIntentService();
+                    var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
+                    
+                    if (paymentIntent.Metadata.TryGetValue("CheckoutSessionId", out string checkoutSessionId))
+                    {
+                        payment = await _context.Payments
+                            .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
+                    }
+                    
+                    // If still not found, try to find any pending payment for this appointment
+                    if (payment == null && paymentIntent.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) &&
+                        int.TryParse(appointmentIdStr, out int appointmentId))
+                    {
+                        // Check if we can determine the payment type
+                        PaymentType paymentType = PaymentType.Deposit;
+                        if (paymentIntent.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
+                        {
+                            Enum.TryParse(paymentTypeStr, out paymentType);
+                        }
+                        
+                        // Look for a pending payment with matching appointment ID and payment type
+                        payment = await _context.Payments
+                            .Where(p => p.AppointmentId == appointmentId && 
+                                   p.PaymentType == paymentType && 
+                                   p.Status == "pending")
+                            .OrderByDescending(p => p.CreatedAt)
+                            .FirstOrDefaultAsync();
+                    }
+                    
+                    if (payment == null)
+                    {
+                        _logger.LogWarning($"Payment with intent ID {paymentIntentId} not found");
+                        return;
+                    }
                 }
                 
+                // Update payment information
                 payment.Status = status;
                 payment.ErrorMessage = errorMessage;
                 payment.UpdatedAt = DateTime.UtcNow;
+                
+                // If it was pending, update the payment intent ID
+                if (string.IsNullOrEmpty(payment.PaymentIntentId))
+                {
+                    payment.PaymentIntentId = paymentIntentId;
+                }
                 
                 // If it's a successful payment and we need to update the receipt URL
                 if (status == "succeeded" && string.IsNullOrEmpty(payment.ReceiptUrl))
@@ -324,6 +477,12 @@ namespace DentalManagement.Services
                 
                 appointment.PaymentStatus = status;
                 appointment.UpdatedAt = DateTime.UtcNow;
+                
+                // For initial deposit payments that succeed, also update the appointment status to Confirmed
+                if (status == PaymentStatus.PartiallyPaid && appointment.Status == "Scheduled")
+                {
+                    appointment.Status = "Confirmed";
+                }
                 
                 await _context.SaveChangesAsync();
             }

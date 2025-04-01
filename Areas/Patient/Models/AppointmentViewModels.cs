@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using DentalManagement.Models;
 
 namespace DentalManagement.Areas.Patient.Models
 {
     // Main view model for appointments list
     public class AppointmentsListViewModel
     {
-        public List<AppointmentViewModel> UpcomingAppointments { get; set; }
-        public List<AppointmentViewModel> PastAppointments { get; set; }
+        public List<AppointmentViewModel> UpcomingAppointments { get; set; } = new List<AppointmentViewModel>();
+        public List<AppointmentViewModel> PastAppointments { get; set; } = new List<AppointmentViewModel>();
+        public List<AppointmentViewModel> CancelledAppointments { get; set; } = new List<AppointmentViewModel>();
     }
 
     // Individual appointment view model
@@ -21,6 +23,8 @@ namespace DentalManagement.Areas.Patient.Models
         public TimeSpan AppointmentTime { get; set; }
         public string Status { get; set; }
         public bool CanCancel { get; set; }
+        public PaymentStatus PaymentStatus { get; set; }
+
         
         // Formatted date and time properties for display
         public string FormattedDate => AppointmentDate.ToString("MMM d, yyyy");
@@ -106,12 +110,19 @@ namespace DentalManagement.Areas.Patient.Models
         public string Notes { get; set; }
         public bool CanCancel { get; set; }
         
-        // Add the missing CreatedOn property
+        // Base properties
         public DateTime CreatedOn { get; set; }
-        
-        // Additional info that might be useful
         public decimal TreatmentCost { get; set; }
         public int TreatmentDuration { get; set; }
+        
+        // Payment related properties
+        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
+        public decimal DepositAmount { get; set; }
+        public decimal AmountPaid { get; set; }
+        public decimal RemainingAmount { get; set; }
+        public DateTime? LastPaymentDate { get; set; }
+        public DateTime? FullPaymentDate { get; set; }
+        
         public string FormattedAppointmentDate => AppointmentDate.ToString("dddd, MMMM d, yyyy");
         public string FormattedAppointmentTime 
         { 
@@ -146,6 +157,7 @@ namespace DentalManagement.Areas.Patient.Models
                         "completed" => "completed",
                         "cancelled" => "cancelled",
                         "no-show" => "no-show",
+                        "pending-payment" => "pending-payment",
                         _ => "pending"
                     };
                 }
@@ -229,9 +241,9 @@ namespace DentalManagement.Areas.Patient.Models
         public int RequiredSlots { get; set; } = 1;
         public List<int> ConsecutiveSlotIds { get; set; } = new List<int>();
 
-            // Display duration
+        // Display duration
         public string FormattedDuration => RequiredSlots == 1 
             ? "1 hour" 
             : $"{RequiredSlots} hours";
     }
-    }
+}

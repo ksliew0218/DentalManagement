@@ -1,0 +1,268 @@
+@model DentalManagement.Areas.Patient.Models.BillingViewModel
+@{
+    ViewData["Title"] = "Billing & Payments";
+    Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="page-title">Billing & Payments</h2>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Pending Deposits Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">Deposit Payments Due</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.PendingDeposits.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Treatment</th>
+                                        <th>Doctor</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Total</th>
+                                        <th>Deposit Due</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PendingDeposits)
+                                    {
+                                        <tr>
+                                            <td>@item.TreatmentName</td>
+                                            <td>@item.DoctorName</td>
+                                            <td>@item.AppointmentDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@FormatTime(item.AppointmentTime)</td>
+                                            <td>@item.TotalAmount.ToString("C2")</td>
+                                            <td>@item.DepositAmount.ToString("C2")</td>
+                                            <td>@item.AppointmentStatus</td>
+                                            <td>
+                                                <a href="@Url.Action("Details", "Appointments", new { id = item.AppointmentId })" class="btn btn-sm btn-outline-primary">
+                                                    Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="mb-0">No pending deposit payments at this time.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outstanding Payments Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Outstanding Balance Payments for Completed Treatments</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.OutstandingPayments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Treatment</th>
+                                        <th>Doctor</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Total</th>
+                                        <th>Remaining</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.OutstandingPayments)
+                                    {
+                                        <tr>
+                                            <td>@item.TreatmentName</td>
+                                            <td>@item.DoctorName</td>
+                                            <td>@item.AppointmentDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@FormatTime(item.AppointmentTime)</td>
+                                            <td>@item.TotalAmount.ToString("C2")</td>
+                                            <td>@item.RemainingAmount.ToString("C2")</td>
+                                            <td>@item.AppointmentStatus</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="@Url.Action("Details", "Appointments", new { id = item.AppointmentId })" class="btn btn-sm btn-outline-primary">
+                                                        Details
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(item.DepositReceiptUrl))
+                                                    {
+                                                        <a href="@item.DepositReceiptUrl" target="_blank" class="btn btn-sm btn-outline-secondary ms-1">
+                                                            Deposit Receipt
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="mb-0">No outstanding balance payments at this time.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">Payment History</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.PaymentHistory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Treatment</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PaymentHistory)
+                                    {
+                                        <tr>
+                                            <td>@item.PaymentDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                            <td>@item.TreatmentName</td>
+                                            <td>
+                                                <span class="badge @GetPaymentTypeBadgeClass(item.PaymentType)">
+                                                    @GetPaymentTypeDisplay(item.PaymentType)
+                                                </span>
+                                            </td>
+                                            <td>@item.Amount.ToString("C2")</td>
+                                            <td>
+                                                <span class="badge @GetStatusBadgeClass(item.Status)">
+                                                    @GetStatusDisplay(item.Status)
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="@Url.Action("Details", "Appointments", new { id = item.AppointmentId })" class="btn btn-sm btn-outline-primary">
+                                                        Appointment
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(item.ReceiptUrl) && item.Status == "succeeded")
+                                                    {
+                                                        <a href="@item.ReceiptUrl" target="_blank" class="btn btn-sm btn-outline-secondary ms-1">
+                                                            Receipt
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="mb-0">No payment history available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string FormatTime(TimeSpan time)
+    {
+        bool isPM = time.Hours >= 12;
+        int hour12 = time.Hours % 12;
+        if (hour12 == 0) hour12 = 12;
+        return $"{hour12}:{time.Minutes:D2} {(isPM ? "PM" : "AM")}";
+    }
+
+    string GetPaymentTypeDisplay(PaymentType type)
+    {
+        return type switch
+        {
+            PaymentType.Deposit => "Deposit Payment",
+            PaymentType.FullPayment => "Final Balance Payment",
+            PaymentType.Refund => "Refund",
+            _ => type.ToString()
+        };
+    }
+
+    string GetStatusDisplay(string status)
+    {
+        return status.ToLower() switch
+        {
+            "succeeded" => "Paid",
+            "pending" => "Pending",
+            "failed" => "Failed",
+            _ => status
+        };
+    }
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "succeeded" => "bg-success",
+            "pending" => "bg-warning",
+            "failed" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    
+    string GetPaymentTypeBadgeClass(PaymentType type)
+    {
+        return type switch
+        {
+            PaymentType.Deposit => "bg-primary",
+            PaymentType.FullPayment => "bg-info",
+            PaymentType.Refund => "bg-warning text-dark",
+            _ => "bg-secondary"
+        };
+    }
+}
