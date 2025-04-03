@@ -1,0 +1,503 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using DentalManagement.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Stripe;
+using Stripe.Checkout;
+
+namespace DentalManagement.Services
+{
+    public class PaymentService : IPaymentService
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<PaymentService> _logger;
+        private readonly StripeSettings _stripeSettings;
+        
+        public PaymentService(
+            ApplicationDbContext context,
+            ILogger<PaymentService> logger,
+            IOptions<StripeSettings> stripeSettings)
+        {
+            _context = context;
+            _logger = logger;
+            _stripeSettings = stripeSettings.Value;
+
+            // Add these logging statements to verify configuration
+            _logger.LogInformation("Stripe payment service initialized");
+            _logger.LogInformation($"Using currency: {_stripeSettings.Currency ?? "myr"}");
+            
+            // Don't log the full keys but confirm they exist
+            _logger.LogInformation($"Secret key exists: {!string.IsNullOrEmpty(_stripeSettings.SecretKey)}");
+            _logger.LogInformation($"Publishable key exists: {!string.IsNullOrEmpty(_stripeSettings.PublishableKey)}");
+            _logger.LogInformation($"Webhook secret exists: {!string.IsNullOrEmpty(_stripeSettings.WebhookSecret)}");
+        }
+        
+        public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl)
+        {
+            // Call the overloaded method with default payment type (Deposit)
+            return await CreateCheckoutSessionAsync(appointmentId, amount, successUrl, cancelUrl, PaymentType.Deposit);
+        }
+        
+        public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, PaymentType paymentType)
+        {
+            try
+            {
+                // Get appointment details for the metadata
+                var appointment = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.Doctor)
+                    .Include(a => a.TreatmentType)
+                    .FirstOrDefaultAsync(a => a.Id == appointmentId);
+                
+                if (appointment == null)
+                {
+                    _logger.LogError($"Appointment {appointmentId} not found when creating checkout session");
+                    throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
+                }
+                
+                // Convert amount to cents/smallest currency unit for Stripe
+                var amountInCents = (long)(amount * 100);
+                
+                // Generate appropriate title and description based on payment type
+                string paymentTitle, paymentDescription;
+                
+                if (paymentType == PaymentType.Deposit)
+                {
+                    paymentTitle = $"30% Deposit for {appointment.TreatmentType.Name}";
+                    paymentDescription = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}";
+                }
+                else if (paymentType == PaymentType.FullPayment)
+                {
+                    paymentTitle = $"Remaining Balance for {appointment.TreatmentType.Name}";
+                    paymentDescription = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}";
+                }
+                else
+                {
+                    // Default fallback
+                    paymentTitle = $"Payment for {appointment.TreatmentType.Name}";
+                    paymentDescription = $"Appointment on {appointment.AppointmentDate.ToString("MMMM d, yyyy")} at {FormatTime(appointment.AppointmentTime)}";
+                }
+                
+                // Create line items for checkout
+                var lineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = amountInCents,
+                            Currency = _stripeSettings.Currency ?? "myr", // Use the configured currency
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = paymentTitle,
+                                Description = paymentDescription
+                            }
+                        },
+                        Quantity = 1
+                    }
+                };
+                
+                // Create checkout session options with PaymentIntentData
+                var options = new SessionCreateOptions
+                {
+                    PaymentMethodTypes = new List<string> { "card" },
+                    LineItems = lineItems,
+                    Mode = "payment",
+                    SuccessUrl = successUrl,
+                    CancelUrl = cancelUrl,
+                    CustomerEmail = appointment.Patient.User?.Email,
+                    PaymentIntentData = new SessionPaymentIntentDataOptions
+                    {
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "AppointmentId", appointmentId.ToString() },
+                            { "PaymentType", paymentType.ToString() },
+                            { "IsRemainingPayment", (paymentType == PaymentType.FullPayment).ToString() }
+                        }
+                    },
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "AppointmentId", appointmentId.ToString() },
+                        { "PatientId", appointment.PatientId.ToString() },
+                        { "DoctorName", $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}" },
+                        { "TreatmentType", appointment.TreatmentType.Name },
+                        { "AppointmentDate", appointment.AppointmentDate.ToString("yyyy-MM-dd") },
+                        { "AppointmentTime", appointment.AppointmentTime.ToString() },
+                        { "PaymentType", paymentType.ToString() }
+                    }
+                };
+                
+                // Create the checkout session
+                var service = new SessionService();
+                var session = await service.CreateAsync(options);
+                
+                // Check if payment with this checkout session already exists
+                var existingPayment = await _context.Payments
+                    .FirstOrDefaultAsync(p => p.CheckoutSessionId == session.Id);
+                
+                if (existingPayment != null)
+                {
+                    _logger.LogWarning($"Payment with checkout session ID {session.Id} already exists");
+                    return session.Url;
+                }
+                
+                // Record the initial pending payment in our database
+                await RecordPaymentAsync(
+                    appointmentId, 
+                    null, // PaymentIntentId will be updated after successful payment
+                    amount,
+                    paymentType,
+                    "pending",
+                    session.Id
+                );
+                
+                return session.Url;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error creating checkout session for appointment {appointmentId}");
+                throw;
+            }
+        }
+        
+        public async Task<bool> VerifyPaymentAsync(string paymentIntentId)
+        {
+            try
+            {
+                var service = new PaymentIntentService();
+                var paymentIntent = await service.GetAsync(paymentIntentId);
+                
+                return paymentIntent.Status == "succeeded";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error verifying payment for intent {paymentIntentId}");
+                return false;
+            }
+        }
+        
+        public async Task<bool> ProcessRefundAsync(int appointmentId)
+        {
+            try
+            {
+                // Get the payment to refund
+                var payment = await _context.Payments
+                    .Where(p => p.AppointmentId == appointmentId && 
+                           p.Status == "succeeded" && 
+                           p.PaymentType == PaymentType.Deposit)
+                    .FirstOrDefaultAsync();
+                
+                if (payment == null || string.IsNullOrEmpty(payment.PaymentIntentId))
+                {
+                    _logger.LogWarning($"No successful payment found for appointment {appointmentId} to refund");
+                    return false;
+                }
+                
+                // Calculate refund amount (for now, refund the full deposit)
+                var refundAmount = payment.Amount;
+                
+                // Create the refund on Stripe
+                var refundOptions = new RefundCreateOptions
+                {
+                    PaymentIntent = payment.PaymentIntentId,
+                    Amount = (long)(refundAmount * 100), // Convert to cents
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "AppointmentId", appointmentId.ToString() },
+                        { "Reason", "Appointment Cancellation" }
+                    }
+                };
+                
+                var refundService = new RefundService();
+                var refund = await refundService.CreateAsync(refundOptions);
+                
+                // Record the refund in our database
+                await RecordRefundAsync(
+                    appointmentId,
+                    refund.Id,
+                    refundAmount,
+                    refund.Status
+                );
+                
+                // Update appointment payment status
+                if (refund.Status == "succeeded")
+                {
+                    await UpdateAppointmentPaymentStatusAsync(appointmentId, PaymentStatus.Refunded);
+                    return true;
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error processing refund for appointment {appointmentId}");
+                return false;
+            }
+        }
+        
+        public async Task<Payment> RecordPaymentAsync(int appointmentId, string paymentIntentId, decimal amount, 
+                                                     PaymentType paymentType, string status = "pending", string checkoutSessionId = null)
+        {
+            try
+            {
+                // Check if a payment with this checkout session ID already exists
+                if (!string.IsNullOrEmpty(checkoutSessionId))
+                {
+                    var existingPayment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
+                    
+                    if (existingPayment != null)
+                    {
+                        _logger.LogInformation($"Updating existing payment for checkout session {checkoutSessionId}");
+                        
+                        // Update the existing payment
+                        existingPayment.PaymentIntentId = paymentIntentId ?? existingPayment.PaymentIntentId;
+                        existingPayment.Amount = amount;
+                        existingPayment.Status = status;
+                        existingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        // Update appointment payment status if successful
+                        if (status == "succeeded")
+                        {
+                            await UpdateAppointmentPaymentStatusAsync(
+                                appointmentId, 
+                                paymentType == PaymentType.FullPayment ? 
+                                    PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                            );
+                        }
+                        
+                        return existingPayment;
+                    }
+                }
+                
+                // Check if a payment with this payment intent ID already exists
+                if (!string.IsNullOrEmpty(paymentIntentId))
+                {
+                    var existingPayment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
+                    
+                    if (existingPayment != null)
+                    {
+                        _logger.LogInformation($"Updating existing payment for payment intent {paymentIntentId}");
+                        
+                        // Update the existing payment
+                        existingPayment.CheckoutSessionId = checkoutSessionId ?? existingPayment.CheckoutSessionId;
+                        existingPayment.Amount = amount;
+                        existingPayment.Status = status;
+                        existingPayment.UpdatedAt = DateTime.UtcNow;
+                        
+                        await _context.SaveChangesAsync();
+                        
+                        // Update appointment payment status if successful
+                        if (status == "succeeded")
+                        {
+                            await UpdateAppointmentPaymentStatusAsync(
+                                appointmentId, 
+                                paymentType == PaymentType.FullPayment ? 
+                                    PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                            );
+                        }
+                        
+                        return existingPayment;
+                    }
+                }
+                
+                // Create a new payment record
+                var payment = new Payment
+                {
+                    AppointmentId = appointmentId,
+                    PaymentIntentId = paymentIntentId,
+                    CheckoutSessionId = checkoutSessionId,
+                    Amount = amount,
+                    PaymentType = paymentType,
+                    Status = status,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                _context.Payments.Add(payment);
+                await _context.SaveChangesAsync();
+                
+                // Update appointment payment status if successful
+                if (status == "succeeded")
+                {
+                    await UpdateAppointmentPaymentStatusAsync(
+                        appointmentId, 
+                        paymentType == PaymentType.FullPayment ? 
+                            PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                    );
+                }
+                
+                return payment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error recording payment for appointment {appointmentId}");
+                throw;
+            }
+        }
+        
+        public async Task<Payment> RecordRefundAsync(int appointmentId, string refundId, decimal amount, string status = "pending")
+        {
+            try
+            {
+                var payment = new Payment
+                {
+                    AppointmentId = appointmentId,
+                    RefundId = refundId,
+                    Amount = amount,
+                    PaymentType = PaymentType.Refund,
+                    Status = status,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                _context.Payments.Add(payment);
+                await _context.SaveChangesAsync();
+                
+                return payment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error recording refund for appointment {appointmentId}");
+                throw;
+            }
+        }
+        
+        public async Task UpdatePaymentStatusAsync(string paymentIntentId, string status, string errorMessage = null)
+        {
+            try
+            {
+                // Try to find the payment by payment intent ID
+                var payment = await _context.Payments
+                    .FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
+                
+                if (payment == null)
+                {
+                    // If not found by payment intent ID, try to find by checkout session ID
+                    // First get the payment intent from Stripe to find any metadata
+                    var paymentIntentService = new PaymentIntentService();
+                    var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
+                    
+                    if (paymentIntent.Metadata.TryGetValue("CheckoutSessionId", out string checkoutSessionId))
+                    {
+                        payment = await _context.Payments
+                            .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
+                    }
+                    
+                    // If still not found, try to find any pending payment for this appointment
+                    if (payment == null && paymentIntent.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) &&
+                        int.TryParse(appointmentIdStr, out int appointmentId))
+                    {
+                        // Check if we can determine the payment type
+                        PaymentType paymentType = PaymentType.Deposit;
+                        if (paymentIntent.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
+                        {
+                            Enum.TryParse(paymentTypeStr, out paymentType);
+                        }
+                        
+                        // Look for a pending payment with matching appointment ID and payment type
+                        payment = await _context.Payments
+                            .Where(p => p.AppointmentId == appointmentId && 
+                                   p.PaymentType == paymentType && 
+                                   p.Status == "pending")
+                            .OrderByDescending(p => p.CreatedAt)
+                            .FirstOrDefaultAsync();
+                    }
+                    
+                    if (payment == null)
+                    {
+                        _logger.LogWarning($"Payment with intent ID {paymentIntentId} not found");
+                        return;
+                    }
+                }
+                
+                // Update payment information
+                payment.Status = status;
+                payment.ErrorMessage = errorMessage;
+                payment.UpdatedAt = DateTime.UtcNow;
+                
+                // If it was pending, update the payment intent ID
+                if (string.IsNullOrEmpty(payment.PaymentIntentId))
+                {
+                    payment.PaymentIntentId = paymentIntentId;
+                }
+                
+                // If it's a successful payment and we need to update the receipt URL
+                if (status == "succeeded" && string.IsNullOrEmpty(payment.ReceiptUrl))
+                {
+                    // Instead of getting Charges from PaymentIntent, retrieve the charge directly
+                    var chargeService = new ChargeService();
+                    var charges = await chargeService.ListAsync(new ChargeListOptions 
+                    { 
+                        PaymentIntent = paymentIntentId 
+                    });
+                    
+                    if (charges?.Data?.Count > 0)
+                    {
+                        payment.ReceiptUrl = charges.Data[0].ReceiptUrl;
+                    }
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                // Update appointment payment status if successful
+                if (status == "succeeded")
+                {
+                    var appointmentId = payment.AppointmentId;
+                    await UpdateAppointmentPaymentStatusAsync(
+                        appointmentId, 
+                        payment.PaymentType == PaymentType.FullPayment ? 
+                            PaymentStatus.Paid : PaymentStatus.PartiallyPaid
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating payment status for intent {paymentIntentId}");
+            }
+        }
+        
+        public async Task UpdateAppointmentPaymentStatusAsync(int appointmentId, PaymentStatus status)
+        {
+            try
+            {
+                var appointment = await _context.Appointments
+                    .FindAsync(appointmentId);
+                
+                if (appointment == null)
+                {
+                    _logger.LogWarning($"Appointment {appointmentId} not found when updating payment status");
+                    return;
+                }
+                
+                appointment.PaymentStatus = status;
+                appointment.UpdatedAt = DateTime.UtcNow;
+                
+                // For initial deposit payments that succeed, also update the appointment status to Confirmed
+                if (status == PaymentStatus.PartiallyPaid && appointment.Status == "Scheduled")
+                {
+                    appointment.Status = "Confirmed";
+                }
+                
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating appointment {appointmentId} payment status");
+            }
+        }
+        
+        private string FormatTime(TimeSpan time)
+        {
+            bool isPM = time.Hours >= 12;
+            int hour12 = time.Hours % 12;
+            if (hour12 == 0) hour12 = 12;
+            return $"{hour12}:{time.Minutes:D2} {(isPM ? "PM" : "AM")}";
+        }
+    }
+}

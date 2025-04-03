@@ -397,6 +397,48 @@ function initializeAppointmentFilters() {
 
     activeFilterTags.appendChild(tagElement);
   }
+  
+  // Helper function to check if an appointment is in the past based on date and time
+  function isAppointmentInPast(dateElement) {
+    if (!dateElement) return false;
+    
+    const monthElement = dateElement.querySelector('.month');
+    const dayElement = dateElement.querySelector('.day');
+    const timeElement = dateElement.closest('.appointment-card').querySelector('.time');
+    
+    if (!monthElement || !dayElement) return false;
+    
+    const monthText = monthElement.textContent.trim();
+    const dayText = dayElement.textContent.trim();
+    let timeText = timeElement ? timeElement.textContent.trim() : '23:59'; // Default to end of day if no time
+    
+    // Extract just the time part if it has format or additional text
+    if (timeText.includes(':')) {
+      const match = timeText.match(/\d{1,2}:\d{2}/);
+      timeText = match ? match[0] : '23:59';
+    } else {
+      timeText = '23:59'; // Default if no valid time format
+    }
+    
+    // Parse month name to month index (0-11)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthIndex = monthNames.findIndex(m => monthText.includes(m));
+    
+    if (monthIndex === -1) return false;
+    
+    // Create date object for the appointment (use current year)
+    const now = new Date();
+    const appointmentDate = new Date(
+      now.getFullYear(),
+      monthIndex,
+      parseInt(dayText),
+      parseInt(timeText.split(':')[0]),
+      parseInt(timeText.split(':')[1])
+    );
+    
+    // Compare with current date/time
+    return appointmentDate < now;
+  }
 
   // Apply all active filters
   function applyAllFilters() {
@@ -483,6 +525,17 @@ function initializeAppointmentFilters() {
           }
         }
 
+        // Special handling for tabs
+        // Note: This is to ensure we maintain tab separation for cancelled appointments
+        const tabId = visibleTab.id;
+        const statusElement = card.querySelector('.appointment-status');
+        const status = statusElement ? statusElement.textContent.trim() : '';
+        
+        // Make sure cancelled appointments only show in cancelled tab
+        if (tabId !== 'cancelled-tab' && status === 'Cancelled') {
+          visible = false;
+        }
+
         // Update card visibility
         card.style.display = visible ? 'flex' : 'none';
 
@@ -516,6 +569,146 @@ function initializeAppointmentFilters() {
       applyAllFilters();
     });
   }
+  
+  // Check each appointment and move it to the correct tab based on status and date
+  function organizeAppointmentsByStatus() {
+    const appointments = document.querySelectorAll('.appointment-card');
+    const upcomingTab = document.getElementById('upcoming-tab');
+    const pastTab = document.getElementById('past-tab');
+    const cancelledTab = document.getElementById('cancelled-tab');
+    
+    if (!upcomingTab || !pastTab || !cancelledTab) return;
+    
+    // Process each appointment card
+    appointments.forEach(card => {
+      const statusElement = card.querySelector('.appointment-status');
+      const status = statusElement ? statusElement.textContent.trim() : '';
+      const dateBox = card.querySelector('.date-box');
+      
+      // Create a clone of the card to move to another tab if needed
+      const cardClone = card.cloneNode(true);
+      
+      // Handle cancelled appointments - they always go to Cancelled tab
+      if (status === 'Cancelled') {
+        // If the card isn't already in the cancelled tab, move it there
+        if (!card.parentElement.closest('#cancelled-tab')) {
+          if (cancelledTab.querySelector('.appointments-grid')) {
+            cancelledTab.querySelector('.appointments-grid').appendChild(cardClone);
+          } else {
+            // Create grid if it doesn't exist
+            const grid = document.createElement('div');
+            grid.className = 'appointments-grid';
+            grid.appendChild(cardClone);
+            
+            // Replace empty state with grid if it exists
+            const emptyState = cancelledTab.querySelector('.empty-category-card');
+            if (emptyState) {
+              cancelledTab.replaceChild(grid, emptyState);
+            } else {
+              cancelledTab.appendChild(grid);
+            }
+          }
+          card.remove();
+        }
+      } 
+      // Handle completed appointments - they go to Past tab
+      else if (status === 'Completed') {
+        // If the card isn't already in the past tab, move it there
+        if (!card.parentElement.closest('#past-tab')) {
+          if (pastTab.querySelector('.appointments-grid')) {
+            pastTab.querySelector('.appointments-grid').appendChild(cardClone);
+          } else {
+            // Create grid if it doesn't exist
+            const grid = document.createElement('div');
+            grid.className = 'appointments-grid';
+            grid.appendChild(cardClone);
+            
+            // Replace empty state with grid if it exists
+            const emptyState = pastTab.querySelector('.empty-category-card');
+            if (emptyState) {
+              pastTab.replaceChild(grid, emptyState);
+            } else {
+              pastTab.appendChild(grid);
+            }
+          }
+          card.remove();
+        }
+      }
+      // Check if appointment is in the past based on date/time
+      else if (isAppointmentInPast(dateBox)) {
+        // If it's a past appointment and not already in past tab, move it there
+        if (!card.parentElement.closest('#past-tab')) {
+          if (pastTab.querySelector('.appointments-grid')) {
+            pastTab.querySelector('.appointments-grid').appendChild(cardClone);
+          } else {
+            // Create grid if it doesn't exist
+            const grid = document.createElement('div');
+            grid.className = 'appointments-grid';
+            grid.appendChild(cardClone);
+            
+            // Replace empty state with grid if it exists
+            const emptyState = pastTab.querySelector('.empty-category-card');
+            if (emptyState) {
+              pastTab.replaceChild(grid, emptyState);
+            } else {
+              pastTab.appendChild(grid);
+            }
+          }
+          card.remove();
+        }
+      }
+    });
+    
+    // Check if any tab is empty and show empty state if needed
+    [upcomingTab, pastTab, cancelledTab].forEach(tab => {
+      const grid = tab.querySelector('.appointments-grid');
+      if (grid && grid.children.length === 0) {
+        grid.remove();
+        
+        // Only add empty state if it doesn't already exist
+        if (!tab.querySelector('.empty-category-card')) {
+          const emptyState = document.createElement('div');
+          emptyState.className = 'empty-category-card';
+          
+          let iconClass, title, message;
+          if (tab.id === 'upcoming-tab') {
+            iconClass = 'bi-calendar-plus';
+            title = 'No Upcoming Appointments';
+            message = 'You don\'t have any scheduled appointments. Book a new appointment to get started.';
+          } else if (tab.id === 'past-tab') {
+            iconClass = 'bi-calendar-check';
+            title = 'No Past Appointments';
+            message = 'You don\'t have any past appointment records.';
+          } else {
+            iconClass = 'bi-calendar-x';
+            title = 'No Cancelled Appointments';
+            message = 'You don\'t have any cancelled appointments.';
+          }
+          
+          emptyState.innerHTML = `
+            <div class="empty-icon">
+              <i class="bi ${iconClass}"></i>
+            </div>
+            <div class="empty-message">
+              <h3>${title}</h3>
+              <p>${message}</p>
+              ${tab.id === 'upcoming-tab' ? `
+                <a href="/Patient/Appointments/Book" class="action-btn schedule-btn">
+                  <i class="bi bi-plus-circle"></i>
+                  Book an Appointment
+                </a>
+              ` : ''}
+            </div>
+          `;
+          
+          tab.appendChild(emptyState);
+        }
+      }
+    });
+  }
+  
+  // Run the organization logic on page load
+  organizeAppointmentsByStatus();
   
   // Apply existing filters on initialization
   updateFilterTags();

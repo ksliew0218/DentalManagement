@@ -1,0 +1,675 @@
+/* Billing Page Styles - Matching My Appointments styling */
+
+:root {
+  --primary-color: #4769f7;
+  --success-color: #48bb78;
+  --warning-color: #ecc94b;
+  --danger-color: #e53e3e;
+  --background-color: #f8f9fc;
+  --card-background: #ffffff;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border-color: #e2e8f0;
+  --hover-bg: #f7fafc;
+}
+
+.dashboard-container {
+  padding: 48px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-header h2 i {
+  color: var(--primary-color);
+}
+
+.page-header .subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* Alert Messages */
+.alert-message {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  position: relative;
+  transition: opacity 0.3s ease;
+}
+
+.alert-message i {
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.alert-message.success {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: var(--success-color);
+}
+
+.alert-message.error {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--danger-color);
+}
+
+.close-alert {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.close-alert:hover {
+  opacity: 1;
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.summary-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(71, 105, 247, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-icon i {
+  font-size: 28px;
+  color: var(--primary-color);
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.summary-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 8px 0;
+  line-height: 1;
+}
+
+.summary-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Filter Tabs - Matching My Appointments design */
+.filter-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.filter-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.filter-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-tabs::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 2px;
+}
+
+.filter-tab {
+  padding: 10px 20px;
+  background: white;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-tab i {
+  font-size: 1rem;
+}
+
+.filter-tab:hover {
+  background: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+.filter-tab.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Tab Content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Grid Layout for Payments - Matching appointments grid */
+.payments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Payment Card */
+.payment-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 16px;
+  height: 100%;
+  min-height: 380px;
+}
+
+.payment-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.payment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.payment-card.history {
+  border-top: 4px solid var(--primary-color);
+}
+
+.payment-card.history.refund {
+  border-top-color: var(--warning-color);
+}
+
+/* Payment Header */
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f7fafc;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.date-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.date-box .month {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-transform: uppercase;
+}
+
+.date-box .day {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.payment-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.time i {
+  color: var(--text-muted);
+}
+
+/* Payment Date - for history cards */
+.payment-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 16px 8px 16px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.payment-date i {
+  color: var(--primary-color);
+}
+
+/* Payment Type */
+.payment-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 16px 8px 16px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.payment-type.deposit {
+  background-color: rgba(66, 153, 225, 0.1);
+  color: #3182ce;
+}
+
+.payment-type.full-payment {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #38a169;
+}
+
+.payment-type.refund {
+  background-color: rgba(236, 201, 75, 0.1);
+  color: #d69e2e;
+}
+
+/* Treatment Name */
+.treatment-name {
+  padding: 16px 16px 8px 16px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Doctor Info */
+.doctor-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 16px 16px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.doctor-info i {
+  color: var(--primary-color);
+}
+
+/* Amount Info */
+.amount-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 16px 16px;
+  background: rgba(247, 250, 252, 0.5);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  margin-top: auto;
+}
+
+.amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amount-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.amount-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.amount-value.highlight {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
+.amount-value.refund {
+  color: var(--warning-color);
+}
+
+/* Payment Status */
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.payment-status.scheduled,
+.payment-status.confirmed {
+  background-color: rgba(66, 153, 225, 0.1);
+  color: #3182ce;
+}
+
+.payment-status.completed {
+  background-color: rgba(102, 126, 234, 0.1);
+  color: #5a67d8;
+}
+
+.payment-status.pending {
+  background-color: rgba(236, 201, 75, 0.1);
+  color: #d69e2e;
+}
+
+.payment-status.cancelled {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: #e53e3e;
+}
+
+.payment-status .status-icon {
+  font-size: 0.5rem;
+}
+
+/* Status pill for payment history */
+.payment-status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.payment-status-pill.success {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #38a169;
+}
+
+.payment-status-pill.pending {
+  background-color: rgba(236, 201, 75, 0.1);
+  color: #d69e2e;
+}
+
+.payment-status-pill.failed {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: #e53e3e;
+}
+
+/* Payment Footer - position at bottom by default */
+.payment-footer {
+  padding: 16px 16px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+}
+
+/* For Payment History tab - add flex-grow for single button */
+#payment-history-tab .payment-card:not(:has(.receipt-link)) .payment-footer,
+#pending-deposits-tab .payment-footer,
+#outstanding-balances-tab .payment-footer {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Receipt Link */
+.receipt-link {
+  padding: 8px 16px 8px 16px;
+  text-align: center;
+  width: 100%;
+}
+
+.receipt-link a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  background: rgba(160, 174, 192, 0.1);
+  color: #4a5568;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 10px 16px;
+  text-decoration: none;
+}
+
+.receipt-link a:hover {
+  background: rgba(160, 174, 192, 0.2);
+}
+
+/* Action Buttons - matching styles */
+.view-details-btn,
+.pay-btn,
+.receipt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+  width: 100%;
+  text-align: center;
+  min-height: 42px;
+  box-sizing: border-box;
+}
+
+.view-details-btn {
+  background: rgba(66, 153, 225, 0.1);
+  color: #3182ce;
+}
+
+.view-details-btn:hover {
+  background: rgba(66, 153, 225, 0.2);
+}
+
+.pay-btn {
+  background: rgba(72, 187, 120, 0.1);
+  color: #38a169;
+}
+
+.pay-btn:hover {
+  background: rgba(72, 187, 120, 0.2);
+}
+
+.receipt-btn {
+  background: rgba(160, 174, 192, 0.1);
+  color: #4a5568;
+}
+
+.receipt-btn:hover {
+  background: rgba(160, 174, 192, 0.2);
+}
+
+/* Empty State - matching the appointments page */
+.empty-category-card {
+  background: var(--card-background);
+  border-radius: 16px;
+  padding: 40px 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(66, 153, 225, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.empty-icon i {
+  font-size: 32px;
+  color: var(--primary-color);
+}
+
+.empty-message h3 {
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.empty-message p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.5;
+  max-width: 400px;
+  margin: 0 auto 24px;
+}
+
+/* Card Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-card {
+  animation: fadeInUp 0.5s ease forwards;
+  animation-delay: calc(var(--index, 0) * 0.1s);
+  opacity: 0;
+}
+
+/* Count Animation */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary-count {
+  animation: countUp 0.8s ease forwards;
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 24px 16px;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .payments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-footer {
+    flex-direction: column;
+  }
+
+  .payment-footer .view-details-btn,
+  .payment-footer .pay-btn,
+  .payment-footer .receipt-btn {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+}

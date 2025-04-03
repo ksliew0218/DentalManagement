@@ -147,20 +147,35 @@
             <div class="payment-section">
                 <div class="section-header">
                     <h3>Payment Information</h3>
-                    <p class="section-subtitle">A deposit is not required. You will pay after your appointment.</p>
+                    <p class="section-subtitle">A 30% deposit is required to confirm your appointment.</p>
                 </div>
                 <div class="payment-info">
                     <div class="payment-row">
                         <span class="payment-label">Treatment Cost</span>
                         <span class="payment-value" id="treatment-cost">@Model.TreatmentPrice</span>
                     </div>
+                    <div class="payment-row">
+                        <span class="payment-label">Required Deposit (30%)</span>
+                        <span class="payment-value" id="deposit-amount">
+                            @{
+                                var price = decimal.Parse(Model.TreatmentPrice.Replace("RM ", ""));
+                                var deposit = Math.Round(price * 0.3m, 2);
+                                @($"RM {deposit:F2}")
+                            }
+                        </span>
+                    </div>
                     <div class="payment-row total">
-                        <span class="payment-label">Total Cost</span>
-                        <span class="payment-value" id="estimated-total">@Model.TreatmentPrice</span>
+                        <span class="payment-label">Balance Due at Appointment</span>
+                        <span class="payment-value" id="balance-due">
+                            @{
+                                var balance = Math.Round(price * 0.7m, 2);
+                                @($"RM {balance:F2}")
+                            }
+                        </span>
                     </div>
                     <div class="payment-note">
                         <i class="bi bi-info-circle"></i>
-                        <span>Final cost may vary based on your treatment needs.</span>
+                        <span>You'll be redirected to our secure payment page to complete your deposit payment.</span>
                     </div>
                 </div>
             </div>
@@ -172,8 +187,8 @@
                     <h3>Cancellation Policy</h3>
                 </div>
                 <p class="policy-content">
-                    Please provide at least <strong>24 hours notice</strong> if you need to cancel or reschedule your appointment. 
-                    Late cancellations or no-shows may incur a fee of <strong>RM 30</strong>.
+                    Please provide at least 24 hours notice if you need to cancel or reschedule your appointment. 
+                    Late cancellations or no-shows <strong>will result in forfeiture of the deposit</strong>.
                 </p>
                 <div class="policy-checkbox">
                     <input type="checkbox" id="policy-agreement" required>
@@ -188,7 +203,7 @@
                 <i class="bi bi-arrow-left"></i> Back to Date & Time
             </a>
             <button type="submit" class="confirm-btn" id="confirm-btn" disabled>
-                Confirm Appointment <i class="bi bi-check2"></i>
+                Proceed to Payment <i class="bi bi-credit-card"></i>
             </button>
         </div>
     </form>

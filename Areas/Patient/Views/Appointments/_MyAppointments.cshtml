@@ -1,4 +1,5 @@
 @model DentalManagement.Areas.Patient.Models.AppointmentsListViewModel
+@using DentalManagement.Models
 @{
     ViewData["Title"] = "My Appointments";
     Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
@@ -89,10 +90,10 @@
 
     <!-- Upcoming Appointments Tab -->
     <div class="tab-content active" id="upcoming-tab">
-        @if (Model?.UpcomingAppointments != null && Model.UpcomingAppointments.Any(a => a.Status != "Cancelled"))
+        @if (Model?.UpcomingAppointments != null && Model.UpcomingAppointments.Any())
         {
             <div class="appointments-grid">
-                @foreach (var appointment in Model.UpcomingAppointments.Where(a => a.Status != "Cancelled"))
+                @foreach (var appointment in Model.UpcomingAppointments)
                 {
                     <div class="appointment-card">
                         <div class="appointment-header">
@@ -205,6 +206,13 @@
                                 <i class="bi bi-eye"></i>
                                 View Details
                             </a>
+                            @if (appointment.Status == "Completed" && appointment.PaymentStatus == PaymentStatus.PartiallyPaid)
+                            {
+                                <a href="@Url.Action("ProcessRemainingPayment", "Appointments", new { area = "Patient", id = appointment.Id })" class="payment-btn">
+                                    <i class="bi bi-credit-card"></i>
+                                    Pay Balance
+                                </a>
+                            }
                         </div>
                     </div>
                 }
@@ -226,10 +234,10 @@
 
     <!-- Cancelled Appointments Tab -->
     <div class="tab-content" id="cancelled-tab">
-        @if (Model?.UpcomingAppointments != null && Model.UpcomingAppointments.Any(a => a.Status == "Cancelled"))
+        @if (Model?.CancelledAppointments != null && Model.CancelledAppointments.Any())
         {
             <div class="appointments-grid">
-                @foreach (var appointment in Model.UpcomingAppointments.Where(a => a.Status == "Cancelled"))
+                @foreach (var appointment in Model.CancelledAppointments)
                 {
                     <div class="appointment-card cancelled">
                         <div class="appointment-header">

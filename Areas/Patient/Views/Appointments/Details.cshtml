@@ -1,4 +1,5 @@
 @model DentalManagement.Areas.Patient.Models.AppointmentDetailViewModel
+@using DentalManagement.Models
 @{
     ViewData["Title"] = "Appointment Details";
     Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
@@ -7,6 +8,36 @@
 <head>
     <!-- Link to custom CSS files -->
     <link href="~/css/appointment-details.css" rel="stylesheet" asp-append-version="true">
+    <style>
+        /* Payment-related styles */
+        .payment-status {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .payment-status i {
+            margin-right: 5px;
+        }
+
+        .payment-status.paid {
+            color: #28a745;
+        }
+
+        .payment-status.unpaid {
+            color: #dc3545;
+        }
+
+        .detail-icon.total-icon {
+            background-color: rgba(111, 66, 193, 0.1);
+            color: #6f42c1;
+        }
+
+        /* Add more space between cards */
+        .details-card + .details-card {
+            margin-top: 1.5rem;
+        }
+    </style>
 </head>
 
 <div class="appointment-container">
@@ -39,6 +70,10 @@
                 else if (Model.Status == "Cancelled")
                 {
                     <span>This appointment has been cancelled.</span>
+                }
+                else if (Model.Status == "Pending-Payment")
+                {
+                    <span>Your appointment is pending payment. Please complete the payment to confirm your appointment.</span>
                 }
             </p>
         </div>
@@ -127,8 +162,105 @@
         </div>
     </div>
     
+    <!-- Payment Details Card -->
+    <div class="details-card">
+        <div class="card-header">
+            <h3>Payment Information</h3>
+        </div>
+        <div class="details-content">
+            <!-- Deposit Payment Section -->
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-credit-card-fill"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Deposit Payment</span>
+                    <span class="detail-value">
+                        @if (Model.PaymentStatus == PaymentStatus.Paid || Model.PaymentStatus == PaymentStatus.PartiallyPaid)
+                        {
+                            <span class="payment-status paid">
+                                <i class="bi bi-check-circle"></i> Paid - RM @Model.DepositAmount.ToString("0.00")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="payment-status unpaid">
+                                <i class="bi bi-x-circle"></i> Unpaid - RM @Model.DepositAmount.ToString("0.00")
+                            </span>
+                        }
+                    </span>
+                    @if ((Model.PaymentStatus == PaymentStatus.Paid || Model.PaymentStatus == PaymentStatus.PartiallyPaid) && Model.LastPaymentDate.HasValue)
+                    {
+                        <span class="detail-meta">Paid on @Model.LastPaymentDate.Value.ToString("MMM d, yyyy 'at' h:mm tt")</span>
+                    }
+                </div>
+            </div>
+            
+            <!-- Remaining Payment Section -->
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Remaining Balance</span>
+                    <span class="detail-value">
+                        @if (Model.RemainingAmount <= 0 && Model.PaymentStatus == PaymentStatus.Paid)
+                        {
+                            <span class="payment-status paid">
+                                <i class="bi bi-check-circle"></i> Paid - RM @((Model.TreatmentCost - Model.DepositAmount).ToString("0.00"))
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="payment-status unpaid">
+                                <i class="bi bi-x-circle"></i> Due at Appointment - RM @Model.RemainingAmount.ToString("0.00")
+                            </span>
+                        }
+                    </span>
+                    @if (Model.RemainingAmount <= 0 && Model.PaymentStatus == PaymentStatus.Paid && Model.FullPaymentDate.HasValue)
+                    {
+                        <span class="detail-meta">Paid on @Model.FullPaymentDate.Value.ToString("MMM d, yyyy 'at' h:mm tt")</span>
+                    }
+                    else if (Model.RemainingAmount > 0)
+                    {
+                        <span class="detail-meta">Payment due after treatment completion</span>
+                    }
+                </div>
+            </div>
+            
+            <!-- Total Payment Section -->
+            <div class="detail-item">
+                <div class="detail-icon total-icon">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Total Treatment Cost</span>
+                    <span class="detail-value">RM @Model.TreatmentCost.ToString("0.00")</span>
+                    @if (Model.AmountPaid > 0)
+                    {
+                        <span class="detail-meta">
+                            @(Math.Round(Model.AmountPaid / Model.TreatmentCost * 100))% paid (RM @Model.AmountPaid.ToString("0.00"))
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Actions Section -->
     <div class="actions-section">
+        @if (Model.Status == "Pending-Payment")
+        {
+            <button class="action-btn payment-btn" onclick="checkAppointmentAvailability(@Model.Id)">
+                <i class="bi bi-credit-card"></i> Proceed to Payment
+            </button>
+        }
+        @if (Model.Status == "Completed" && Model.PaymentStatus == PaymentStatus.PartiallyPaid && Model.RemainingAmount > 0)
+        {
+            <button class="action-btn payment-btn" onclick="processRemainingPayment(@Model.Id)">
+                <i class="bi bi-credit-card"></i> Pay Remaining Balance
+            </button>
+        }
         @if (Model.Status != "Cancelled" && Model.Status != "Completed" && Model.CanCancel)
         {
             <button class="action-btn cancel-btn" onclick="confirmCancelAppointment(@Model.Id)">
@@ -144,6 +276,28 @@
         <a href="@Url.Action("Index", "Appointments", new { area = "Patient" })" class="action-btn back-btn">
             <i class="bi bi-arrow-left"></i> Back to Appointments
         </a>
+    </div>
+
+    <!-- Slot Unavailable Modal -->
+    <div class="modal" id="slot-unavailable-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-exclamation-triangle"></i> Time Slot Unavailable</h3>
+                <button class="close-modal-btn"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Unfortunately, the time slot for this appointment is no longer available.</p>
+                <p>Please book a new appointment with an available time slot.</p>
+                <div class="modal-actions">
+                    <a href="@Url.Action("Book", "Appointments", new { area = "Patient" })" class="action-btn">
+                        <i class="bi bi-calendar-plus"></i> Book New Appointment
+                    </a>
+                    <button type="button" id="close-unavailable-modal" class="action-btn cancel-btn">
+                        <i class="bi bi-x-circle"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Cancel Confirmation Modal -->
@@ -207,5 +361,53 @@
                 }
             });
         });
+
+         // Slot availability check
+        function checkAppointmentAvailability(appointmentId) {
+            fetch(`/Patient/Appointments/CheckSlotAvailability/${appointmentId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.isAvailable) {
+                    // Redirect to payment
+                    window.location.href = `/Patient/Appointments/ProceedToPayment/${appointmentId}`;
+                } else {
+                    // Show unavailable modal
+                    const modal = document.getElementById('slot-unavailable-modal');
+                    modal.classList.add('show');
+
+                    // Close modal functionality
+                    const closeBtn = modal.querySelector('.close-modal-btn');
+                    const closeBtnAlt = document.getElementById('close-unavailable-modal');
+                    
+                    function closeModal() {
+                        modal.classList.remove('show');
+                    }
+
+                    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+                    if (closeBtnAlt) closeBtnAlt.addEventListener('click', closeModal);
+
+                    // Close modal when clicking outside
+                    window.addEventListener('click', function(event) {
+                        if (event.target === modal) {
+                            closeModal();
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while checking appointment availability.');
+            });
+        }
+        
+        // Function to process the remaining balance payment
+        function processRemainingPayment(appointmentId) {
+            window.location.href = `/Patient/Appointments/ProcessRemainingPayment/${appointmentId}`;
+        }
     </script>
-} 
+}

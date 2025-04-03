@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using DentalManagement.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace DentalManagement.Areas.Patient.Controllers
 {
@@ -25,18 +27,21 @@ namespace DentalManagement.Areas.Patient.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AppointmentsController> _logger;
         private readonly IEmailService _emailService;
+        private readonly IPaymentService _paymentService; // Add this line
 
 
         public AppointmentsController(
             ApplicationDbContext context, 
             UserManager<User> userManager,
             ILogger<AppointmentsController> logger,
+            IPaymentService paymentService,
             IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
             _emailService = emailService;
+            _paymentService = paymentService;
         }
 
         // GET: Patient/Appointments
@@ -45,7 +50,8 @@ namespace DentalManagement.Areas.Patient.Controllers
             var viewModel = new AppointmentsListViewModel
             {
                 UpcomingAppointments = new List<AppointmentViewModel>(),
-                PastAppointments = new List<AppointmentViewModel>()
+                PastAppointments = new List<AppointmentViewModel>(),
+                CancelledAppointments = new List<AppointmentViewModel>()
             };
 
             try
@@ -58,51 +64,83 @@ namespace DentalManagement.Areas.Patient.Controllers
                     var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
                     if (patient != null)
                     {
-                        // Get appointments
-                        var today = DateTime.UtcNow.Date;  // Use UTC date                        
-                        // Get upcoming appointments
-                        var upcomingAppointments = await _context.Appointments
+                        // Get the current date and time
+                        var now = DateTime.UtcNow;
+                        var today = now.Date;
+
+                        // Get all appointments for this patient
+                        var allAppointments = await _context.Appointments
                             .Include(a => a.Doctor)
                             .Include(a => a.TreatmentType)
-                            .Where(a => a.PatientId == patient.Id && a.AppointmentDate >= today)
+                            .Where(a => a.PatientId == patient.Id)
                             .OrderBy(a => a.AppointmentDate)
                             .ThenBy(a => a.AppointmentTime)
                             .ToListAsync();
-                            
-                        // Get past appointments
-                        var pastAppointments = await _context.Appointments
-                            .Include(a => a.Doctor)
-                            .Include(a => a.TreatmentType)
-                            .Where(a => a.PatientId == patient.Id && a.AppointmentDate < today)
-                            .OrderByDescending(a => a.AppointmentDate)
+
+                        // Process each appointment and categorize it
+                        foreach (var appointment in allAppointments)
+                        {
+                            var appointmentViewModel = new AppointmentViewModel
+                            {
+                                Id = appointment.Id,
+                                TreatmentName = appointment.TreatmentType.Name,
+                                DoctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}",
+                                AppointmentDate = appointment.AppointmentDate,
+                                AppointmentTime = appointment.AppointmentTime,
+                                Status = appointment.Status,
+                                PaymentStatus = appointment.PaymentStatus,
+                                // Can cancel if not already cancelled or completed, and appointment is in the future
+                                CanCancel = appointment.Status != "Cancelled" && 
+                                        appointment.Status != "Completed" && 
+                                        (appointment.AppointmentDate > today || 
+                                        (appointment.AppointmentDate == today && 
+                                            appointment.AppointmentTime > now.TimeOfDay))
+                            };
+
+                            // Categorize appointments
+                            if (appointment.Status == "Cancelled")
+                            {
+                                // All cancelled appointments go to the cancelled tab
+                                viewModel.CancelledAppointments.Add(appointmentViewModel);
+                            }
+                            else if (appointment.Status == "Completed")
+                            {
+                                // All completed appointments go to the past tab
+                                viewModel.PastAppointments.Add(appointmentViewModel);
+                            }
+                            else
+                            {
+                                // Check if appointment is in the past based on date and time
+                                bool isPastAppointment = appointment.AppointmentDate < today || 
+                                                    (appointment.AppointmentDate == today && 
+                                                        appointment.AppointmentTime < now.TimeOfDay);
+
+                                if (isPastAppointment)
+                                {
+                                    viewModel.PastAppointments.Add(appointmentViewModel);
+                                }
+                                else
+                                {
+                                    viewModel.UpcomingAppointments.Add(appointmentViewModel);
+                                }
+                            }
+                        }
+
+                        // Sort the appointment collections
+                        viewModel.UpcomingAppointments = viewModel.UpcomingAppointments
+                            .OrderBy(a => a.AppointmentDate)
                             .ThenBy(a => a.AppointmentTime)
-                            .Take(10) // Limit to 10 past appointments
-                            .ToListAsync();
-                            
-                        // Map to view models
-                        viewModel.UpcomingAppointments = upcomingAppointments.Select(a => new AppointmentViewModel
-                        {
-                            Id = a.Id,
-                            TreatmentName = a.TreatmentType.Name,
-                            DoctorName = $"Dr. {a.Doctor.FirstName} {a.Doctor.LastName}",
-                            AppointmentDate = a.AppointmentDate,
-                            AppointmentTime = a.AppointmentTime,
-                            Status = a.Status,
-                            CanCancel = a.Status != "Cancelled" && a.Status != "Completed" && 
-                                       (a.AppointmentDate > today || 
-                                       (a.AppointmentDate == today && a.AppointmentTime > DateTime.UtcNow.TimeOfDay))
-                        }).ToList();
-                        
-                        viewModel.PastAppointments = pastAppointments.Select(a => new AppointmentViewModel
-                        {
-                            Id = a.Id,
-                            TreatmentName = a.TreatmentType.Name,
-                            DoctorName = $"Dr. {a.Doctor.FirstName} {a.Doctor.LastName}",
-                            AppointmentDate = a.AppointmentDate,
-                            AppointmentTime = a.AppointmentTime,
-                            Status = a.Status,
-                            CanCancel = false
-                        }).ToList();
+                            .ToList();
+
+                        viewModel.PastAppointments = viewModel.PastAppointments
+                            .OrderByDescending(a => a.AppointmentDate)
+                            .ThenByDescending(a => a.AppointmentTime)
+                            .ToList();
+
+                        viewModel.CancelledAppointments = viewModel.CancelledAppointments
+                            .OrderByDescending(a => a.AppointmentDate)
+                            .ThenByDescending(a => a.AppointmentTime)
+                            .ToList();
                     }
                 }
             }
@@ -781,7 +819,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    _logger.LogError("User not found in SubmitBooking");
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
                 
@@ -789,234 +826,121 @@ namespace DentalManagement.Areas.Patient.Controllers
                 var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
                 if (patient == null)
                 {
-                    _logger.LogError($"Patient record not found for user ID {user.Id}");
                     ModelState.AddModelError("", "Patient record not found");
-                    
-                    // Reload the data for the form
-                    await RepopulateViewModelData(model);
-                    
                     return View("Confirm", model);
                 }
                 
-                // Parse the appointment time
-                TimeSpan appointmentTime;
-                if (!TimeSpan.TryParse(model.AppointmentTime, out appointmentTime))
-                {
-                    _logger.LogError($"Invalid appointment time format: {model.AppointmentTime}");
-                    ModelState.AddModelError("AppointmentTime", "Invalid time format");
-                    
-                    // Reload the data for the form
-                    await RepopulateViewModelData(model);
-                    
-                    return View("Confirm", model);
-                }
-                
-                // Get treatment for duration
+                // Get treatment for cost calculation
                 var treatment = await _context.TreatmentTypes.FindAsync(model.TreatmentId);
                 if (treatment == null)
                 {
-                    _logger.LogError($"Treatment with ID {model.TreatmentId} not found");
                     ModelState.AddModelError("", "Selected treatment not found");
-                    await RepopulateViewModelData(model);
                     return View("Confirm", model);
                 }
                 
-                // Create the appointment
+                // Calculate deposit amount (30% of treatment cost)
+                decimal depositAmount = treatment.Price * 0.3m;
+                
+                // Create the appointment with a temporary status
                 var appointment = new Appointment
                 {
                     PatientId = patient.Id,
                     DoctorId = model.DoctorId,
                     TreatmentTypeId = model.TreatmentId,
                     AppointmentDate = DateTime.SpecifyKind(model.AppointmentDate, DateTimeKind.Utc),
-                    AppointmentTime = appointmentTime,
-                    Duration = treatment.Duration, // Store the treatment duration
-                    Notes = model.Notes ?? "", // Handle null notes
-                    Status = "Scheduled",
-                    CreatedAt = DateTime.UtcNow
+                    AppointmentTime = TimeSpan.Parse(model.AppointmentTime),
+                    Duration = treatment.Duration,
+                    Notes = model.Notes ?? "",
+                    Status = "Pending-Payment", // New status before payment
+                    CreatedAt = DateTime.UtcNow,
+                    PaymentStatus = PaymentStatus.Pending,
+                    DepositAmount = depositAmount,
+                    TotalAmount = treatment.Price
                 };
                 
-                // Log the appointment details
-                _logger.LogInformation($"Created appointment: PatientId={appointment.PatientId}, " +
-                                    $"DoctorId={appointment.DoctorId}, TreatmentTypeId={appointment.TreatmentTypeId}, " +
-                                    $"Date={appointment.AppointmentDate:yyyy-MM-dd}, Time={appointment.AppointmentTime}, " +
-                                    $"Duration={appointment.Duration} minutes");
-                
-                // Save to database to get the ID
+                // Save the appointment to get an ID
                 _context.Appointments.Add(appointment);
                 await _context.SaveChangesAsync();
                 
-                _logger.LogInformation($"Appointment saved with ID: {appointment.Id}");
+                // Construct success and cancel URLs
+                string successUrl = Url.Action(
+                    "BookingSuccess", 
+                    "Appointments", 
+                    new { area = "Patient", id = appointment.Id }, 
+                    Request.Scheme
+                );
                 
-                // Now book the time slots
-                string slotIdsString = HttpContext.Session.GetString("SlotIds");
-                if (!string.IsNullOrEmpty(slotIdsString))
-                {
-                    try 
-                    {
-                        var slotIds = slotIdsString.Split(',').Select(int.Parse).ToList();
-                        await BookTimeSlotsAsync(appointment.Id, slotIds);
-                        _logger.LogInformation($"Booked {slotIds.Count} time slots for appointment {appointment.Id}");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error booking time slots");
-                        // Continue with the appointment even if slot booking failed
-                    }
-                }
-                else
-                {
-                    // If no slot IDs were provided, try to find consecutive slots based on appointment details
-                    try
-                    {
-                        var slotIds = await FindConsecutiveSlotIdsAsync(
-                            appointment.DoctorId,
-                            appointment.AppointmentDate,
-                            appointment.AppointmentTime,
-                            appointment.Duration
-                        );
-                        
-                        await BookTimeSlotsAsync(appointment.Id, slotIds);
-                        _logger.LogInformation($"Found and booked {slotIds.Count} time slots for appointment {appointment.Id}");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error finding and booking time slots");
-                        // Continue with the appointment even if slot booking failed
-                    }
-                }
+                string cancelUrl = Url.Action(
+                    "CancelBooking", 
+                    "Appointments", 
+                    new { area = "Patient" }, 
+                    Request.Scheme
+                );
                 
-                // Get doctor details for notifications
-                var doctor = await _context.Doctors.FindAsync(appointment.DoctorId);
-                var doctorName = doctor != null ? $"Dr. {doctor.FirstName} {doctor.LastName}" : "your doctor";
+                // Create Stripe checkout session
+                var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
+                    appointment.Id, 
+                    depositAmount, 
+                    successUrl, 
+                    cancelUrl
+                );
                 
-                // Format appointment date and time for notifications
-                string formattedDate = appointment.AppointmentDate.ToString("MMMM d, yyyy");
-                
-                // Format time
-                bool isPM = appointment.AppointmentTime.Hours >= 12;
-                int hour12 = appointment.AppointmentTime.Hours % 12;
-                if (hour12 == 0) hour12 = 12;
-                string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
-                
-                // Create in-app notification for new appointment
-                var notification = new UserNotification
-                {
-                    UserId = user.Id,
-                    NotificationType = "Appointment_New",
-                    Title = "New Appointment Confirmed",
-                    Message = $"Your {treatment.Name} appointment with {doctorName} has been scheduled for {formattedDate} at {formattedTime}.",
-                    RelatedEntityId = appointment.Id,
-                    ActionController = "Appointments",
-                    ActionName = "Details",
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-                
-                _context.UserNotifications.Add(notification);
-                await _context.SaveChangesAsync();
-                
-                _logger.LogInformation($"Created in-app notification for new appointment ID: {appointment.Id}");
-                
-                // Get the user's notification preferences for email
-                try
-                {
-                    // Get the user's notification preferences
-                    var preferences = await _context.UserNotificationPreferences
-                        .FirstOrDefaultAsync(p => p.UserId == user.Id);
-                        
-                    // If no preferences found, create default ones with email notifications enabled
-                    if (preferences == null)
-                    {
-                        preferences = new UserNotificationPreferences
-                        {
-                            UserId = user.Id,
-                            EmailAppointmentReminders = true,
-                            EmailNewAppointments = true,
-                            EmailAppointmentChanges = true,
-                            EmailPromotions = true,
-                            LastUpdated = DateTime.UtcNow
-                        };
-                        
-                        _context.UserNotificationPreferences.Add(preferences);
-                        await _context.SaveChangesAsync();
-                    }
-                    
-                    // Only send confirmation email if user has enabled the preference
-                    if (preferences.EmailNewAppointments)
-                    {
-                        if (doctor != null)
-                        {
-                            // Create appointment details for email
-                            var appointmentDetails = new AppointmentDetailViewModel
-                            {
-                                Id = appointment.Id,
-                                TreatmentName = treatment.Name,
-                                DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
-                                DoctorSpecialization = doctor.Specialty,
-                                AppointmentDate = appointment.AppointmentDate,
-                                AppointmentTime = appointment.AppointmentTime,
-                                Status = appointment.Status,
-                                Notes = appointment.Notes,
-                                CreatedOn = appointment.CreatedAt,
-                                TreatmentCost = treatment.Price,
-                                TreatmentDuration = treatment.Duration
-                            };
-                            
-                            // Send confirmation email
-                            await _emailService.SendAppointmentConfirmationEmailAsync(
-                                user.Email,
-                                $"{patient.FirstName} {patient.LastName}",
-                                appointmentDetails);
-                            
-                            // Update notification to track email sent
-                            notification.EmailSent = true;
-                            notification.EmailSentAt = DateTime.UtcNow;
-                            await _context.SaveChangesAsync();
-                            
-                            _logger.LogInformation($"Appointment confirmation email sent to {user.Email}");
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Could not find doctor with ID {appointment.DoctorId} for email notification");
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogInformation($"Skipped sending confirmation email to {user.Email} based on user preferences");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Log the error but don't fail the appointment creation if email fails
-                    _logger.LogError(ex, "Error handling appointment confirmation notification");
-                }
-                
-                // Clear session data
-                HttpContext.Session.Remove("SelectedTreatmentId");
-                HttpContext.Session.Remove("SelectedDoctorId");
-                HttpContext.Session.Remove("AppointmentDate");
-                HttpContext.Session.Remove("AppointmentTime");
-                HttpContext.Session.Remove("SlotIds");
-                
-                // Set success message
-                TempData["BookingSuccess"] = true;
-                TempData["AppointmentId"] = appointment.Id;
-                
-                // Redirect to the success page
-                return RedirectToAction("BookingSuccess", "Appointments", new { area = "Patient", id = appointment.Id });
+                // Redirect to Stripe checkout
+                return Redirect(checkoutUrl);
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError(ex, $"Error booking appointment: {ex.Message}");
-                
-                // Add error to the model
-                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
-                
-                // Reload the data for the form
-                await RepopulateViewModelData(model);
-                
+                _logger.LogError(ex, "Error in SubmitBooking");
+                ModelState.AddModelError("", "An error occurred while processing your booking");
                 return View("Confirm", model);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CancelBooking()
+        {
+            try 
+            {
+                // Get current user
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login", "Account", new { area = "Identity" });
+                }
+
+                // Find the patient associated with the user
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
+                if (patient == null)
+                {
+                    return RedirectToAction("Index");
+                }
+
+                // Clear all session variables related to booking process
+                HttpContext.Session.Clear();
+
+
+                // Optional: Remove any pending appointments in "Pending-Payment" status
+                // var pendingAppointments = await _context.Appointments
+                //     .Where(a => a.PatientId == patient.Id && a.Status == "Pending-Payment")
+                //     .ToListAsync();
+
+                // if (pendingAppointments.Any())
+                // {
+                //     _context.Appointments.RemoveRange(pendingAppointments);
+                //     await _context.SaveChangesAsync();
+                // }
+
+                // Log the cancellation
+                _logger.LogInformation("Booking process cancelled and session state cleared");
+
+                // Redirect to the main appointments page
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                // Log any errors
+                _logger.LogError(ex, "Error in CancelBooking method");
+                return RedirectToAction("Index");
             }
         }
 
@@ -1058,46 +982,58 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
         }
                 
-        [HttpGet]
-        public async Task<IActionResult> BookingSuccess()
+        [HttpGet("BookingSuccess/{id}")]
+        public async Task<IActionResult> BookingSuccess(int id)
         {
-            _logger.LogInformation("BookingSuccess method called");
+            _logger.LogInformation($"BookingSuccess method called with Appointment ID: {id}");
             
-            // Check if we came from a successful booking
-            if (TempData["BookingSuccess"] == null)
+            try 
             {
-                _logger.LogWarning("Attempted to access BookingSuccess without successful booking");
-                return RedirectToAction("Index");
-            }
-            
-            // Get appointment details if available
-            int? appointmentId = TempData["AppointmentId"] as int?;
-            if (appointmentId.HasValue)
-            {
+                // Fetch the appointment with all related details
                 var appointment = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Include(a => a.TreatmentType)
-                    .FirstOrDefaultAsync(a => a.Id == appointmentId.Value);
-                    
-                if (appointment != null)
+                    .Include(a => a.Patient)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+                
+                if (appointment == null)
                 {
-                    ViewData["AppointmentId"] = appointment.Id;
-                    ViewData["AppointmentDate"] = appointment.AppointmentDate.ToString("dddd, MMMM d, yyyy");
-                    
-                    // Format time
-                    bool isPM = appointment.AppointmentTime.Hours >= 12;
-                    int hour12 = appointment.AppointmentTime.Hours % 12;
-                    if (hour12 == 0) hour12 = 12;
-                    string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
-                    ViewData["AppointmentTime"] = formattedTime;
-                    
-                    ViewData["DoctorName"] = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}";
-                    ViewData["TreatmentName"] = appointment.TreatmentType.Name;
+                    _logger.LogWarning($"No appointment found with ID: {id}");
+                    return RedirectToAction("Index");
                 }
+                
+                // Verify the appointment belongs to the current user
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null || appointment.Patient.UserID != user.Id)
+                {
+                    _logger.LogWarning($"Unauthorized access to appointment {id}");
+                    return RedirectToAction("Index");
+                }
+                
+                // Populate ViewData with appointment details
+                ViewData["AppointmentId"] = appointment.Id;
+                ViewData["AppointmentDate"] = appointment.AppointmentDate.ToString("dddd, MMMM d, yyyy");
+                
+                // Format time
+                bool isPM = appointment.AppointmentTime.Hours >= 12;
+                int hour12 = appointment.AppointmentTime.Hours % 12;
+                if (hour12 == 0) hour12 = 12;
+                string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
+                ViewData["AppointmentTime"] = formattedTime;
+                
+                ViewData["DoctorName"] = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}";
+                ViewData["TreatmentName"] = appointment.TreatmentType.Name;
+                ViewData["TreatmentCost"] = $"RM {appointment.TreatmentType.Price:0.00}";
+                ViewData["DepositAmount"] = $"RM {(appointment.TreatmentType.Price * 0.3m):0.00}";
+                
+                _logger.LogInformation("Rendering BookingSuccess view");
+                return View();
             }
-            
-            _logger.LogInformation("Rendering BookingSuccess view");
-            return View();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in BookingSuccess method for appointment {id}");
+                return RedirectToAction("Index");
+            }
         }
         
         [HttpPost]
@@ -1105,9 +1041,12 @@ namespace DentalManagement.Areas.Patient.Controllers
         public async Task<IActionResult> Cancel(int id)
         {
             var appointment = await _context.Appointments
-                .Include(a => a.TimeSlots) // Eagerly load associated time slots
+                .Include(a => a.TimeSlots)
                 .Include(a => a.Doctor)
                 .Include(a => a.TreatmentType)
+                .Include(a => a.Patient)
+                .ThenInclude(p => p.User)
+                .Include(a => a.Payments)
                 .FirstOrDefaultAsync(a => a.Id == id);
             
             if (appointment == null)
@@ -1165,16 +1104,62 @@ namespace DentalManagement.Areas.Patient.Controllers
             if (hour12 == 0) hour12 = 12;
             string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
             
+            // Determine refund details
+            string refundMessage = "";
+
+            // If appointment is in Pending-Payment status, just cancel
+            if (appointment.PaymentStatus == PaymentStatus.Pending)
+            {
+                refundMessage = "This appointment was in pending status and has been cancelled.";
+            }
+            else
+            {
+                // Existing refund logic for paid appointments
+                bool isEligibleForRefund = false;
+                bool refundProcessed = false;
+                decimal refundAmount = 0;
+
+                try 
+                {
+                    // Check if appointment is more than 24 hours away
+                    DateTime appointmentDateTime = appointment.AppointmentDate.Date + appointment.AppointmentTime;
+                    isEligibleForRefund = (appointmentDateTime - DateTime.UtcNow).TotalHours > 24;
+                    
+                    // If eligible, attempt to process refund
+                    if (isEligibleForRefund)
+                    {
+                        // Find the deposit payment
+                        var depositPayment = appointment.Payments
+                            .FirstOrDefault(p => p.PaymentType == PaymentType.Deposit && p.Status == "succeeded");
+                        
+                        if (depositPayment != null)
+                        {
+                            refundAmount = depositPayment.Amount;
+                            
+                            // Attempt to process refund
+                            refundProcessed = await _paymentService.ProcessRefundAsync(appointment.Id);
+                        }
+                    }
+
+                    refundMessage = DetermineRefundMessage(isEligibleForRefund, refundProcessed, refundAmount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing refund");
+                    refundMessage = "An error occurred while processing the cancellation.";
+                }
+            }
+            
             // Create in-app notification for appointment cancellation
             var notification = new UserNotification
             {
                 UserId = user.Id,
                 NotificationType = "Appointment_Cancelled",
                 Title = "Appointment Cancelled",
-                Message = $"Your {appointment.TreatmentType.Name} appointment scheduled for {formattedDate} at {formattedTime} has been cancelled.",
+                Message = $"Your {appointment.TreatmentType.Name} appointment scheduled for {formattedDate} at {formattedTime} has been cancelled. {refundMessage}",
                 RelatedEntityId = appointment.Id,
                 ActionController = "Appointments",
-                ActionName = "Index", // Redirect to appointments list since this one is cancelled
+                ActionName = "Details",
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
@@ -1184,7 +1169,7 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             _logger.LogInformation($"Created in-app notification for cancelled appointment ID: {appointment.Id}");
             
-            // Send cancellation email based on user preferences
+            // Existing email notification logic remains unchanged
             if (previousStatus == "Scheduled" || previousStatus == "Confirmed")
             {
                 try
@@ -1256,16 +1241,34 @@ namespace DentalManagement.Areas.Patient.Controllers
             TempData["SuccessMessage"] = "Your appointment has been cancelled.";
             return RedirectToAction(nameof(Index));
         }
+
+        // Helper method to determine refund message
+        private string DetermineRefundMessage(bool isEligibleForRefund, bool refundProcessed, decimal refundAmount)
+        {
+            if (!isEligibleForRefund)
+            {
+                return "This appointment is not eligible for a refund due to being within 24 hours of the scheduled time.";
+            }
+
+            if (refundProcessed)
+            {
+                return $"A full deposit refund of RM {refundAmount:0.00} has been processed and will be credited back to your original payment method within 5-10 business days.";
+            }
+
+            return "You are eligible for a refund, but there was an issue processing it. Please contact our support team for assistance.";
+        }
         
         // GET: Patient/Appointments/Details/{id}
+        // Additional action for processing remaining payment will be needed
         public async Task<IActionResult> Details(int id)
         {
             var today = DateTime.UtcNow.Date;
             var appointment = await _context.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.TreatmentType)
+                .Include(a => a.Payments) // Include payments related to this appointment
                 .FirstOrDefaultAsync(a => a.Id == id);
-                
+                    
             if (appointment == null)
             {
                 return NotFound();
@@ -1279,6 +1282,33 @@ namespace DentalManagement.Areas.Patient.Controllers
             {
                 return Forbid();
             }
+            
+            // Find payment dates and calculate amounts
+            DateTime? depositPaymentDate = null;
+            DateTime? fullPaymentDate = null;
+            decimal amountPaid = 0;
+            
+            if (appointment.Payments != null && appointment.Payments.Any())
+            {
+                foreach (var payment in appointment.Payments.Where(p => p.Status == "succeeded"))
+                {
+                    // Add to the total paid amount
+                    amountPaid += payment.Amount;
+                    
+                    // Track payment dates based on type
+                    if (payment.PaymentType == PaymentType.Deposit)
+                    {
+                        depositPaymentDate = payment.CreatedAt;
+                    }
+                    else if (payment.PaymentType == PaymentType.FullPayment)
+                    {
+                        fullPaymentDate = payment.CreatedAt;
+                    }
+                }
+            }
+            
+            // Calculate remaining amount
+            decimal remainingAmount = appointment.TotalAmount - amountPaid;
             
             // Create view model
             var viewModel = new AppointmentDetailViewModel
@@ -1295,8 +1325,15 @@ namespace DentalManagement.Areas.Patient.Controllers
                 TreatmentCost = appointment.TreatmentType.Price,
                 TreatmentDuration = appointment.TreatmentType.Duration,
                 CanCancel = appointment.Status != "Cancelled" && appointment.Status != "Completed" && 
-                           (appointment.AppointmentDate > today || 
-                           (appointment.AppointmentDate == today && appointment.AppointmentTime > DateTime.UtcNow.TimeOfDay))
+                        (appointment.AppointmentDate > today || 
+                        (appointment.AppointmentDate == today && appointment.AppointmentTime > DateTime.UtcNow.TimeOfDay)),
+                // Payment related properties
+                PaymentStatus = appointment.PaymentStatus,
+                DepositAmount = appointment.DepositAmount,
+                AmountPaid = amountPaid,
+                RemainingAmount = remainingAmount,
+                LastPaymentDate = depositPaymentDate,
+                FullPaymentDate = fullPaymentDate
             };
             
             return View(viewModel);
@@ -1450,5 +1487,206 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             return View(preferences);
         }
+
+        [HttpGet]
+public async Task<IActionResult> CheckSlotAvailability(int id)
+{
+    try 
+    {
+        // Find the appointment
+        var appointment = await _context.Appointments
+            .Include(a => a.TimeSlots)
+            .FirstOrDefaultAsync(a => a.Id == id);
+        
+        if (appointment == null)
+        {
+            return Json(new { isAvailable = false });
+        }
+
+        // Check if all associated time slots are still available
+        var slotIds = appointment.TimeSlots.Select(ts => ts.Id).ToList();
+        
+        var availableSlots = await _context.TimeSlots
+            .Where(ts => slotIds.Contains(ts.Id))
+            .ToListAsync();
+        
+        // Check if all slots are still not booked
+        bool allSlotsAvailable = availableSlots.All(slot => !slot.IsBooked);
+        
+        return Json(new { isAvailable = allSlotsAvailable });
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error checking slot availability");
+        return Json(new { isAvailable = false });
+    }
+}
+
+    [HttpGet]
+    public async Task<IActionResult> ProceedToPayment(int id)
+    {
+        try 
+        {
+            // Find the appointment
+            var appointment = await _context.Appointments
+                .Include(a => a.TreatmentType)
+                .FirstOrDefaultAsync(a => a.Id == id);
+            
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Index");
+            }
+
+            // Calculate deposit amount (30% of treatment cost)
+            decimal depositAmount = appointment.TreatmentType.Price * 0.3m;
+            
+            // Construct success and cancel URLs
+            string successUrl = Url.Action(
+                "BookingSuccess", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id }, 
+                Request.Scheme
+            );
+            
+            string cancelUrl = Url.Action(
+                "Details", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id }, 
+                Request.Scheme
+            );
+            
+            // Create Stripe checkout session
+            var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
+                appointment.Id, 
+                depositAmount, 
+                successUrl, 
+                cancelUrl
+            );
+            
+            // Redirect to Stripe checkout
+            return Redirect(checkoutUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error proceeding to payment");
+            TempData["ErrorMessage"] = "An error occurred while processing your payment.";
+            return RedirectToAction("Index");
+        }
+    }
+
+    [HttpGet]
+public async Task<IActionResult> ProcessRemainingPayment(int id)
+{
+    try 
+    {
+        // Find the appointment
+        var appointment = await _context.Appointments
+            .Include(a => a.TreatmentType)
+            .Include(a => a.Payments)
+            .FirstOrDefaultAsync(a => a.Id == id);
+        
+        if (appointment == null)
+        {
+            TempData["ErrorMessage"] = "Appointment not found.";
+            return RedirectToAction("Index");
+        }
+
+        // Verify the appointment belongs to the current user
+        var user = await _userManager.GetUserAsync(User);
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
+        
+        if (patient == null || appointment.PatientId != patient.Id)
+        {
+            return Forbid();
+        }
+
+        // Calculate the remaining amount to pay
+        decimal amountPaid = appointment.Payments
+            .Where(p => p.Status == "succeeded")
+            .Sum(p => p.Amount);
+        
+        decimal remainingAmount = appointment.TotalAmount - amountPaid;
+        
+        if (remainingAmount <= 0)
+        {
+            TempData["InfoMessage"] = "This appointment has already been fully paid.";
+            return RedirectToAction("Details", new { id = appointment.Id });
+        }
+
+        // Construct success and cancel URLs
+        string successUrl = Url.Action(
+            "PaymentSuccess", 
+            "Appointments", 
+            new { area = "Patient", id = appointment.Id, type = "remaining" }, 
+            Request.Scheme
+        );
+        
+        string cancelUrl = Url.Action(
+            "Details", 
+            "Appointments", 
+            new { area = "Patient", id = appointment.Id }, 
+            Request.Scheme
+        );
+        
+        // Create Stripe checkout session for the remaining amount
+        var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
+            appointment.Id, 
+            remainingAmount, 
+            successUrl, 
+            cancelUrl,
+            PaymentType.FullPayment  // Add this parameter to specify payment type
+        );
+        
+        // Redirect to Stripe checkout
+        return Redirect(checkoutUrl);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error processing remaining payment");
+        TempData["ErrorMessage"] = "An error occurred while processing your payment.";
+        return RedirectToAction("Details", new { id = id });
+    }
+}
+
+[HttpGet]
+public async Task<IActionResult> PaymentSuccess(int id, string type)
+{
+    try
+    {
+        var appointment = await _context.Appointments
+            .Include(a => a.TreatmentType)
+            .FirstOrDefaultAsync(a => a.Id == id);
+            
+        if (appointment == null)
+        {
+            return NotFound();
+        }
+
+        // Update appointment payment status to Paid if this was the remaining payment
+        if (type == "remaining")
+        {
+            appointment.Status = "Completed"; // Add this line to update the status to "Completed"
+            appointment.PaymentStatus = PaymentStatus.Paid;
+            appointment.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Payment successful! Your appointment is now fully paid.";
+        }
+        else
+        {
+            TempData["SuccessMessage"] = "Payment successful!";
+        }
+        
+        return RedirectToAction("Details", new { id = id });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"Error in PaymentSuccess method for appointment {id}");
+        TempData["ErrorMessage"] = "There was an issue processing your payment result.";
+        return RedirectToAction("Details", new { id = id });
+    }
+}
+}
+    
 }
