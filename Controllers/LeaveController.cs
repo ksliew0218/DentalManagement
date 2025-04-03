@@ -55,6 +55,8 @@ namespace DentalManagement.Controllers
                 return NotFound("Doctor profile not found");
             }
 
+            ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            
             // Get current year leave balances
             var currentYear = DateTime.UtcNow.Year;
             var leaveBalances = await _leaveService.GetDoctorLeaveBalancesAsync(doctor.Id, currentYear);

@@ -1,0 +1,1726 @@
+@model DentalManagement.Models.Patient
+
+@{
+    ViewData["Title"] = "Patient Details";
+    Layout = "~/Areas/Doctor/Views/Shared/_DoctorLayout.cshtml";
+    var appointments = ViewBag.Appointments as List<DentalManagement.Models.Appointment>;
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+                <i class="bi bi-person-vcard me-2 text-primary"></i>Patient Profile
+            </h1>
+            <p class="text-muted">View patient information and treatment history</p>
+        </div>
+        <div class="d-flex">
+            <a asp-action="Index" class="btn btn-outline-primary me-2 rounded-pill px-3">
+                <i class="bi bi-arrow-left me-2"></i>Back to Patients
+            </a>
+            <a asp-area="Doctor" asp-controller="Appointments" asp-action="Create" asp-route-patientId="@Model.Id" class="btn btn-primary shadow-sm rounded-pill px-4">
+                <i class="bi bi-calendar-plus me-2"></i>Schedule Appointment
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Patient Profile Card -->
+            <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-person me-2"></i>Personal Information
+                    </h6>
+                </div>
+                <div class="card-body text-center pt-4">
+                    <div class="profile-img-container">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePic))
+                        {
+                            <img class="img-fluid" src="@Model.ProfilePic" alt="Patient profile picture">
+                        }
+                        else
+                        {
+                            <div class="profile-initial bg-gradient-primary">
+                                @(Model.FirstName[0])@(Model.LastName[0])
+                            </div>
+                        }
+                    </div>
+
+                    <h3 class="font-weight-bold mb-1">@Model.FirstName @Model.LastName</h3>
+                    <p class="text-muted mb-3">
+                        <span class="badge bg-primary rounded-pill px-3 py-2 shadow-sm">
+                            <i class="bi bi-person me-1"></i>Patient
+                        </span>
+                    </p>
+
+                    <div class="row patient-stats mb-4">
+                        <div class="col-4">
+                            <div class="patient-stat-item">
+                                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+                                <div class="stat-value">@(appointments != null ? appointments.Count : 0)</div>
+                                <div class="stat-label">Appointments</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="patient-stat-item">
+                                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="stat-value">@(appointments != null ? appointments.Count(a => a.Status == "Completed") : 0)</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="patient-stat-item">
+                                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                    <i class="bi bi-person-badge"></i>
+                                </div>
+                                <div class="stat-value">
+                                    @{
+                                        var today = DateTime.Today;
+                                        var birthDate = Model.DateOfBirth.Date;
+                                        var age = today.Year - birthDate.Year;
+                                        if (birthDate > today.AddYears(-age)) age--;
+                                    }
+                                    @age
+                                </div>
+                                <div class="stat-label">Age</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="list-label"><i class="bi bi-envelope text-primary"></i> Email</div>
+                            <div class="list-value">@(string.IsNullOrEmpty(Model.User?.Email) ? "Not provided" : Model.User.Email)</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="list-label"><i class="bi bi-telephone text-primary"></i> Phone</div>
+                            <div class="list-value">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="list-label"><i class="bi bi-gender-ambiguous text-primary"></i> Gender</div>
+                            <div class="list-value">@Model.Gender</div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="list-label"><i class="bi bi-calendar-date text-primary"></i> Date of Birth</div>
+                            <div class="list-value">@Model.DateOfBirth.ToString("dd MMM yyyy")</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Additional Info Card -->
+            <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-info-circle me-2"></i>Additional Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="additional-info-item mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="info-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-house"></i>
+                            </div>
+                            <h6 class="mb-0 ms-2 fw-bold">Address</h6>
+                        </div>
+                        <p class="mb-0 ps-4 ms-2">@(string.IsNullOrEmpty(Model.Address) ? "Not provided" : Model.Address)</p>
+                    </div>
+                    <div class="additional-info-item">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="info-icon bg-danger bg-opacity-10 text-danger">
+                                <i class="bi bi-shield-plus"></i>
+                            </div>
+                            <h6 class="mb-0 ms-2 fw-bold">Emergency Contact</h6>
+                        </div>
+                        <div class="ps-4 ms-2">
+                            @if (!string.IsNullOrEmpty(Model.EmergencyContactName) || !string.IsNullOrEmpty(Model.EmergencyContactPhone))
+                            {
+                                <p class="mb-1"><strong>Name:</strong> @Model.EmergencyContactName</p>
+                                <p class="mb-0"><strong>Phone:</strong> @Model.EmergencyContactPhone</p>
+                            }
+                            else
+                            {
+                                <p class="mb-0 text-muted">Not provided</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Medical Info Card -->
+            <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-heart-pulse me-2"></i>Medical Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="medical-info-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-warning bg-opacity-10 text-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <h6 class="mb-0 ms-2 fw-bold">Medical Alerts</h6>
+                            </div>
+                            <span class="badge bg-light text-dark">None</span>
+                        </div>
+                    </div>
+                    <div class="medical-info-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-danger bg-opacity-10 text-danger">
+                                    <i class="bi bi-capsule"></i>
+                                </div>
+                                <h6 class="mb-0 ms-2 fw-bold">Allergies</h6>
+                            </div>
+                            <span class="badge bg-light text-dark">Not recorded</span>
+                        </div>
+                    </div>
+                    <div class="medical-info-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="info-icon bg-info bg-opacity-10 text-info">
+                                    <i class="bi bi-pill"></i>
+                                </div>
+                                <h6 class="mb-0 ms-2 fw-bold">Medications</h6>
+                            </div>
+                            <span class="badge bg-light text-dark">Not recorded</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Tabs Card -->
+            <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-white py-3">
+                    <ul class="nav nav-pills card-header-pills" id="patientTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="true">
+                                <i class="bi bi-calendar-check me-2"></i>Appointments
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="treatment-tab" data-bs-toggle="tab" data-bs-target="#treatmentHistory" type="button" role="tab" aria-controls="treatmentHistory" aria-selected="false">
+                                <i class="bi bi-clipboard-pulse me-2"></i>Treatment History
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="dental-tab" data-bs-toggle="tab" data-bs-target="#dentalRecords" type="button" role="tab" aria-controls="dentalRecords" aria-selected="false">
+                                <i class="bi bi-diagram-3 me-2"></i>Dental Records
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="patientTabsContent">
+                        <!-- Appointments Tab -->
+                        <div class="tab-pane fade show active" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0 fw-bold">
+                                    <i class="bi bi-calendar2-week me-2 text-primary"></i>Appointment History
+                                </h5>
+                                <div class="appointment-filters">
+                                    <select class="form-select form-select-sm">
+                                        <option selected>All appointments</option>
+                                        <option>Scheduled</option>
+                                        <option>Completed</option>
+                                        <option>Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            @if (appointments == null || !appointments.Any())
+                            {
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                    <div>No appointments found for this patient.</div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive shadow-sm rounded-lg overflow-hidden">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th>Date & Time</th>
+                                                <th>Treatment</th>
+                                                <th>Status</th>
+                                                <th class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var appointment in appointments.OrderByDescending(a => a.AppointmentDate).ThenByDescending(a => a.AppointmentTime))
+                                            {
+                                                <tr class="appointment-row">
+                                                    <td>
+                                                        <div class="d-flex flex-column">
+                                                            <span class="fw-bold">@appointment.AppointmentDate.ToString("dd MMM yyyy")</span>
+                                                            <small class="text-muted">@(appointment.AppointmentTime.ToString("hh\\:mm") + (appointment.AppointmentTime.Hours >= 12 ? " PM" : " AM"))</small>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="fw-medium treatment-type">@appointment.TreatmentType?.Name</span>
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            var (badgeBg, icon) = appointment.Status switch
+                                                            {
+                                                                "Scheduled" => ("bg-warning", "bi-calendar-check"),
+                                                                "Confirmed" => ("bg-primary", "bi-check2-circle"),
+                                                                "Completed" => ("bg-success", "bi-check2-all"),
+                                                                "Cancelled" => ("bg-danger", "bi-x-circle"),
+                                                                "No-Show" => ("bg-dark", "bi-person-x"),
+                                                                _ => ("bg-secondary", "bi-question-circle")
+                                                            };
+                                                        }
+                                                        <span class="badge @badgeBg status-badge">
+                                                            <i class="bi @icon me-1"></i>
+                                                            @appointment.Status
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <a asp-area="Doctor" asp-controller="Appointments" asp-action="Details" asp-route-id="@appointment.Id" class="btn btn-primary btn-sm action-btn" title="View Details">
+                                                            <i class="bi bi-eye-fill"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                        
+                        <!-- Treatment History Tab -->
+                        <div class="tab-pane fade" id="treatmentHistory" role="tabpanel" aria-labelledby="treatment-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0 fw-bold">
+                                    <i class="bi bi-clipboard-pulse me-2 text-primary"></i>Treatment Reports
+                                </h5>
+                            </div>
+                            
+                            @if (appointments == null || !appointments.Any(a => a.TreatmentReports != null && a.TreatmentReports.Any()))
+                            {
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                    <div>No treatment reports found for this patient.</div>
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var appointment in appointments.Where(a => a.TreatmentReports != null && a.TreatmentReports.Any()).OrderByDescending(a => a.AppointmentDate))
+                                {
+                                    @foreach (var report in appointment.TreatmentReports.OrderByDescending(r => r.CreatedAt))
+                                    {
+                                        <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
+                                            <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-0">
+                                                <h6 class="m-0 font-weight-bold text-primary">
+                                                    <i class="bi bi-clipboard-check me-2"></i>Treatment Report - @appointment.TreatmentType?.Name
+                                                </h6>
+                                                <div class="d-flex">
+                                                    @if (!string.IsNullOrEmpty(report.DentalChart))
+                                                    {
+                                                        <button type="button" class="btn btn-info btn-sm btn-circle view-dental-chart-btn" 
+                                                                data-chart='@Html.Raw(report.DentalChart)'
+                                                                data-treatment="@appointment.TreatmentType?.Name" 
+                                                                data-date="@report.TreatmentDate.ToString("MMMM dd, yyyy")" 
+                                                                title="View Dental Chart">
+                                                            <i class="bi bi-diagram-3"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="treatment-report-header p-3 bg-success bg-opacity-10 rounded-lg mb-3">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="bi bi-clipboard-check me-2 text-success fs-4"></i>
+                                                        <h5 class="mb-0 fw-bold">Treatment Completed</h5>
+                                                    </div>
+                                                    <p class="mb-0 text-muted">
+                                                        <i class="bi bi-calendar-event me-1"></i>
+                                                        @report.TreatmentDate.ToString("MMMM dd, yyyy at hh:mm tt")
+                                                    </p>
+                                                </div>
+                                                
+                                                @if (!string.IsNullOrEmpty(report.Notes))
+                                                {
+                                                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                                                        <i class="bi bi-pencil-square me-2"></i>Doctor's Treatment Notes
+                                                    </h6>
+                                                    <div class="p-3 bg-light rounded-lg">
+                                                        <p class="mb-0">@report.Notes</p>
+                                                    </div>
+                                                    <div class="text-end mt-1">
+                                                        <small class="text-muted">Added on @report.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                        
+                        <!-- Dental Records Tab -->
+                        <div class="tab-pane fade" id="dentalRecords" role="tabpanel" aria-labelledby="dental-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0 fw-bold">
+                                    <i class="bi bi-diagram-3 me-2 text-primary"></i>Dental Records
+                                </h5>
+                            </div>
+                            
+                            @if (appointments == null || !appointments.Any(a => a.TreatmentReports != null && a.TreatmentReports.Any(tr => !string.IsNullOrEmpty(tr.DentalChart))))
+                            {
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                    <div>No dental charts found for this patient.</div>
+                                </div>
+                                
+                                <div class="text-center p-5">
+                                    <div class="mb-4">
+                                        <i class="bi bi-diagram-3 fs-1 text-primary opacity-50"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3">No Dental Charts Available</h5>
+                                    <p class="text-muted mb-4">Dental charts will be displayed here once they are added to treatment reports</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
+                                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 font-weight-bold text-primary">
+                                            <i class="bi bi-diagram-3 me-2"></i>Latest Dental Chart
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="dental-records-info p-3 mb-4 bg-light rounded-lg">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-info-circle-fill text-primary me-3 fs-4"></i>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">Dental Chart Information</h6>
+                                                    <p class="mb-0">The dental chart shows the current status of each tooth using the FDI World Dental Federation notation system (ISO 3950)</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            @{
+                                                var latestReport = appointments
+                                                    .Where(a => a.TreatmentReports != null && a.TreatmentReports.Any(tr => !string.IsNullOrEmpty(tr.DentalChart)))
+                                                    .SelectMany(a => a.TreatmentReports.Where(tr => !string.IsNullOrEmpty(tr.DentalChart))
+                                                        .Select(tr => new {
+                                                            Report = tr,
+                                                            Treatment = a.TreatmentType?.Name,
+                                                            Date = tr.TreatmentDate
+                                                        }))
+                                                    .OrderByDescending(x => x.Report.CreatedAt)
+                                                    .FirstOrDefault();
+                                            }
+                                            
+                                            @if (latestReport != null)
+                                            {
+                                                <div class="mb-3 p-3 bg-success bg-opacity-10 rounded-lg">
+                                                    <h6 class="fw-bold mb-2">
+                                                        <i class="bi bi-clipboard-check me-2"></i>@latestReport.Treatment
+                                                    </h6>
+                                                    <p class="text-muted mb-0">
+                                                        <i class="bi bi-calendar-event me-1"></i>
+                                                        @latestReport.Date.ToString("MMMM dd, yyyy")
+                                                    </p>
+                                                </div>
+                                                
+                                                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" id="viewLatestDentalChart">
+                                                    <i class="bi bi-eye me-2"></i>View Full Dental Chart
+                                                </button>
+                                                
+                                                <input type="hidden" id="latestChartData" value='@Html.Raw(latestReport.Report.DentalChart)' />
+                                                <input type="hidden" id="latestTreatmentName" value="@latestReport.Treatment" />
+                                                <input type="hidden" id="latestTreatmentDate" value="@latestReport.Date.ToString("MMMM dd, yyyy")" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Dental Chart History -->
+                                <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
+                                    <div class="card-header bg-white py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">
+                                            <i class="bi bi-clock-history me-2"></i>Dental Chart History
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive shadow-sm rounded-lg overflow-hidden">
+                                            <table class="table table-hover mb-0">
+                                                <thead class="bg-light">
+                                                    <tr>
+                                                        <th>Treatment Date</th>
+                                                        <th>Treatment Type</th>
+                                                        <th class="text-end">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var appointment in appointments
+                                                        .Where(a => a.TreatmentReports != null && a.TreatmentReports.Any(tr => !string.IsNullOrEmpty(tr.DentalChart)))
+                                                        .OrderByDescending(a => a.AppointmentDate))
+                                                    {
+                                                        @foreach (var report in appointment.TreatmentReports
+                                                            .Where(tr => !string.IsNullOrEmpty(tr.DentalChart))
+                                                            .OrderByDescending(r => r.CreatedAt))
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="d-flex flex-column">
+                                                                        <span class="fw-bold">@report.TreatmentDate.ToString("dd MMM yyyy")</span>
+                                                                        <small class="text-muted">@report.CreatedAt.ToString("hh:mm tt")</small>
+                                                                    </div>
+                                                                </td>
+                                                                <td>@appointment.TreatmentType?.Name</td>
+                                                                <td class="text-end">
+                                                                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 view-dental-chart-btn" 
+                                                                            data-chart='@Html.Raw(report.DentalChart)' 
+                                                                            data-treatment="@appointment.TreatmentType?.Name" 
+                                                                            data-date="@report.TreatmentDate.ToString("MMMM dd, yyyy")">
+                                                                        <i class="bi bi-eye me-1"></i>View
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History Card -->
+            <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-credit-card me-2"></i>Payment History
+                    </h6>
+                    <button class="btn btn-sm btn-primary rounded-pill px-3">
+                        <i class="bi bi-eye me-1"></i>View All
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (appointments == null || !appointments.Any(a => a.Payments != null && a.Payments.Any()))
+                    {
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                            <div>No payment records found for this patient.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive shadow-sm rounded-lg overflow-hidden">
+                            <table class="table mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in appointments.Where(a => a.Payments != null && a.Payments.Any()).OrderByDescending(a => a.AppointmentDate).Take(5))
+                                    {
+                                        @foreach (var payment in appointment.Payments.OrderByDescending(p => p.CreatedAt))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-medium">@payment.CreatedAt.ToString("dd MMM yyyy")</span>
+                                                        <small class="text-muted">@payment.CreatedAt.ToString("hh:mm tt")</small>
+                                                    </div>
+                                                </td>
+                                                <td class="fw-bold">RM @payment.Amount.ToString("0.00")</td>
+                                                <td>
+                                                    <span class="d-flex align-items-center">
+                                                        <i class="bi bi-credit-card me-2 text-primary"></i>
+                                                        @payment.PaymentType
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    @{
+                                                        var paymentBadge = payment.Status.ToLower() switch
+                                                        {
+                                                            "succeeded" => "bg-success",
+                                                            "pending" => "bg-warning",
+                                                            "failed" => "bg-danger",
+                                                            _ => "bg-secondary"
+                                                        };
+                                                    }
+                                                    <span class="badge @paymentBadge rounded-pill px-3 py-2">
+                                                        @payment.Status
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dental Chart View Modal -->
+<div class="modal fade" id="viewDentalChartModal" tabindex="-1" aria-labelledby="viewDentalChartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="viewDentalChartModalLabel">
+                    <i class="bi bi-diagram-3 me-2"></i>Dental Chart
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-clipboard-check text-success fs-3 me-3"></i>
+                        <div>
+                            <h4 class="mb-1 fw-bold" id="treatmentNameDisplay">Dental Chart Record</h4>
+                            <p class="text-muted mb-0">Treatment completed on <span id="treatmentDateDisplay"></span></p>
+                        </div>
+                    </div>
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            This chart uses the FDI World Dental Federation notation system (ISO 3950). Click on a tooth to view more details.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dental-chart-container bg-light p-4 rounded-lg shadow-sm">
+                    <h5 class="text-center mb-4 border-bottom pb-2 fw-bold">Upper Teeth</h5>
+                    <div class="teeth-row" id="upperTeeth">
+                        <!-- This will be populated dynamically by JavaScript -->
+                    </div>
+                    
+                    <h5 class="text-center my-4 border-bottom pb-2 fw-bold">Lower Teeth</h5>
+                    <div class="teeth-row mb-4" id="lowerTeeth">
+                        <!-- This will be populated dynamically by JavaScript -->
+                    </div>
+                    
+                    <div class="dental-chart-legend mt-4 p-3 border-top">
+                        <h6 class="mb-3 fw-bold text-center">Dental Chart Legend</h6>
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <div class="legend-item me-4 mb-2 d-flex align-items-center">
+                                <div class="legend-color healthy-tooth me-2"></div>
+                                <span>Healthy Tooth</span>
+                            </div>
+                            <div class="legend-item me-4 mb-2 d-flex align-items-center">
+                                <div class="legend-color decayed-tooth me-2"></div>
+                                <span>Decayed Tooth</span>
+                            </div>
+                            <div class="legend-item mb-2 d-flex align-items-center">
+                                <div class="legend-color filled-tooth me-2"></div>
+                                <span>Filled Tooth</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-check-lg me-1"></i>Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* General Styles */
+        .card {
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        
+        .rounded-lg {
+            border-radius: 0.75rem !important;
+        }
+        
+        .shadow-sm {
+            box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        .fw-medium {
+            font-weight: 500;
+        }
+        
+        .rounded-pill {
+            border-radius: 50rem !important;
+        }
+        
+        /* Background Gradients */
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #4e73df, #2e59d9);
+        }
+        
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #1cc88a, #13855c);
+        }
+        
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #36b9cc, #258391);
+        }
+        
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #f6c23e, #dda20a);
+        }
+        
+        .bg-gradient-danger {
+            background: linear-gradient(45deg, #e74a3b, #be2617);
+        }
+        
+        /* Patient Profile */
+        .profile-img-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid #fff;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-initial {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            font-weight: 700;
+        }
+        
+        /* Patient Stats */
+        .patient-stats {
+            margin: 0 10px;
+        }
+        
+        .patient-stat-item {
+            text-align: center;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .patient-stat-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 20px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        /* Patient Info Lists */
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+            border-left: none;
+            border-right: none;
+        }
+        
+        .list-group-item:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        
+        .list-label {
+            color: #6c757d;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .list-label i {
+            margin-right: 8px;
+        }
+        
+        .list-value {
+            font-weight: 500;
+        }
+        
+        /* Additional Info Items */
+        .additional-info-item {
+            padding: 10px 0;
+        }
+        
+        .info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        /* Tab Styling */
+        .nav-pills .nav-link {
+            border-radius: 50rem;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+        
+        .nav-pills .nav-link:hover {
+            background-color: rgba(78, 115, 223, 0.1);
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: #4e73df;
+            box-shadow: 0 4px 10px rgba(78, 115, 223, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .tab-pane {
+            padding: 20px 0;
+        }
+        
+        /* Appointment Row */
+        .appointment-row {
+            transition: all 0.2s ease;
+        }
+        
+        .appointment-row:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        
+        .treatment-type {
+            color: #5a5c69;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Action Button */
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Timeline Styling */
+        .timeline-modern {
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .timeline-item-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4e73df;
+            position: absolute;
+            left: -20px;
+            top: 0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            z-index: 2;
+        }
+        
+        .timeline-item {
+            background: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            padding: 1rem;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+            border-left: 2px solid #4e73df;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -2px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #4e73df;
+            z-index: 1;
+        }
+        
+        .timeline-item:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .timeline-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #4e73df;
+        }
+        
+        .timeline-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .timeline-info {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Dental Chart Styling */
+        .teeth-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+        }
+        
+        .tooth {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tooth:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tooth-number {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+        
+        .tooth-status {
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .healthy-tooth {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: #2e7d32;
+        }
+        
+        .decayed-tooth {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            color: #c62828;
+        }
+        
+        .filled-tooth {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+        }
+        
+        .dental-chart-legend {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        
+        .legend-color.healthy-tooth {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+        }
+        
+        .legend-color.decayed-tooth {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+        }
+        
+        .legend-color.filled-tooth {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+        }
+        
+        /* Tooth Tooltip */
+        .tooth-tooltip {
+            position: absolute;
+            z-index: 1100;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+            padding: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            width: 250px;
+            transform: translateY(10px);
+        }
+        
+        .tooth-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .tooth-details {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .healthy-dot {
+            background-color: #1cc88a;
+        }
+        
+        .decayed-dot {
+            background-color: #f6c23e;
+        }
+        
+        .filled-dot {
+            background-color: #4e73df;
+        }
+        
+        /* Button Styles */
+        .btn-circle {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .btn-circle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Treatment Report Header */
+        .treatment-report-header {
+            background-color: rgba(28, 200, 138, 0.1);
+            border-radius: 0.5rem;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Media Queries for Responsiveness */
+        @@media (max-width: 767.98px) {
+            .profile-img-container,
+            .profile-initial {
+                width: 100px;
+                height: 100px;
+                font-size: 32px;
+            }
+            
+            .timeline-modern {
+                padding-left: 1.5rem;
+            }
+            
+            .timeline-marker {
+                width: 32px;
+                height: 32px;
+                left: -16px;
+                font-size: 14px;
+            }
+            
+            .stat-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .info-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .nav-pills .nav-link {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            
+            .tooth {
+                width: 40px;
+                height: 60px;
+                font-size: 10px;
+            }
+            
+            .tooth-tooltip {
+                width: 200px;
+            }
+        }
+        
+        /* Dental Chart Button Styling */
+        .btn-primary.rounded-3 {
+            background-color: #2563EB;
+            border-color: #2563EB;
+            border-radius: 0.5rem !important;
+            padding: 8px 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary.rounded-3:hover {
+            background-color: #1D4ED8;
+            border-color: #1D4ED8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .view-dental-chart-btn {
+            font-weight: 500;
+            font-size: 14px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log("Document ready - initializing patient details page");
+            
+            // Initialize DataTables if exists
+            if ($('#appointmentsTable').length) {
+                $('#appointmentsTable').DataTable({
+                    responsive: true,
+                    lengthMenu: [5, 10, 25, 50],
+                    pageLength: 5
+                });
+            }
+            
+            // Add hover effect for appointment rows
+            $('.appointment-row').hover(
+                function() { $(this).addClass('hover-active'); },
+                function() { $(this).removeClass('hover-active'); }
+            );
+            
+            // Add animation for timeline items
+            $('.timeline-item').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+            });
+            
+            // FDI World Dental Federation notation
+            const upperTeethNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+            const lowerTeethNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+            
+            // Mapping between traditional (1-32) and FDI numbering systems
+            const traditionalToFDI = {
+                // Upper right (traditional 1-8 to FDI 18-11)
+                "1": 18, "2": 17, "3": 16, "4": 15, "5": 14, "6": 13, "7": 12, "8": 11,
+                // Upper left (traditional 9-16 to FDI 21-28)
+                "9": 21, "10": 22, "11": 23, "12": 24, "13": 25, "14": 26, "15": 27, "16": 28,
+                // Lower left (traditional 17-24 to FDI 38-31)
+                "17": 38, "18": 37, "19": 36, "20": 35, "21": 34, "22": 33, "23": 32, "24": 31,
+                // Lower right (traditional 25-32 to FDI 41-48)
+                "25": 41, "26": 42, "27": 43, "28": 44, "29": 45, "30": 46, "31": 47, "32": 48
+            };
+            
+            // Create reverse mapping FDI to traditional
+            const FDIToTraditional = {};
+            Object.keys(traditionalToFDI).forEach(key => {
+                FDIToTraditional[traditionalToFDI[key]] = parseInt(key);
+            });
+            
+            // Initialize dental chart for viewing modal
+            function generateTeethHtml(teethNumbers, rowId) {
+                let html = '';
+                for (let i = 0; i < teethNumbers.length; i++) {
+                    const fdiNumber = teethNumbers[i];
+                    const traditionalNumber = FDIToTraditional[fdiNumber];
+                    html += `
+                    <div class="tooth shadow-sm" id="tooth-${fdiNumber}-${rowId}" data-tooth-number="${fdiNumber}" data-traditional-number="${traditionalNumber}">
+                        <div class="tooth-number">${fdiNumber}</div>
+                        <div class="tooth-status">Loading...</div>
+                    </div>`;
+                }
+                $(`#${rowId}`).html(html);
+            }
+            
+            // Update teeth UI based on data
+            function updateTeethUI(teethData, containerPrefix) {
+                console.log(`Updating teeth UI for container: ${containerPrefix}`);
+                console.log(`Teeth data keys: ${Object.keys(teethData).join(', ')}`);
+                
+                // Count how many teeth we update
+                let updatedCount = 0;
+                
+                // First create a promise to ensure DOM is ready
+                setTimeout(() => {
+                    // For debugging, log all teeth in teethData
+                    console.log("All teeth data available:", teethData);
+                    
+                    // Get all teeth elements
+                    const allTeethElements = $(`#${containerPrefix} .tooth`);
+                    console.log(`Found ${allTeethElements.length} teeth elements in ${containerPrefix}`);
+                    
+                    // Loop through all elements and update them
+                    allTeethElements.each(function() {
+                        const $tooth = $(this);
+                        const fdiNumber = $tooth.data('tooth-number');
+                        
+                        if (fdiNumber in teethData) {
+                            updatedCount++;
+                            const status = teethData[fdiNumber];
+                            
+                            // Remove any existing status classes
+                            $tooth.removeClass('healthy-tooth decayed-tooth filled-tooth');
+                            
+                            // Update the tooth status text (capitalize first letter)
+                            const displayStatus = typeof status === 'string' ? 
+                                status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : 'Unknown';
+                            $tooth.find('.tooth-status').text(displayStatus);
+                            
+                            // Add the appropriate status class
+                            const statusLower = typeof status === 'string' ? status.toLowerCase() : '';
+                            if (statusLower === 'healthy') {
+                                $tooth.addClass('healthy-tooth');
+                            } else if (statusLower === 'decayed') {
+                                $tooth.addClass('decayed-tooth');
+                            } else if (statusLower === 'filled') {
+                                $tooth.addClass('filled-tooth');
+                            } else {
+                                console.warn(`Unknown tooth status: "${status}" for tooth #${fdiNumber}`);
+                                $tooth.addClass('healthy-tooth'); // Default to healthy if unknown
+                            }
+                            
+                            console.log(`Updated tooth #${fdiNumber} with status "${status}"`);
+                        } else {
+                            // Default to healthy if no data
+                            $tooth.removeClass('healthy-tooth decayed-tooth filled-tooth').addClass('healthy-tooth');
+                            $tooth.find('.tooth-status').text('Healthy');
+                            console.log(`No data for tooth #${fdiNumber}, setting to Healthy`);
+                        }
+                    });
+                    
+                    console.log(`Updated ${updatedCount} teeth with data for container ${containerPrefix}`);
+                }, 200); // Increased delay to ensure DOM elements are ready
+            }
+            
+            // Convert traditional dental chart data to FDI format for UI
+            function convertTraditionalToFDI(traditionalData) {
+                if (!traditionalData) return {};
+                
+                console.log("Traditional data to convert - Type:", typeof traditionalData);
+                console.log("Data stringified:", JSON.stringify(traditionalData, null, 2));
+                console.log("All keys in traditionalData:", Object.keys(traditionalData));
+                
+                // Create a new object for the FDI-formatted data
+                const fdiData = {};
+                
+                // Process each key in the traditional data
+                Object.keys(traditionalData).forEach(traditionalKey => {
+                    // Convert string status to lowercase for consistent handling
+                    let status = traditionalData[traditionalKey];
+                    if (typeof status === 'string') {
+                        status = status.toLowerCase();
+                    } else {
+                        console.warn(`Unexpected status type for tooth #${traditionalKey}:`, status);
+                        status = 'healthy'; // Default if unexpected type
+                    }
+                    
+                    // Get the FDI number using the traditional key
+                    const fdiNum = traditionalToFDI[traditionalKey];
+                    
+                    console.log(`Converting tooth #${traditionalKey} (traditional) to FDI #${fdiNum}, status: ${status}`);
+                    
+                    if (fdiNum) {
+                        fdiData[fdiNum] = status;
+                    } else {
+                        console.warn(`No FDI mapping found for traditional tooth #${traditionalKey}`);
+                    }
+                });
+                
+                console.log("Final converted FDI data:", fdiData);
+                
+                // If no valid data was converted, return null
+                if (Object.keys(fdiData).length === 0) {
+                    return null;
+                }
+                
+                return fdiData;
+            }
+            
+            // Viewing Dental Chart Modal setup
+            $('#viewDentalChartModal').on('show.bs.modal', function () {
+                console.log("Dental chart modal showing");
+                
+                // Generate teeth structure
+                generateTeethHtml(upperTeethNumbers, 'upperTeeth');
+                generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
+                
+                // The dental chart data will be populated by the view-dental-chart-btn click handler
+            });
+
+            // Make sure we reset the modal when it's hidden
+            $('#viewDentalChartModal').on('hidden.bs.modal', function () {
+                console.log("Dental chart modal hidden, clearing data");
+                $('#upperTeeth').empty();
+                $('#lowerTeeth').empty();
+                $('#treatmentNameDisplay').text('Dental Chart Record');
+                $('#treatmentDateDisplay').text('N/A');
+            });
+            
+            // Show tooth details in a nice tooltip/popover
+            function showToothDetails(fdiNumber, traditionalNumber, status) {
+                // Create tooltip content
+                let tooltipContent = `
+                <div class="tooth-details p-3">
+                    <h5 class="fw-bold mb-2">Tooth #${fdiNumber}</h5>
+                    <p class="mb-2">Traditional Notation: #${traditionalNumber}</p>
+                    <div class="d-flex align-items-center">
+                        <span class="status-dot ${status}-dot me-2"></span>
+                        <span class="fw-medium">Status: ${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                    </div>
+                    <p class="mt-2 mb-0 text-muted small">Click outside to close</p>
+                </div>`;
+                
+                // Create the tooltip element (or use existing one)
+                let $tooltip = $('#toothTooltip');
+                if (!$tooltip.length) {
+                    $tooltip = $('<div>')
+                        .attr('id', 'toothTooltip')
+                        .addClass('tooth-tooltip')
+                        .appendTo('body');
+                }
+                
+                $tooltip.html(tooltipContent);
+                
+                // Position the tooltip near the tooth
+                const $tooth = $(`#tooth-${fdiNumber}-upperTeeth, #tooth-${fdiNumber}-lowerTeeth`);
+                const toothPosition = $tooth.offset();
+                
+                $tooltip.css({
+                    top: toothPosition.top + $tooth.outerHeight() + 10,
+                    left: toothPosition.left + ($tooth.outerWidth() / 2) - ($tooltip.outerWidth() / 2)
+                }).addClass('show');
+                
+                // Close tooltip when clicking outside
+                $(document).on('click.tooth-tooltip', function(e) {
+                    if (!$(e.target).closest('.tooth-tooltip, .tooth').length) {
+                        $tooltip.removeClass('show');
+                        $(document).off('click.tooth-tooltip');
+                    }
+                });
+            }
+            
+            // Setup tooth click listeners
+            function setupToothClickListeners() {
+                $(document).off('click', '#viewDentalChartModal .tooth');
+                $(document).on('click', '#viewDentalChartModal .tooth', function() {
+                    const fdiNumber = $(this).data('tooth-number');
+                    const traditionalNumber = $(this).data('traditional-number');
+                    const status = $(this).find('.tooth-status').text().toLowerCase();
+                    
+                    console.log(`Tooth clicked: FDI #${fdiNumber}, Traditional #${traditionalNumber}, Status: ${status}`);
+                    
+                    // Show tooth details
+                    showToothDetails(fdiNumber, traditionalNumber, status);
+                });
+            }
+            
+            // Helper function to determine quadrant name
+            function getQuadrantName(fdiNumber) {
+                const quadrant = Math.floor(fdiNumber / 10);
+                switch(quadrant) {
+                    case 1: return "Upper Right (Q1)";
+                    case 2: return "Upper Left (Q2)";
+                    case 3: return "Lower Left (Q3)";
+                    case 4: return "Lower Right (Q4)";
+                    default: return "Unknown";
+                }
+            }
+            
+            // Helper function to determine tooth type
+            function getToothType(fdiNumber) {
+                const toothNumber = fdiNumber % 10;
+                if (toothNumber === 1 || toothNumber === 2) return "Incisor";
+                if (toothNumber === 3) return "Canine";
+                if (toothNumber === 4 || toothNumber === 5) return "Premolar";
+                if (toothNumber === 6 || toothNumber === 7 || toothNumber === 8) return "Molar";
+                return "Unknown";
+            }
+            
+            // Directly attach click handlers to each dental chart button
+            document.querySelectorAll('.view-dental-chart-btn').forEach((button, index) => {
+                button.setAttribute('data-debug-id', index);
+                
+                button.onclick = function() {
+                    const btnIndex = this.getAttribute('data-debug-id');
+                    console.log("View dental chart button clicked - Index:", btnIndex);
+                    
+                    const chartDataStr = this.getAttribute('data-chart');
+                    const treatmentName = this.getAttribute('data-treatment');
+                    const treatmentDate = this.getAttribute('data-date');
+                    
+                    console.log(`Button #${btnIndex} Chart - Treatment: "${treatmentName}", Date: "${treatmentDate}"`);
+                    console.log(`Button #${btnIndex} Chart - Raw data:`, chartDataStr);
+                    
+                    // Show the modal first so elements can be properly rendered
+                    var myModal = new bootstrap.Modal(document.getElementById('viewDentalChartModal'));
+                    myModal.show();
+                    
+                    // First clear any existing data
+                    $('#upperTeeth').empty();
+                    $('#lowerTeeth').empty();
+                    
+                    // Generate teeth structure first
+                    generateTeethHtml(upperTeethNumbers, 'upperTeeth');
+                    generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
+                    
+                    // Setup tooth click listeners
+                    setupToothClickListeners();
+                    
+                    // Update modal content with treatment information
+                    document.getElementById('treatmentNameDisplay').textContent = treatmentName || 'Dental Chart Record';
+                    document.getElementById('treatmentDateDisplay').textContent = treatmentDate || 'N/A';
+                    
+                    // Allow a brief moment for DOM to render before processing data
+                    setTimeout(() => {
+                        try {
+                            // Parse the dental chart data
+                            let dentalChart = null;
+                            
+                            if (chartDataStr) {
+                                try {
+                                    // First, try to parse it as a JSON object directly
+                                    dentalChart = JSON.parse(chartDataStr);
+                                    console.log(`Button #${btnIndex} - Successfully parsed dental chart data:`, dentalChart);
+                                    
+                                    // Additional check - make sure it's not a string that needs further parsing
+                                    if (typeof dentalChart === 'string') {
+                                        console.log(`Button #${btnIndex} - Result is a string, trying to parse again:`, dentalChart);
+                                        dentalChart = JSON.parse(dentalChart);
+                                    }
+                                } catch (parseError) {
+                                    console.error(`Button #${btnIndex} - Error parsing dental chart JSON:`, parseError);
+                                    console.log(`Button #${btnIndex} - Attempting cleanup on data:`, chartDataStr);
+                                    
+                                    try {
+                                        // Try to clean up the string and parse again
+                                        const cleanedStr = chartDataStr
+                                            .replace(/\\"/g, '"')  // Replace escaped quotes
+                                            .replace(/^"|"$/g, ''); // Remove wrapping quotes
+                                            
+                                        console.log(`Button #${btnIndex} - Cleaned chart string:`, cleanedStr);
+                                        dentalChart = JSON.parse(cleanedStr);
+                                        console.log(`Button #${btnIndex} - Successfully parsed after cleanup:`, dentalChart);
+                                        
+                                        // Additional check - make sure it's not a string that needs further parsing
+                                        if (typeof dentalChart === 'string') {
+                                            console.log(`Button #${btnIndex} - Result after cleanup is still a string, trying to parse again:`, dentalChart);
+                                            dentalChart = JSON.parse(dentalChart);
+                                        }
+                                    } catch (secondError) {
+                                        console.error(`Button #${btnIndex} - Failed to parse dental chart after cleanup:`, secondError);
+                                        alert("Error parsing dental chart data. Please check the console for details.");
+                                        return;
+                                    }
+                                }
+                            }
+                            
+                            console.log(`Raw dental chart data:`, dentalChart);
+                            
+                            if (!dentalChart || typeof dentalChart !== 'object') {
+                                console.error(`Button #${btnIndex} - Invalid dental chart data:`, dentalChart);
+                                alert("Invalid dental chart data format");
+                                return;
+                            }
+                            
+                            // Validate that we have a proper object with teeth data
+                            console.log(`Button #${btnIndex} - Dental chart data type:`, typeof dentalChart);
+                            console.log(`Button #${btnIndex} - Dental chart keys:`, Object.keys(dentalChart));
+                            
+                            // Check if we have tooth statuses (1-32)
+                            const hasTradKeys = ["1", "16", "17", "32"].some(key => key in dentalChart);
+                            
+                            if (!hasTradKeys) {
+                                console.warn(`Button #${btnIndex} - Data doesn't appear to have traditional tooth numbers. Keys found:`, Object.keys(dentalChart));
+                            }
+                            
+                            // Convert traditional numbering to FDI
+                            const fdiData = convertTraditionalToFDI(dentalChart);
+                            
+                            // Debug and validate the conversion
+                            console.log(`Button #${btnIndex} - Conversion result:`, fdiData);
+                            
+                            // If we have data in FDI format, use it directly
+                            if (fdiData && Object.keys(fdiData).length > 0) {
+                                console.log(`Button #${btnIndex} - Using converted FDI data to update UI`);
+                                updateTeethUI(fdiData, 'upperTeeth');
+                                updateTeethUI(fdiData, 'lowerTeeth');
+                            } else {
+                                console.log(`Button #${btnIndex} - No valid data found, using default healthy status`);
+                                // Fallback to default statuses
+                                const defaultData = {};
+                                upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
+                                    defaultData[toothNumber] = 'healthy';
+                                });
+                                updateTeethUI(defaultData, 'upperTeeth');
+                                updateTeethUI(defaultData, 'lowerTeeth');
+                            }
+                        } catch (error) {
+                            console.error('Error displaying dental chart:', error);
+                            alert('Error displaying dental chart: ' + error.message);
+                        }
+                    }, 200); // Small delay to ensure DOM is fully rendered
+                };
+            });
+            
+            // View Full Dental Chart button with direct onclick handler
+            const viewLatestDentalChartBtn = document.getElementById('viewLatestDentalChart');
+            if (viewLatestDentalChartBtn) {
+                viewLatestDentalChartBtn.onclick = function() {
+                    console.log("View latest dental chart button clicked");
+                    
+                    // Get latest chart data from hidden fields
+                    const chartDataStr = document.getElementById('latestChartData').value;
+                    const treatmentName = document.getElementById('latestTreatmentName').value;
+                    const treatmentDate = document.getElementById('latestTreatmentDate').value;
+                    
+                    console.log("Latest Chart - Treatment:", treatmentName);
+                    console.log("Latest Chart - Date:", treatmentDate);
+                    console.log("Latest Chart - Raw data:", chartDataStr);
+                    
+                    // Show the modal first so elements can be properly rendered
+                    var myModal = new bootstrap.Modal(document.getElementById('viewDentalChartModal'));
+                    myModal.show();
+                    
+                    // First clear any existing data
+                    $('#upperTeeth').empty();
+                    $('#lowerTeeth').empty();
+                    
+                    // Generate teeth structure first
+                    generateTeethHtml(upperTeethNumbers, 'upperTeeth');
+                    generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
+                    
+                    // Setup tooth click listeners
+                    setupToothClickListeners();
+                    
+                    // Update modal content with treatment information
+                    document.getElementById('treatmentNameDisplay').textContent = treatmentName || 'Latest Dental Chart';
+                    document.getElementById('treatmentDateDisplay').textContent = treatmentDate || 'N/A';
+                    
+                    // Allow a brief moment for DOM to render before processing data
+                    setTimeout(() => {
+                        try {
+                            // Parse the dental chart data
+                            let dentalChart = null;
+                            
+                            if (chartDataStr) {
+                                try {
+                                    // First, try to parse it as a JSON object directly
+                                    dentalChart = JSON.parse(chartDataStr);
+                                    console.log("Latest Chart - Successfully parsed dental chart data:", dentalChart);
+                                    
+                                    // Additional check - make sure it's not a string that needs further parsing
+                                    if (typeof dentalChart === 'string') {
+                                        console.log("Latest Chart - Result is a string, trying to parse again:", dentalChart);
+                                        dentalChart = JSON.parse(dentalChart);
+                                    }
+                                } catch (parseError) {
+                                    console.error("Latest Chart - Error parsing dental chart JSON:", parseError);
+                                    console.log("Latest Chart - Attempting cleanup on data:", chartDataStr);
+                                    
+                                    try {
+                                        // Try to clean up the string and parse again
+                                        const cleanedStr = chartDataStr
+                                            .replace(/\\"/g, '"')  // Replace escaped quotes
+                                            .replace(/^"|"$/g, ''); // Remove wrapping quotes
+                                            
+                                        console.log("Latest Chart - Cleaned chart string:", cleanedStr);
+                                        dentalChart = JSON.parse(cleanedStr);
+                                        console.log("Latest Chart - Successfully parsed after cleanup:", dentalChart);
+                                    } catch (secondError) {
+                                        console.error("Latest Chart - Failed to parse dental chart after cleanup:", secondError);
+                                        alert("Error parsing dental chart data. Please check the console for details.");
+                                        return;
+                                    }
+                                }
+                            }
+                            
+                            if (!dentalChart || typeof dentalChart !== 'object') {
+                                console.error("Latest Chart - Invalid dental chart data:", dentalChart);
+                                alert("Invalid dental chart data format");
+                                return;
+                            }
+                            
+                            // Validate that we have a proper object with teeth data
+                            console.log("Latest Chart - Dental chart data type:", typeof dentalChart);
+                            console.log("Latest Chart - Dental chart keys:", Object.keys(dentalChart));
+                            
+                            // Check if we have tooth statuses (1-32)
+                            const hasTradKeys = ["1", "16", "17", "32"].some(key => key in dentalChart);
+                            
+                            if (!hasTradKeys) {
+                                console.warn("Latest Chart - Data doesn't appear to have traditional tooth numbers. Keys found:", Object.keys(dentalChart));
+                            }
+                            
+                            // Convert traditional numbering to FDI
+                            const fdiData = convertTraditionalToFDI(dentalChart);
+                            
+                            // Update the UI with the data
+                            if (fdiData && Object.keys(fdiData).length > 0) {
+                                console.log("Using converted FDI data to update UI for latest chart");
+                                updateTeethUI(fdiData, 'upperTeeth');
+                                updateTeethUI(fdiData, 'lowerTeeth');
+                            } else {
+                                console.log("No valid data found for latest chart, using default healthy status");
+                                // Fallback to default statuses
+                                const defaultData = {};
+                                upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
+                                    defaultData[toothNumber] = 'healthy';
+                                });
+                                updateTeethUI(defaultData, 'upperTeeth');
+                                updateTeethUI(defaultData, 'lowerTeeth');
+                            }
+                        } catch (error) {
+                            console.error('Error displaying latest dental chart:', error);
+                            alert('Error displaying dental chart: ' + error.message);
+                        }
+                    }, 200); // Small delay to ensure DOM is fully rendered
+                };
+            } else {
+                console.log("Latest dental chart button not found");
+            }
+            
+            // Create tooltip element if needed
+            if (!document.getElementById('toothTooltip')) {
+                const tooltipDiv = document.createElement('div');
+                tooltipDiv.className = 'tooth-tooltip';
+                tooltipDiv.id = 'toothTooltip';
+                document.body.appendChild(tooltipDiv);
+            }
+            
+            // Close tooltip when clicking outside
+            document.addEventListener('click', function(e) {
+                const tooltip = document.getElementById('toothTooltip');
+                if (tooltip && !e.target.closest('.tooth, .tooth-tooltip')) {
+                    tooltip.classList.remove('show');
+                }
+            });
+
+            // Add test button for debugging
+            // Comment this out in production
+            if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+                // REMOVE this auto-running test that overrides the real chart data
+                // $('#viewDentalChartModal').on('shown.bs.modal', function() {
+                //     console.log("Running test after modal is shown");
+                //     setTimeout(testDentalChart, 500);
+                // });
+            }
+        });
+    </script>
+}

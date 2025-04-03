@@ -1,0 +1,755 @@
+@model IEnumerable<DentalManagement.Models.Patient>
+
+@{
+    ViewData["Title"] = "My Patients";
+    Layout = "~/Areas/Doctor/Views/Shared/_DoctorLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* Card Styles */
+        .card {
+            border-radius: 0.75rem;
+            border: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        /* Breadcrumb Navigation */
+        .breadcrumb-nav {
+            background-color: #f8f9fc;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item.active {
+            color: #4e73df;
+            font-weight: 600;
+        }
+        
+        /* Table Styles */
+        .table-hover tbody tr {
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #5a5c69;
+            border-top: none;
+            background-color: #f8f9fc;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            padding: 0.75rem 1rem;
+        }
+        
+        /* Stats Card */
+        .stats-card {
+            border-left-width: 0.25rem;
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-card .icon {
+            opacity: 0.3;
+            font-size: 2rem;
+            transition: all 0.2s ease;
+        }
+        
+        .stats-card:hover .icon {
+            opacity: 0.7;
+            transform: scale(1.1);
+        }
+        
+        .border-left-primary {
+            border-left-color: #4e73df !important;
+        }
+        
+        .border-left-success {
+            border-left-color: #1cc88a !important;
+        }
+        
+        .border-left-info {
+            border-left-color: #36b9cc !important;
+        }
+        
+        .border-left-warning {
+            border-left-color: #f6c23e !important;
+        }
+        
+        /* Badge Styles */
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .badge-pill {
+            border-radius: 30px;
+        }
+        
+        /* Avatar Styles */
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            background-color: #4e73df;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        tr:hover .avatar {
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* DataTable Customization */
+        .dataTables_wrapper .row {
+            margin: 0;
+            align-items: center;
+        }
+        
+        /* Custom search box styling */
+        .search-wrapper {
+            position: relative;
+            margin-right: 1rem;
+            max-width: 300px;
+            width: 100%;
+        }
+        
+        .search-wrapper .form-control {
+            border-radius: 50rem;
+            padding-left: 40px;
+            border: 1px solid #e3e6f0;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+            height: 38px;
+            transition: all 0.2s;
+        }
+        
+        .search-wrapper .form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .search-wrapper .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4e73df;
+            z-index: 10;
+        }
+        
+        /* Pagination styling */
+        .pagination-container {
+            background-color: #f8f9fc;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        }
+        
+        .pagination {
+            margin-bottom: 0;
+        }
+        
+        .pagination .page-item .page-link {
+            border-radius: 0.5rem;
+            margin: 0 2px;
+            border: none;
+            color: #4e73df;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #4e73df;
+            color: white;
+        }
+        
+        .pagination .page-item .page-link:hover {
+            background-color: #eaecf4;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+        
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        
+        /* Page length selection */
+        .page-length-selector {
+            display: flex;
+            align-items: center;
+        }
+        
+        .page-length-selector label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0;
+        }
+        
+        .page-length-selector select {
+            border-radius: 0.5rem;
+            border: 1px solid #e3e6f0;
+            padding: 0.25rem 2rem 0.25rem 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            font-size: 0.875rem;
+        }
+        
+        /* Action Button Styles */
+        .actions-cell {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+        .btn-action {
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            margin-right: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-action:last-child {
+            margin-right: 0;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-action i {
+            font-size: 1rem;
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+        
+        .btn-success {
+            background-color: #1cc88a;
+            border-color: #1cc88a;
+        }
+        
+        .btn-outline-primary {
+            color: #4e73df;
+            border-color: #4e73df;
+        }
+        
+        .btn-primary:hover, 
+        .btn-success:hover {
+            filter: brightness(110%);
+        }
+        
+        .rounded-pill {
+            border-radius: 50rem !important;
+        }
+        
+        /* Filter Dropdown */
+        .dropdown-menu {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            padding: 0.5rem 0;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1.5rem;
+            transition: all 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(78, 115, 223, 0.1);
+            color: #4e73df;
+        }
+        
+        .dropdown-header {
+            color: #4e73df;
+            font-weight: 600;
+        }
+        
+        /* Hide DataTable's default UI elements */
+        div.dataTables_wrapper div.dataTables_filter,
+        div.dataTables_wrapper div.dataTables_length,
+        div.dataTables_wrapper div.dataTables_info,
+        div.dataTables_wrapper div.dataTables_paginate {
+            display: none !important;
+        }
+        
+        /* Empty State Styling */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #d1d3e2;
+            margin-bottom: 1.5rem;
+        }
+        
+        .empty-state h5 {
+            color: #5a5c69;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            color: #858796;
+            max-width: 500px;
+            margin: 0 auto 1.5rem;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Dashboard", new { area = "Doctor" })">Dashboard</a></li>
+            <li class="breadcrumb-item active">Patients</li>
+        </ol>
+    </nav>
+    
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+                <i class="bi bi-person-vcard me-2 text-primary"></i>My Patients
+            </h1>
+            <p class="text-muted">View and manage your patient information</p>
+        </div>
+        <div class="d-flex">
+            <a asp-area="Doctor" asp-controller="Appointments" asp-action="Index" class="btn btn-primary shadow-sm rounded-pill px-4">
+                <i class="bi bi-calendar3 fa-sm text-white-50 me-2"></i>Appointments
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <!-- Total Patients -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card border-left-primary shadow h-100 py-2 rounded-lg">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Patients</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Male Patients -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card border-left-success shadow h-100 py-2 rounded-lg">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Male Patients</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count(p => p.Gender.ToLower() == "male")
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-gender-male icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Female Patients -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card border-left-info shadow h-100 py-2 rounded-lg">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Female Patients</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count(p => p.Gender.ToLower() == "female")
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-gender-female icon text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Age -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card border-left-warning shadow h-100 py-2 rounded-lg">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Average Age</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @{
+                                    var avgAge = Model.Any() ? Math.Round(Model.Average(p => 
+                                        (DateTime.Today.Year - p.DateOfBirth.Year) - 
+                                        (DateTime.Today.DayOfYear < p.DateOfBirth.DayOfYear ? 1 : 0)), 1) : 0;
+                                }
+                                @avgAge years
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-hourglass-split icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient List Card -->
+    <div class="card shadow mb-4 rounded-lg">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-list-ul me-2 text-primary"></i>
+                <h6 class="m-0 font-weight-bold text-primary">Patients List</h6>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="search-wrapper me-3">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="form-control custom-search" id="customSearch" placeholder="Search patients...">
+                </div>
+                <div class="dropdown">
+                    <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle rounded-pill px-3" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-filter me-1"></i> Filter
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><h6 class="dropdown-header">Filter By Gender:</h6></li>
+                        <li><a class="dropdown-item filter-gender" href="#" data-gender="all">All Genders</a></li>
+                        <li><a class="dropdown-item filter-gender" href="#" data-gender="male">Male</a></li>
+                        <li><a class="dropdown-item filter-gender" href="#" data-gender="female">Female</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-people"></i>
+                    <h5 class="fw-bold">No Patients Found</h5>
+                    <p>You haven't added any patients to your practice yet. When you do, they'll appear here.</p>
+                    <a href="#" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-person-plus me-2"></i>Add New Patient
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive mb-4">
+                    <table id="patientsTable" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="60"></th>
+                                <th>Patient</th>
+                                <th>Contact Info</th>
+                                <th>Gender</th>
+                                <th>Age</th>
+                                <th width="100" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var patient in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="avatar">
+                                            @(patient.FirstName[0])@(patient.LastName[0])
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">@patient.FirstName @patient.LastName</span>
+                                            <small class="text-muted">Since @patient.User?.CreatedAt.ToString("MMM yyyy")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>@(string.IsNullOrEmpty(patient.PhoneNumber) ? "N/A" : patient.PhoneNumber)</span>
+                                            <small class="text-muted">@(patient.User?.Email ?? "N/A")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (patient.Gender.ToLower() == "male")
+                                        {
+                                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">
+                                                <i class="bi bi-gender-male me-1"></i>Male
+                                            </span>
+                                        }
+                                        else if (patient.Gender.ToLower() == "female")
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill">
+                                                <i class="bi bi-gender-female me-1"></i>Female
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">@patient.Gender</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var age = (DateTime.Today.Year - patient.DateOfBirth.Year) - 
+                                                (DateTime.Today.DayOfYear < patient.DateOfBirth.DayOfYear ? 1 : 0);
+                                        }
+                                        <span class="fw-bold">@age</span>
+                                        <small class="text-muted ms-1">yrs</small>
+                                        <div class="small text-muted">@patient.DateOfBirth.ToString("dd MMM yyyy")</div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a asp-action="Details" asp-route-id="@patient.Id" class="btn btn-primary btn-sm btn-action" title="View Patient Details">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Custom Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="tableInfo">
+                        Showing <span id="startRecord">1</span> to <span id="endRecord">10</span> of <span id="totalRecords">@Model.Count()</span> patients
+                    </div>
+                    
+                    <div class="page-length-selector">
+                        <label for="pageLengthSelect">Show:</label>
+                        <select id="pageLengthSelect" class="form-select form-select-sm">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="-1">All</option>
+                        </select>
+                    </div>
+                    
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination mb-0" id="customPagination">
+                            <li class="page-item disabled" id="prevPageBtn">
+                                <a class="page-link" href="#" aria-label="Previous">
+                                    <span aria-hidden="true">«</span>
+                                </a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item" id="nextPageBtn">
+                                <a class="page-link" href="#" aria-label="Next">
+                                    <span aria-hidden="true">»</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.1/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable with custom DOM
+            var table = $('#patientsTable').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "pageLength": 10,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "info": true,
+                "autoWidth": false,
+                "searching": true,
+                "dom": 't',  // Only show the table, hide everything else
+                "language": {
+                    "emptyTable": "<div class='text-center my-5'><i class='bi bi-people fs-1 text-muted mb-3'></i><p>No patients available</p></div>",
+                    "zeroRecords": "<div class='text-center my-5'><i class='bi bi-search fs-1 text-muted mb-3'></i><p>No matching patients found</p></div>"
+                },
+                "order": [[1, "asc"]],
+                "drawCallback": function(settings) {
+                    updatePaginationInfo(this.api());
+                }
+            });
+            
+            // Function to update the pagination information
+            function updatePaginationInfo(api) {
+                var info = api.page.info();
+                var totalPages = info.pages;
+                
+                // Update info text
+                $('#startRecord').text(info.start + 1);
+                $('#endRecord').text(info.end);
+                $('#totalRecords').text(info.recordsTotal);
+                
+                // Update pagination buttons
+                var $pagination = $('#customPagination');
+                $pagination.empty();
+                
+                // Previous button
+                var $prevBtn = $('<li class="page-item' + (info.page === 0 ? ' disabled' : '') + '">' +
+                                '<a class="page-link" href="#" aria-label="Previous">' +
+                                '<span aria-hidden="true">«</span></a></li>');
+                $prevBtn.on('click', function(e) {
+                    e.preventDefault();
+                    if (info.page > 0) {
+                        table.page('previous').draw('page');
+                    }
+                });
+                $pagination.append($prevBtn);
+                
+                // Page numbers
+                var startPage = Math.max(0, info.page - 2);
+                var endPage = Math.min(info.pages - 1, info.page + 2);
+                
+                // Add first page button if not in range
+                if (startPage > 0) {
+                    $pagination.append(
+                        '<li class="page-item"><a class="page-link" data-page="0" href="#">1</a></li>'
+                    );
+                    if (startPage > 1) {
+                        $pagination.append('<li class="page-item disabled"><span class="page-link">...</span></li>');
+                    }
+                }
+                
+                // Add page numbers
+                for (var i = startPage; i <= endPage; i++) {
+                    var $pageBtn = $('<li class="page-item' + (i === info.page ? ' active' : '') + '">' +
+                                    '<a class="page-link" data-page="' + i + '" href="#">' + (i + 1) + '</a></li>');
+                    $pageBtn.on('click', function(e) {
+                        e.preventDefault();
+                        table.page(parseInt($(this).find('a').data('page'))).draw('page');
+                    });
+                    $pagination.append($pageBtn);
+                }
+                
+                // Add last page button if not in range
+                if (endPage < info.pages - 1) {
+                    if (endPage < info.pages - 2) {
+                        $pagination.append('<li class="page-item disabled"><span class="page-link">...</span></li>');
+                    }
+                    var $lastPageBtn = $('<li class="page-item"><a class="page-link" data-page="' + (info.pages - 1) + '" href="#">' + info.pages + '</a></li>');
+                    $lastPageBtn.on('click', function(e) {
+                        e.preventDefault();
+                        table.page(parseInt($(this).find('a').data('page'))).draw('page');
+                    });
+                    $pagination.append($lastPageBtn);
+                }
+                
+                // Next button
+                var $nextBtn = $('<li class="page-item' + (info.page === info.pages - 1 ? ' disabled' : '') + '">' +
+                                '<a class="page-link" href="#" aria-label="Next">' +
+                                '<span aria-hidden="true">»</span></a></li>');
+                $nextBtn.on('click', function(e) {
+                    e.preventDefault();
+                    if (info.page < info.pages - 1) {
+                        table.page('next').draw('page');
+                    }
+                });
+                $pagination.append($nextBtn);
+            }
+            
+            // Custom search box
+            $('#customSearch').on('keyup', function() {
+                table.search($(this).val()).draw();
+            });
+            
+            // Page length change
+            $('#pageLengthSelect').on('change', function() {
+                table.page.len($(this).val()).draw();
+            });
+            
+            // Filter by gender
+            $('.filter-gender').on('click', function(e) {
+                e.preventDefault();
+                var gender = $(this).data('gender');
+                
+                if (gender === 'all') {
+                    table.columns(3).search('').draw();
+                } else {
+                    table.columns(3).search(gender, true, false).draw();
+                }
+            });
+            
+            // Animate stats cards on hover
+            $('.stats-card').hover(
+                function() {
+                    $(this).find('.icon').css('transform', 'scale(1.2) rotate(10deg)');
+                },
+                function() {
+                    $(this).find('.icon').css('transform', 'scale(1) rotate(0)');
+                }
+            );
+            
+            // Initialize pagination
+            updatePaginationInfo(table.api());
+        });
+    </script>
+}

@@ -94,6 +94,9 @@ namespace DentalManagement.Models
         // Add this collection property for reminders
         public virtual ICollection<AppointmentReminder> Reminders { get; set; } = new List<AppointmentReminder>();
 
+        // Collection of treatment reports
+        public virtual ICollection<TreatmentReport> TreatmentReports { get; set; } = new List<TreatmentReport>();
+
         // Calculated property for appointment datetime
         [NotMapped]
         public DateTime AppointmentDateTime => AppointmentDate.Date + AppointmentTime;

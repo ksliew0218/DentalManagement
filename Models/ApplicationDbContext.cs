@@ -29,6 +29,7 @@ namespace DentalManagement.Models
         public DbSet<UserNotificationPreferences> UserNotificationPreferences { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<TreatmentReport> TreatmentReports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -248,6 +249,47 @@ namespace DentalManagement.Models
                 entity.Property(e => e.ReminderType)
                     .IsRequired()
                     .HasMaxLength(50);
+            });
+            
+            // Configure TreatmentReport
+            modelBuilder.Entity<TreatmentReport>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                entity.HasOne(e => e.Appointment)
+                    .WithMany(a => a.TreatmentReports)
+                    .HasForeignKey(e => e.AppointmentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Doctor)
+                    .WithMany()
+                    .HasForeignKey(e => e.DoctorId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.Patient)
+                    .WithMany()
+                    .HasForeignKey(e => e.PatientId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v, 
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    
+                entity.Property(e => e.UpdatedAt)
+                    .HasConversion(
+                        v => v.HasValue ? v.Value : DateTime.MinValue, 
+                        v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                        
+                entity.Property(e => e.TreatmentDate)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v, 
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                
+                entity.Property(e => e.DentalChart)
+                    .HasColumnType("text");
             });
         }
 

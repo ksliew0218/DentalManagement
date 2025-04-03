@@ -228,6 +228,7 @@
                                 <th class="font-weight-bold border-top-0">Treatment</th>
                                 <th class="font-weight-bold border-top-0">Duration</th>
                                 <th class="font-weight-bold border-top-0">Status</th>
+                                <th class="font-weight-bold border-top-0">Payment</th>
                                 <th class="font-weight-bold text-center border-top-0">Actions</th>
                             </tr>
                         </thead>
@@ -291,6 +292,12 @@
                                             @appointment.Status
                                         </span>
                                     </td>
+                                    <td class="align-middle py-3">
+                                        <span class="badge rounded-pill @GetPaymentStatusBadgeClass(appointment.PaymentStatus) px-3 py-2 shadow-sm">
+                                            <i class="@GetPaymentStatusIcon(appointment.PaymentStatus) me-1"></i>
+                                            @appointment.PaymentStatus
+                                        </span>
+                                    </td>
                                     <td class="text-center align-middle py-3">
                                         <a href="@Url.Action("Details", "Appointments", new { area = "Doctor", id = appointment.Id })" 
                                            class="btn btn-info btn-sm shadow-sm rounded-pill px-3 py-2" title="View Appointment Details">
@@ -335,20 +342,22 @@
 @functions {
     string GetRowClass(string status, bool isToday)
     {
-        var statusClass = status switch
+        var baseClass = "border-left-4";
+        
+        if (isToday) {
+            baseClass += " bg-light";
+        }
+        
+        return status switch 
         {
-            "Cancelled" => "border-left-danger",
-            "Completed" => "border-left-success",
-            "No-Show" => "border-left-warning",
-            "Scheduled" => "border-left-primary",
-            _ => "border-left-primary"
+            "Scheduled" => $"{baseClass} border-left-info",
+            "Completed" => $"{baseClass} border-left-success",
+            "Cancelled" => $"{baseClass} border-left-danger",
+            "No-Show" => $"{baseClass} border-left-warning",
+            _ => $"{baseClass} border-left-secondary"
         };
-        
-        var todayClass = isToday ? "bg-light" : "";
-        
-        return $"{statusClass} {todayClass}";
     }
-
+    
     string GetStatusBadgeClass(string status)
     {
         return status switch
@@ -369,6 +378,36 @@
             "Completed" => "bi bi-check-circle",
             "Cancelled" => "bi bi-x-circle",
             "No-Show" => "bi bi-exclamation-triangle",
+            _ => "bi bi-question-circle"
+        };
+    }
+    
+    string GetPaymentStatusBadgeClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Paid => "bg-success",
+            PaymentStatus.PartiallyPaid => "bg-info",
+            PaymentStatus.Pending => "bg-warning",
+            PaymentStatus.Refunded => "bg-secondary",
+            PaymentStatus.PartiallyRefunded => "bg-secondary",
+            PaymentStatus.Failed => "bg-danger",
+            PaymentStatus.Cancelled => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    
+    string GetPaymentStatusIcon(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Paid => "bi bi-check-circle-fill",
+            PaymentStatus.PartiallyPaid => "bi bi-check-circle",
+            PaymentStatus.Pending => "bi bi-hourglass-split",
+            PaymentStatus.Refunded => "bi bi-arrow-return-left",
+            PaymentStatus.PartiallyRefunded => "bi bi-arrow-return-left",
+            PaymentStatus.Failed => "bi bi-x-circle-fill",
+            PaymentStatus.Cancelled => "bi bi-x-octagon-fill",
             _ => "bi bi-question-circle"
         };
     }
