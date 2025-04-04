@@ -60,7 +60,7 @@ namespace DentalManagement.Models
         // Appointment Status
         [Required]
         [StringLength(50)]
-        public string Status { get; set; } = "Scheduled";
+        public string Status { get; set; } = "Confirmed";
 
         // Payment related fields
         [Required]

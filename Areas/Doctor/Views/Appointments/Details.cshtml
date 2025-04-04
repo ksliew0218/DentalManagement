@@ -43,7 +43,7 @@
                                     </div>
         <div>
                                         <h5 class="card-title mb-1 fw-bold">@Model.Status</h5>
-                                        @if (Model.Status == "Scheduled" && Model.AppointmentDateTime != default)
+                                        @if ((Model.Status == "Scheduled" || Model.Status == "Confirmed") && Model.AppointmentDateTime != default)
                                         {
                                             <p class="card-text">
                                                 <span class="text-white">@TimeUntilAppointment(Model.AppointmentDateTime)</span>
@@ -66,7 +66,7 @@
                                         }
                                     </div>
                                     
-                                    @if (Model.Status == "Scheduled")
+                                    @if (Model.Status == "Scheduled" || Model.Status == "Confirmed")
                                     {
                                         <button type="button" class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
                                             <i class="fas fa-edit me-1"></i> Update Status
@@ -586,7 +586,7 @@
                         </div>
                     }
                     
-                        @if (Model.AppointmentDateTime > DateTime.Now && Model.Status == "Scheduled")
+                        @if (Model.AppointmentDateTime > DateTime.Now && (Model.Status == "Scheduled" || Model.Status == "Confirmed"))
                         {
                             <div class="timeline-item">
                                 <div class="timeline-marker bg-light shadow-sm border">
@@ -884,14 +884,14 @@
             <div class="modal-body p-4">
                 <p class="mb-4">Select the new status for appointment #@Model.Id:</p>
                 <div class="status-options">
-                    <div class="form-check status-option mb-3 p-3 border rounded-lg @(Model.Status == "Scheduled" ? "bg-light" : "")">
-                        <input class="form-check-input" type="radio" name="appointmentStatus" id="statusScheduled" value="Scheduled" @(Model.Status == "Scheduled" ? "checked" : "")>
-                        <label class="form-check-label d-flex align-items-center" for="statusScheduled">
+                    <div class="form-check status-option mb-3 p-3 border rounded-lg @(Model.Status == "Confirmed" ? "bg-light" : "")">
+                        <input class="form-check-input" type="radio" name="appointmentStatus" id="statusConfirmed" value="Confirmed" @(Model.Status == "Confirmed" ? "checked" : "")>
+                        <label class="form-check-label d-flex align-items-center" for="statusConfirmed">
                             <span class="status-icon bg-info text-white rounded-circle p-2 me-3">
                                 <i class="bi bi-calendar-check"></i>
                             </span>
                             <div>
-                                <span class="d-block fw-bold">Scheduled</span>
+                                <span class="d-block fw-bold">Confirmed</span>
                                 <small class="text-muted">The appointment is scheduled and confirmed</small>
                             </div>
                         </label>
@@ -1706,6 +1706,7 @@
         return status switch
         {
             "Scheduled" => "alert-info",
+            "Confirmed" => "alert-info",
             "Completed" => "alert-success",
             "Cancelled" => "alert-danger",
             "No-Show" => "alert-warning",
@@ -1718,6 +1719,7 @@
         return status switch
         {
             "Scheduled" => "bg-info",
+            "Confirmed" => "bg-info",
             "Completed" => "bg-success",
             "Cancelled" => "bg-danger",
             "No-Show" => "bg-warning",
@@ -1730,6 +1732,7 @@
         return status switch
         {
             "Scheduled" => "bg-info",
+            "Confirmed" => "bg-info",
             "Completed" => "bg-success",
             "Cancelled" => "bg-danger",
             "No-Show" => "bg-warning",
@@ -1742,6 +1745,7 @@
         return status switch
         {
             "Scheduled" => "bi bi-calendar-check",
+            "Confirmed" => "bi bi-calendar-check",
             "Completed" => "bi bi-check-circle",
             "Cancelled" => "bi bi-x-circle",
             "No-Show" => "bi bi-exclamation-triangle",
