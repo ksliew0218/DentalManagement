@@ -944,21 +944,143 @@
     </div>
 </div>
 
+<!-- Status Confirmation Modal -->
+<div class="modal fade" id="statusConfirmationModal" tabindex="-1" aria-labelledby="statusConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="statusConfirmationModalLabel">
+                    <i class="bi bi-exclamation-circle me-2"></i>Confirm Status Update
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="statusUpdateForm" method="get">
+                <input type="hidden" id="statusUpdateAppointmentId" name="id" value="">
+                <input type="hidden" id="statusUpdateNewStatus" name="status" value="">
+                
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div id="statusIcon" class="status-icon-large mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-question-circle-fill fs-1"></i>
+                        </div>
+                        <h4 class="fw-bold">Update Appointment Status</h4>
+                        <p class="text-muted" id="statusConfirmationText">Are you sure you want to change this appointment's status?</p>
+                    </div>
+                    
+                    <div class="alert alert-info p-3 d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                        <span id="statusInfoText">This action will update the appointment status and cannot be easily reversed.</span>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="confirmStatusUpdateBtn" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i>Yes, Update Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        // Handle TempData notifications and modal triggers
+        $(document).ready(function() {
+            // Check for TempData messages
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                showNotification('success', '@TempData["SuccessMessage"]');
+                </text>
+            }
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                showNotification('error', '@TempData["ErrorMessage"]');
+                </text>
+            }
+            
+            @if (TempData["InfoMessage"] != null)
+            {
+                <text>
+                showNotification('info', '@TempData["InfoMessage"]');
+                </text>
+            }
+            
+            // If appointment just marked as completed, show the treatment report modal
+            @if (TempData["ShowTreatmentReportModal"] != null && (bool)TempData["ShowTreatmentReportModal"] == true)
+            {
+                <text>
+                setTimeout(function() {
+                    $('#treatmentReportModal').modal('show');
+                }, 1000); // Slight delay to allow page to fully load
+                </text>
+            }
+        });
+        
         // Function to update appointment status
         function updateStatus(appointmentId, status) {
             console.log('Update status function called with ID:', appointmentId, 'status:', status);
             
-            if (!confirm(`Are you sure you want to change the status to ${status}?`)) {
-                console.log('User cancelled status update');
-                return;
-            }
+            // Set the confirmation modal content based on the selected status
+            const statusIconMap = {
+                'Confirmed': '<i class="bi bi-calendar-check-fill fs-1 text-info"></i>',
+                'Completed': '<i class="bi bi-check-circle-fill fs-1 text-success"></i>',
+                'Cancelled': '<i class="bi bi-x-circle-fill fs-1 text-danger"></i>',
+                'No-Show': '<i class="bi bi-exclamation-triangle-fill fs-1 text-warning"></i>'
+            };
             
-            console.log('Redirecting to URL:', '@Url.Action("UpdateStatus", "Appointments", new { area = "Doctor" })/' + appointmentId + '?status=' + status);
-            // Redirect to the UpdateStatus action with the appointment ID and status as parameters
-            window.location.href = '@Url.Action("UpdateStatus", "Appointments", new { area = "Doctor" })/' + appointmentId + '?status=' + status;
+            const statusInfoMap = {
+                'Confirmed': 'This will mark the appointment as confirmed and ready for the patient\'s visit.',
+                'Completed': 'This will mark the appointment as completed. You\'ll be prompted to add treatment notes.',
+                'Cancelled': 'This will mark the appointment as cancelled. Any payments may need to be refunded.',
+                'No-Show': 'This will mark that the patient did not attend their scheduled appointment.'
+            };
+            
+            const statusBgColorMap = {
+                'Confirmed': 'bg-info',
+                'Completed': 'bg-success',
+                'Cancelled': 'bg-danger',
+                'No-Show': 'bg-warning'
+            };
+            
+            // Update the form action URL
+            const actionUrl = '@Url.Action("UpdateStatus", "Appointments", new { area = "Doctor" })/' + appointmentId;
+            $('#statusUpdateForm').attr('action', actionUrl);
+            $('#statusUpdateAppointmentId').val(appointmentId);
+            $('#statusUpdateNewStatus').val(status);
+            
+            // Update the modal content
+            $('#statusIcon').html(statusIconMap[status] || '<i class="bi bi-question-circle-fill fs-1"></i>');
+            $('#statusIcon').removeClass('bg-info bg-success bg-danger bg-warning').addClass(statusBgColorMap[status] || 'bg-secondary');
+            $('#statusConfirmationText').text(`Are you sure you want to change this appointment's status to "${status}"?`);
+            $('#statusInfoText').text(statusInfoMap[status] || 'This action will update the appointment status and cannot be easily reversed.');
+            
+            // Show the modal
+            $('#statusConfirmationModal').modal('show');
         }
+        
+        $(document).ready(function() {
+            $('#statusUpdateForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                $('#confirmStatusUpdateBtn').prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Processing...');
+                
+                // Get the form data
+                const appointmentId = $('#statusUpdateAppointmentId').val();
+                const status = $('#statusUpdateNewStatus').val();
+                
+                // Show notification
+                showNotification('info', `Updating appointment status to ${status}...`);
+                
+                // Get the form action and submit it
+                const actionUrl = $(this).attr('action');
+                window.location.href = actionUrl + '?status=' + status;
+            });
+        });
         
         // Function to display notifications
         function showNotification(type, message) {
@@ -1303,6 +1425,14 @@
             }
         });
     </script>
+    
+    <style>
+        .status-icon-large {
+            width: 80px;
+            height: 80px;
+            color: white;
+        }
+    </style>
 }
 
 @section Styles {

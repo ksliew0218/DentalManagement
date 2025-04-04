@@ -223,25 +223,34 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
             try
             {
+                // Check if status is already the same
+                if (appointment.Status == status)
+                {
+                    TempData["InfoMessage"] = $"Appointment is already marked as {status}.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
                 // Check if appointment is already completed - cannot be changed
-                if (appointment.Status == "Completed")
+                if (appointment.Status == "Completed" && status != "Completed")
                 {
                     TempData["ErrorMessage"] = "Cannot modify an appointment that has been marked as Completed.";
                     return RedirectToAction(nameof(Details), new { id });
                 }
 
-                // Check if appointment is in the past for "Completed" or "No-Show" status
+                // Calculate if appointment is in the past
                 DateTime appointmentDateTime = appointment.AppointmentDate.Date + appointment.AppointmentTime;
                 bool isPastAppointment = appointmentDateTime < DateTime.Now;
                 
-                if ((status == "Completed" || status == "No-Show") && !isPastAppointment)
+                // For Completed status, we'll allow it regardless of appointment time
+                // For No-Show, only allow if it's a past appointment
+                if (status == "No-Show" && !isPastAppointment)
                 {
-                    TempData["ErrorMessage"] = $"Cannot mark an appointment as {status} before its scheduled time.";
+                    TempData["ErrorMessage"] = "Cannot mark a future appointment as No-Show.";
                     return RedirectToAction(nameof(Details), new { id });
                 }
                 
-                // Cancel can be done before the appointment
-                if (status == "Cancelled" && appointmentDateTime < DateTime.Now)
+                // Cancel can be done anytime for future appointments or same-day appointments
+                if (status == "Cancelled" && appointmentDateTime.Date < DateTime.Today)
                 {
                     TempData["ErrorMessage"] = "Cannot cancel a past appointment. Please use 'No-Show' instead.";
                     return RedirectToAction(nameof(Details), new { id });
