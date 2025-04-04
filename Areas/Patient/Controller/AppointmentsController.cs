@@ -1745,44 +1745,131 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
             return RedirectToAction("Details", new { id = id });
         }
     }
-        [HttpGet]
-        public async Task<IActionResult> PaymentSuccess(int id, string type)
+        
+    [HttpGet]
+    public async Task<IActionResult> PaymentSuccess(int id, string type)
+    {
+        try
         {
-            try
-            {
-                var appointment = await _context.Appointments
-                    .Include(a => a.TreatmentType)
-                    .FirstOrDefaultAsync(a => a.Id == id);
-                    
-                if (appointment == null)
-                {
-                    return NotFound();
-                }
-
-                // Update appointment payment status to Paid if this was the remaining payment
-                if (type == "remaining")
-                {
-                    appointment.Status = "Completed"; // Add this line to update the status to "Completed"
-                    appointment.PaymentStatus = PaymentStatus.Paid;
-                    appointment.UpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
-                    
-                    TempData["SuccessMessage"] = "Payment successful! Your appointment is now fully paid.";
-                }
-                else
-                {
-                    TempData["SuccessMessage"] = "Payment successful!";
-                }
+            var appointment = await _context.Appointments
+                .Include(a => a.TreatmentType)
+                .FirstOrDefaultAsync(a => a.Id == id);
                 
-                return RedirectToAction("Details", new { id = id });
-            }
-            catch (Exception ex)
+            if (appointment == null)
             {
-                _logger.LogError(ex, $"Error in PaymentSuccess method for appointment {id}");
-                TempData["ErrorMessage"] = "There was an issue processing your payment result.";
-                return RedirectToAction("Details", new { id = id });
+                return NotFound();
             }
+
+            // Update appointment payment status to Paid if this was the remaining payment
+            if (type == "remaining")
+            {
+                appointment.Status = "Completed"; // Add this line to update the status to "Completed"
+                appointment.PaymentStatus = PaymentStatus.Paid;
+                appointment.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = "Payment successful! Your appointment is now fully paid.";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Payment successful!";
+            }
+            
+            return RedirectToAction("Details", new { id = id });
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in PaymentSuccess method for appointment {id}");
+            TempData["ErrorMessage"] = "There was an issue processing your payment result.";
+            return RedirectToAction("Details", new { id = id });
         }
-    
+    }
+
+    // Add this action to your AppointmentsController.cs file
+
+    [HttpGet]
+    public async Task<IActionResult> GetTreatmentReport(int id)
+    {
+        try
+        {
+            _logger.LogInformation($"GetTreatmentReport called for appointment ID: {id}");
+            
+            // Get current user
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                _logger.LogWarning("Unauthorized access: User not authenticated");
+                return Unauthorized();
+            }
+
+            // Get patient
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
+            if (patient == null)
+            {
+                _logger.LogWarning($"Unauthorized access: Patient record not found for user {user.Id}");
+                return Unauthorized();
+            }
+
+            // Find the appointment and verify it belongs to the current patient
+            var appointment = await _context.Appointments
+                .Include(a => a.Doctor)
+                .FirstOrDefaultAsync(a => a.Id == id && a.PatientId == patient.Id);
+                
+            if (appointment == null)
+            {
+                _logger.LogWarning($"Patient attempted to access appointment {id} that doesn't exist or doesn't belong to them");
+                return NotFound();
+            }
+
+            // Only allow accessing reports for completed appointments
+            if (appointment.Status != "Completed")
+            {
+                _logger.LogWarning($"Patient attempted to access report for non-completed appointment {id}");
+                return BadRequest(new { message = "Reports are only available for completed appointments" });
+            }
+
+            // Get the treatment report for this appointment
+            var treatmentReport = await _context.TreatmentReports
+                .Include(tr => tr.Doctor)
+                .FirstOrDefaultAsync(tr => tr.AppointmentId == id);
+
+            if (treatmentReport == null)
+            {
+                _logger.LogInformation($"No treatment report found for appointment {id}");
+                // Return empty object if no report exists
+                return Json(new { exists = false });
+            }
+
+            // Check if the notes are null or empty
+            if (string.IsNullOrWhiteSpace(treatmentReport.Notes))
+            {
+                _logger.LogInformation($"Treatment report found for appointment {id}, but notes are empty");
+                return Json(new { 
+                    id = treatmentReport.Id,
+                    appointmentId = treatmentReport.AppointmentId,
+                    exists = true,
+                    hasNotes = false
+                });
+            }
+
+            // Return the treatment report data with notes
+            _logger.LogInformation($"Returning treatment report with notes for appointment {id}");
+            return Json(new {
+                id = treatmentReport.Id,
+                appointmentId = treatmentReport.AppointmentId,
+                treatmentDate = treatmentReport.TreatmentDate,
+                notes = treatmentReport.Notes,
+                doctorName = $"Dr. {treatmentReport.Doctor.FirstName} {treatmentReport.Doctor.LastName}",
+                createdAt = treatmentReport.CreatedAt,
+                exists = true,
+                hasNotes = true
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error retrieving treatment report for appointment {id}");
+            return StatusCode(500, new { message = "An error occurred while retrieving the treatment report" });
+        }
+    }
+    }
 }

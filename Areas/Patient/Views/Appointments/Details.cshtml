@@ -255,6 +255,12 @@
                 <i class="bi bi-credit-card"></i> Proceed to Payment
             </button>
         }
+        @if (Model.Status == "Completed")
+        {
+            <button class="action-btn remark-btn" onclick="showDoctorRemarks(@Model.Id)">
+                <i class="bi bi-clipboard-plus"></i> Doctor Remarks
+            </button>
+        }
         @if (Model.Status == "Completed" && Model.PaymentStatus == PaymentStatus.PartiallyPaid && Model.RemainingAmount > 0)
         {
             <button class="action-btn payment-btn" onclick="processRemainingPayment(@Model.Id)">
@@ -326,6 +332,41 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Remarks Modal -->
+    <div class="modal" id="doctor-remarks-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title"><i class="bi bi-clipboard-check"></i> Doctor Remarks</span>
+                <button class="close-modal-btn" id="close-remarks-x"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="remarks-loading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading doctor remarks...</p>
+                </div>
+                <div id="remarks-content" class="remarks-content" style="display: none;">
+                    <!-- Content will be loaded here dynamically -->
+                </div>
+                <div id="no-remarks-message" style="display: none;" class="text-center py-4">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-clipboard"></i>
+                        </div>
+                        <h4>No Remarks Available</h4>
+                        <p>Your doctor hasn't added any remarks for this appointment yet.</p>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="button" id="close-remarks-modal" class="btn btn-outline-secondary">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -409,5 +450,88 @@
         function processRemainingPayment(appointmentId) {
             window.location.href = `/Patient/Appointments/ProcessRemainingPayment/${appointmentId}`;
         }
+
+        // Add this to the existing Scripts section
+
+        function showDoctorRemarks(appointmentId) {
+        // Show the modal
+        const modal = document.getElementById('doctor-remarks-modal');
+        modal.classList.add('show');
+        
+        // Set up close buttons
+        const closeBtn = document.getElementById('close-remarks-x');
+        const closeBtnAlt = document.getElementById('close-remarks-modal');
+        
+        function closeModal() {
+            modal.classList.remove('show');
+        }
+        
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (closeBtnAlt) closeBtnAlt.addEventListener('click', closeModal);
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Show loading, hide content
+        document.getElementById('remarks-loading').style.display = 'block';
+        document.getElementById('remarks-content').style.display = 'none';
+        document.getElementById('no-remarks-message').style.display = 'none';
+        
+        // Use simple query parameter instead of route parameter
+        fetch(`/Patient/Appointments/GetTreatmentReport?id=${appointmentId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Hide loading
+            document.getElementById('remarks-loading').style.display = 'none';
+            
+            // Check if data exists and has non-empty notes
+            if (data && data.exists && data.hasNotes) {
+                // Show content
+                const remarksContent = document.getElementById('remarks-content');
+                remarksContent.style.display = 'block';
+                
+                // Format date
+                const treatmentDate = new Date(data.treatmentDate);
+                const formattedDate = treatmentDate.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                // Insert content
+                remarksContent.innerHTML = `
+                    <div class="treatment-date">Treatment on ${formattedDate}</div>
+                    <div class="doctor-name">
+                        <i class="bi bi-person-badge"></i>
+                        <span>${data.doctorName}</span>
+                    </div>
+                    <div class="notes">${data.notes}</div>
+                `;
+            } else {
+                // Show no remarks message
+                document.getElementById('no-remarks-message').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('remarks-loading').style.display = 'none';
+            document.getElementById('no-remarks-message').style.display = 'block';
+        });
+    }
     </script>
 }

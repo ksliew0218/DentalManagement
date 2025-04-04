@@ -519,3 +519,118 @@
 .details-card + .details-card {
   margin-top: 1.5rem;
 }
+
+
+/* Add these styles to the head section of the page or in the appointment-details.css file */
+
+.remark-btn {
+  background-color: #6f42c1; /* Purple background */
+  color: white;
+  border: 1px solid #5e35b1;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.remark-btn:hover {
+  background-color: #5e35b1; /* Darker purple on hover */
+  transform: translateY(-2px);
+}
+
+/* Modal styles to match design in screenshot */
+#doctor-remarks-modal .modal-content {
+  border-radius: 8px;
+  border: none;
+  max-width: 500px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#doctor-remarks-modal .modal-header {
+  border-bottom: 1px solid #eee;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#doctor-remarks-modal .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#doctor-remarks-modal .modal-title i {
+  color: #5e35b1;
+}
+
+#doctor-remarks-modal .close-modal-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  color: #999;
+}
+
+#doctor-remarks-modal .modal-body {
+  padding: 20px;
+}
+
+.remarks-content {
+  padding: 15px;
+  background-color: #f8f9fc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.remarks-content .treatment-date {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.remarks-content .doctor-name {
+  font-weight: 500;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remarks-content .doctor-name i {
+  color: #48bb78;
+}
+
+.remarks-content .notes {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: #333;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px 0;
+}
+
+.empty-state-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.empty-state-icon i {
+  font-size: 3rem;
+  color: #e2e2e2;
+}
+
+.empty-state h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 20px;
+}
