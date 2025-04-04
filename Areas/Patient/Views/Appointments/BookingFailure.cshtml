@@ -1,0 +1,136 @@
+@{
+    ViewData["Title"] = "Booking Failed";
+    Layout = "~/Areas/Patient/Views/Shared/_PatientLayout.cshtml";
+}
+
+<head>
+    <!-- Link to custom CSS files -->
+    <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
+    <link href="~/css/booking-success.css" rel="stylesheet" asp-append-version="true">
+</head>
+
+<div class="booking-success-container">
+    <div class="success-card">
+        <!-- Failure Header -->
+        <div class="success-header">
+            <div class="success-icon" style="color: #e53e3e;">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <h1>Payment Failed</h1>
+            <p class="success-message">We couldn't process your payment at this time.</p>
+        </div>
+        
+        <!-- Appointment Details -->
+        <div class="appointment-details">
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Treatment</span>
+                    <span class="detail-value">@ViewData["TreatmentName"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Doctor</span>
+                    <span class="detail-value">@ViewData["DoctorName"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">@ViewData["AppointmentDate"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Time</span>
+                    <span class="detail-value">@ViewData["AppointmentTime"]</span>
+                </div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="detail-content">
+                    <span class="detail-label">Payment Status</span>
+                    <span class="detail-value" style="color: #e53e3e;">Failed</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Message -->
+        <div class="email-confirmation" style="border-color: #fed7d7; background-color: #fff5f5; padding: 15px; border-radius: 5px;">
+            <i class="bi bi-info-circle" style="color: #e53e3e;"></i>
+            <p>@ViewData["ErrorMessage"] Please try again or contact our support team if you continue to experience issues.</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/Patient/Appointments/ProceedToPayment/@ViewData["AppointmentId"]" class="btn-view" style="background-color: #48bb78;">
+                <i class="bi bi-credit-card"></i> Try Payment Again
+            </a>
+            <a href="/Patient/Appointments" class="btn-dashboard">
+                <i class="bi bi-calendar-check"></i> View My Appointments
+            </a>
+        </div>
+        
+        <!-- Support Information -->
+        <div class="reminder-section">
+            <div class="reminder-header">
+                <i class="bi bi-headset" style="color: #4299e1;"></i>
+                <h2>Need Help?</h2>
+            </div>
+            <ul class="reminder-list">
+                <li>For payment issues, please contact our billing department at billing@example.com</li>
+                <li>Call our customer support at (123) 456-7890</li>
+                <li>Visit our office during business hours for in-person assistance</li>
+                <li>Your appointment is not confirmed until payment is successfully processed</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add subtle animation to the failure card
+    document.addEventListener('DOMContentLoaded', function() {
+        const failureCard = document.querySelector('.success-card');
+        const detailItems = document.querySelectorAll('.detail-item');
+        
+        // Animate the card appearance
+        failureCard.style.opacity = '0';
+        failureCard.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            failureCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            failureCard.style.opacity = '1';
+            failureCard.style.transform = 'translateY(0)';
+        }, 100);
+        
+        // Animate detail items sequentially
+        detailItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, 300 + (index * 100));
+        });
+    });
+</script>

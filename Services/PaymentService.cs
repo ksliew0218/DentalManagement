@@ -38,11 +38,23 @@ namespace DentalManagement.Services
         
         public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl)
         {
-            // Call the overloaded method with default payment type (Deposit)
-            return await CreateCheckoutSessionAsync(appointmentId, amount, successUrl, cancelUrl, PaymentType.Deposit);
+            // Call the overloaded method with default payment type (Deposit) and no failure URL
+            return await CreateCheckoutSessionAsync(appointmentId, amount, successUrl, cancelUrl, null, PaymentType.Deposit);
         }
         
         public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, PaymentType paymentType)
+        {
+            // Call the overloaded method with no failure URL
+            return await CreateCheckoutSessionAsync(appointmentId, amount, successUrl, cancelUrl, null, paymentType);
+        }
+        
+        public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, string failureUrl)
+        {
+            // Call the overloaded method with default payment type (Deposit)
+            return await CreateCheckoutSessionAsync(appointmentId, amount, successUrl, cancelUrl, failureUrl, PaymentType.Deposit);
+        }
+        
+        public async Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, string failureUrl, PaymentType paymentType)
         {
             try
             {
@@ -130,6 +142,13 @@ namespace DentalManagement.Services
                         { "PaymentType", paymentType.ToString() }
                     }
                 };
+                
+                // Add failure URL to metadata if provided
+                if (!string.IsNullOrEmpty(failureUrl))
+                {
+                    options.Metadata.Add("FailureUrl", failureUrl);
+                    options.PaymentIntentData.Metadata.Add("FailureUrl", failureUrl);
+                }
                 
                 // Create the checkout session
                 var service = new SessionService();

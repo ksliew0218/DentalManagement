@@ -862,7 +862,7 @@ namespace DentalManagement.Areas.Patient.Controllers
                 _context.Appointments.Add(appointment);
                 await _context.SaveChangesAsync();
                 
-                // Construct success and cancel URLs
+                // Construct URLs
                 string successUrl = Url.Action(
                     "BookingSuccess", 
                     "Appointments", 
@@ -877,12 +877,21 @@ namespace DentalManagement.Areas.Patient.Controllers
                     Request.Scheme
                 );
                 
-                // Create Stripe checkout session
+                // Add failure URL
+                string failureUrl = Url.Action(
+                    "BookingFailure", 
+                    "Appointments", 
+                    new { area = "Patient", id = appointment.Id }, 
+                    Request.Scheme
+                );
+                
+                // Create Stripe checkout session with failure URL
                 var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
                     appointment.Id, 
                     depositAmount, 
                     successUrl, 
-                    cancelUrl
+                    cancelUrl,
+                    failureUrl
                 );
                 
                 // Redirect to Stripe checkout
@@ -979,6 +988,66 @@ namespace DentalManagement.Areas.Patient.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error repopulating view model data");
+            }
+        }
+
+        
+        [HttpGet("BookingFailure/{id}")]
+        public async Task<IActionResult> BookingFailure(int id, string error = null)
+        {
+            _logger.LogInformation($"BookingFailure method called with Appointment ID: {id}");
+            
+            try 
+            {
+                // Fetch the appointment with all related details
+                var appointment = await _context.Appointments
+                    .Include(a => a.Doctor)
+                    .Include(a => a.TreatmentType)
+                    .Include(a => a.Patient)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+                
+                if (appointment == null)
+                {
+                    _logger.LogWarning($"No appointment found with ID: {id}");
+                    return RedirectToAction("Index");
+                }
+                
+                // Verify the appointment belongs to the current user
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null || appointment.Patient.UserID != user.Id)
+                {
+                    _logger.LogWarning($"Unauthorized access to appointment {id}");
+                    return RedirectToAction("Index");
+                }
+                
+                // Populate ViewData with appointment details
+                ViewData["AppointmentId"] = appointment.Id;
+                ViewData["AppointmentDate"] = appointment.AppointmentDate.ToString("dddd, MMMM d, yyyy");
+                
+                // Format time
+                bool isPM = appointment.AppointmentTime.Hours >= 12;
+                int hour12 = appointment.AppointmentTime.Hours % 12;
+                if (hour12 == 0) hour12 = 12;
+                string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
+                ViewData["AppointmentTime"] = formattedTime;
+                
+                ViewData["DoctorName"] = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}";
+                ViewData["TreatmentName"] = appointment.TreatmentType.Name;
+                ViewData["TreatmentCost"] = $"RM {appointment.TreatmentType.Price:0.00}";
+                ViewData["DepositAmount"] = $"RM {(appointment.TreatmentType.Price * 0.3m):0.00}";
+                
+                // Set the error message or use a default
+                ViewData["ErrorMessage"] = string.IsNullOrEmpty(error) 
+                    ? "Your payment could not be processed." 
+                    : error;
+                
+                _logger.LogInformation("Rendering BookingFailure view");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in BookingFailure method for appointment {id}");
+                return RedirectToAction("Index");
             }
         }
                 
@@ -1538,10 +1607,19 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return RedirectToAction("Index");
             }
 
+            // Verify the appointment belongs to the current user
+            var user = await _userManager.GetUserAsync(User);
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
+            
+            if (patient == null || appointment.PatientId != patient.Id)
+            {
+                return Forbid();
+            }
+
             // Calculate deposit amount (30% of treatment cost)
             decimal depositAmount = appointment.TreatmentType.Price * 0.3m;
             
-            // Construct success and cancel URLs
+            // Construct URLs
             string successUrl = Url.Action(
                 "BookingSuccess", 
                 "Appointments", 
@@ -1556,12 +1634,21 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 Request.Scheme
             );
             
-            // Create Stripe checkout session
+            // Add failure URL
+            string failureUrl = Url.Action(
+                "BookingFailure", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id }, 
+                Request.Scheme
+            );
+            
+            // Create Stripe checkout session with failure URL
             var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
                 appointment.Id, 
                 depositAmount, 
                 successUrl, 
-                cancelUrl
+                cancelUrl,
+                failureUrl
             );
             
             // Redirect to Stripe checkout
@@ -1575,118 +1662,127 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
         }
     }
 
+
     [HttpGet]
-public async Task<IActionResult> ProcessRemainingPayment(int id)
-{
-    try 
+    public async Task<IActionResult> ProcessRemainingPayment(int id)
     {
-        // Find the appointment
-        var appointment = await _context.Appointments
-            .Include(a => a.TreatmentType)
-            .Include(a => a.Payments)
-            .FirstOrDefaultAsync(a => a.Id == id);
-        
-        if (appointment == null)
+        try 
         {
-            TempData["ErrorMessage"] = "Appointment not found.";
-            return RedirectToAction("Index");
-        }
-
-        // Verify the appointment belongs to the current user
-        var user = await _userManager.GetUserAsync(User);
-        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
-        
-        if (patient == null || appointment.PatientId != patient.Id)
-        {
-            return Forbid();
-        }
-
-        // Calculate the remaining amount to pay
-        decimal amountPaid = appointment.Payments
-            .Where(p => p.Status == "succeeded")
-            .Sum(p => p.Amount);
-        
-        decimal remainingAmount = appointment.TotalAmount - amountPaid;
-        
-        if (remainingAmount <= 0)
-        {
-            TempData["InfoMessage"] = "This appointment has already been fully paid.";
-            return RedirectToAction("Details", new { id = appointment.Id });
-        }
-
-        // Construct success and cancel URLs
-        string successUrl = Url.Action(
-            "PaymentSuccess", 
-            "Appointments", 
-            new { area = "Patient", id = appointment.Id, type = "remaining" }, 
-            Request.Scheme
-        );
-        
-        string cancelUrl = Url.Action(
-            "Details", 
-            "Appointments", 
-            new { area = "Patient", id = appointment.Id }, 
-            Request.Scheme
-        );
-        
-        // Create Stripe checkout session for the remaining amount
-        var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
-            appointment.Id, 
-            remainingAmount, 
-            successUrl, 
-            cancelUrl,
-            PaymentType.FullPayment  // Add this parameter to specify payment type
-        );
-        
-        // Redirect to Stripe checkout
-        return Redirect(checkoutUrl);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error processing remaining payment");
-        TempData["ErrorMessage"] = "An error occurred while processing your payment.";
-        return RedirectToAction("Details", new { id = id });
-    }
-}
-
-[HttpGet]
-public async Task<IActionResult> PaymentSuccess(int id, string type)
-{
-    try
-    {
-        var appointment = await _context.Appointments
-            .Include(a => a.TreatmentType)
-            .FirstOrDefaultAsync(a => a.Id == id);
+            // Find the appointment
+            var appointment = await _context.Appointments
+                .Include(a => a.TreatmentType)
+                .Include(a => a.Payments)
+                .FirstOrDefaultAsync(a => a.Id == id);
             
-        if (appointment == null)
-        {
-            return NotFound();
-        }
+            if (appointment == null)
+            {
+                TempData["ErrorMessage"] = "Appointment not found.";
+                return RedirectToAction("Index");
+            }
 
-        // Update appointment payment status to Paid if this was the remaining payment
-        if (type == "remaining")
-        {
-            appointment.Status = "Completed"; // Add this line to update the status to "Completed"
-            appointment.PaymentStatus = PaymentStatus.Paid;
-            appointment.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            // Verify the appointment belongs to the current user
+            var user = await _userManager.GetUserAsync(User);
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             
-            TempData["SuccessMessage"] = "Payment successful! Your appointment is now fully paid.";
+            if (patient == null || appointment.PatientId != patient.Id)
+            {
+                return Forbid();
+            }
+
+            // Calculate the remaining amount to pay
+            decimal amountPaid = appointment.Payments
+                .Where(p => p.Status == "succeeded")
+                .Sum(p => p.Amount);
+            
+            decimal remainingAmount = appointment.TotalAmount - amountPaid;
+            
+            if (remainingAmount <= 0)
+            {
+                TempData["InfoMessage"] = "This appointment has already been fully paid.";
+                return RedirectToAction("Details", new { id = appointment.Id });
+            }
+
+            // Construct URLs
+            string successUrl = Url.Action(
+                "PaymentSuccess", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id, type = "remaining" }, 
+                Request.Scheme
+            );
+            
+            string cancelUrl = Url.Action(
+                "Details", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id }, 
+                Request.Scheme
+            );
+            
+            // Add failure URL
+            string failureUrl = Url.Action(
+                "BookingFailure", 
+                "Appointments", 
+                new { area = "Patient", id = appointment.Id, error = "Your remaining payment could not be processed." }, 
+                Request.Scheme
+            );
+            
+            // Create Stripe checkout session for the remaining amount with failure URL
+            var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
+                appointment.Id, 
+                remainingAmount, 
+                successUrl, 
+                cancelUrl,
+                failureUrl,
+                PaymentType.FullPayment
+            );
+            
+            // Redirect to Stripe checkout
+            return Redirect(checkoutUrl);
         }
-        else
+        catch (Exception ex)
         {
-            TempData["SuccessMessage"] = "Payment successful!";
+            _logger.LogError(ex, "Error processing remaining payment");
+            TempData["ErrorMessage"] = "An error occurred while processing your payment.";
+            return RedirectToAction("Details", new { id = id });
         }
-        
-        return RedirectToAction("Details", new { id = id });
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, $"Error in PaymentSuccess method for appointment {id}");
-        TempData["ErrorMessage"] = "There was an issue processing your payment result.";
-        return RedirectToAction("Details", new { id = id });
-    }
-}
-}
+        [HttpGet]
+        public async Task<IActionResult> PaymentSuccess(int id, string type)
+        {
+            try
+            {
+                var appointment = await _context.Appointments
+                    .Include(a => a.TreatmentType)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+                    
+                if (appointment == null)
+                {
+                    return NotFound();
+                }
+
+                // Update appointment payment status to Paid if this was the remaining payment
+                if (type == "remaining")
+                {
+                    appointment.Status = "Completed"; // Add this line to update the status to "Completed"
+                    appointment.PaymentStatus = PaymentStatus.Paid;
+                    appointment.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Payment successful! Your appointment is now fully paid.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Payment successful!";
+                }
+                
+                return RedirectToAction("Details", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in PaymentSuccess method for appointment {id}");
+                TempData["ErrorMessage"] = "There was an issue processing your payment result.";
+                return RedirectToAction("Details", new { id = id });
+            }
+        }
+        }
     
 }

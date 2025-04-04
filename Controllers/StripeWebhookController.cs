@@ -62,6 +62,11 @@ namespace DentalManagement.Controllers
                         var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
                         await HandleCheckoutSessionCompleted(session);
                         break;
+                      
+                    case "checkout.session.expired":
+                        var expiredSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                        await HandleCheckoutSessionFailed(expiredSession);
+                        break;
                         
                     case "payment_intent.succeeded":
                         var intent = stripeEvent.Data.Object as PaymentIntent;
@@ -214,6 +219,75 @@ namespace DentalManagement.Controllers
             }
         }
         
+        private async Task HandleCheckoutSessionFailed(Stripe.Checkout.Session session)
+        {
+            _logger.LogInformation($"Checkout session {session.Id} failed or expired");
+            
+            // Get the appointment ID from the session metadata
+            if (session.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) && 
+                int.TryParse(appointmentIdStr, out int appointmentId))
+            {
+                try 
+                {
+                    var appointment = await _context.Appointments
+                        .Include(a => a.Patient)
+                        .ThenInclude(p => p.User)
+                        .FirstOrDefaultAsync(a => a.Id == appointmentId);
+                        
+                    if (appointment != null)
+                    {
+                        // Update the payment record
+                        var payment = await _context.Payments
+                            .FirstOrDefaultAsync(p => p.CheckoutSessionId == session.Id);
+                            
+                        if (payment != null)
+                        {
+                            payment.Status = "failed";
+                            payment.ErrorMessage = "Checkout session expired";
+                            payment.UpdatedAt = DateTime.UtcNow;
+                            
+                            await _context.SaveChangesAsync();
+                        }
+                        
+                        // Notify the user
+                        var user = appointment.Patient.User;
+                        if (user != null)
+                        {
+                            var notification = new UserNotification
+                            {
+                                UserId = user.Id,
+                                NotificationType = "Payment_Failed",
+                                Title = "Payment Failed",
+                                Message = $"Your payment for appointment #{appointment.Id} could not be processed. Please try again.",
+                                RelatedEntityId = appointment.Id,
+                                ActionController = "Appointments",
+                                ActionName = "Details",
+                                IsRead = false,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            
+                            _context.UserNotifications.Add(notification);
+                            await _context.SaveChangesAsync();
+                            
+                            // Optional: Send email notification
+                            var preferences = await _context.UserNotificationPreferences
+                                .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                                
+                            if (preferences?.EmailAppointmentChanges == true)
+                            {
+                                // You could implement a payment failure email here
+                                // await _emailService.SendPaymentFailedEmailAsync(...);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error processing checkout session failure for appointment {appointmentId}");
+                }
+            }
+        }
+
         private async Task CreateAppointmentNotification(Appointment appointment)
         {
             try 
@@ -465,8 +539,90 @@ namespace DentalManagement.Controllers
         {
             _logger.LogInformation($"Payment intent {intent.Id} failed");
             
-            string errorMessage = intent.LastPaymentError?.Message;
-            await _paymentService.UpdatePaymentStatusAsync(intent.Id, "failed", errorMessage);
+            try
+            {
+                string errorMessage = intent.LastPaymentError?.Message;
+                
+                // Update payment status
+                await _paymentService.UpdatePaymentStatusAsync(intent.Id, "failed", errorMessage);
+                
+                // Try to find the related appointment ID for notification purposes
+                int? appointmentId = null;
+                
+                // Check if appointment ID is in metadata
+                if (intent.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) && 
+                    int.TryParse(appointmentIdStr, out int parsedId))
+                {
+                    appointmentId = parsedId;
+                }
+                else
+                {
+                    // Try to find payment record to get appointment ID
+                    var payment = await _context.Payments
+                        .FirstOrDefaultAsync(p => p.PaymentIntentId == intent.Id);
+                    
+                    if (payment != null)
+                    {
+                        appointmentId = payment.AppointmentId;
+                    }
+                    else if (intent.Metadata.TryGetValue("CheckoutSessionId", out string checkoutSessionId))
+                    {
+                        // Try to find by checkout session ID
+                        var sessionPayment = await _context.Payments
+                            .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
+                        
+                        if (sessionPayment != null)
+                        {
+                            appointmentId = sessionPayment.AppointmentId;
+                        }
+                    }
+                }
+                
+                // If we found the appointment, notify the user
+                if (appointmentId.HasValue)
+                {
+                    var appointment = await _context.Appointments
+                        .Include(a => a.Patient)
+                        .ThenInclude(p => p.User)
+                        .FirstOrDefaultAsync(a => a.Id == appointmentId.Value);
+                    
+                    if (appointment != null && appointment.Patient?.User != null)
+                    {
+                        var user = appointment.Patient.User;
+                        
+                        // Create notification
+                        var notification = new UserNotification
+                        {
+                            UserId = user.Id,
+                            NotificationType = "Payment_Failed",
+                            Title = "Payment Failed",
+                            Message = $"Your payment for appointment #{appointment.Id} failed. {(errorMessage ?? "Please try again.")}",
+                            RelatedEntityId = appointment.Id,
+                            ActionController = "Appointments",
+                            ActionName = "Details",
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        
+                        _context.UserNotifications.Add(notification);
+                        await _context.SaveChangesAsync();
+                        
+                        // Optional: Check if failure URL is in metadata and redirect
+                        if (intent.Metadata.TryGetValue("FailureUrl", out string failureUrl))
+                        {
+                            _logger.LogInformation($"Failure URL found: {failureUrl}");
+                            // Note: We can't directly redirect from a webhook, but this info
+                            // could be used by a frontend polling mechanism
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error handling payment failure for intent {intent.Id}");
+                // Ensure basic status update happens even if notification fails
+                await _paymentService.UpdatePaymentStatusAsync(intent.Id, "failed", intent.LastPaymentError?.Message);
+            }
         }
         
         private async Task HandleChargeRefunded(Charge charge)

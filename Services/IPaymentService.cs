@@ -11,6 +11,12 @@ namespace DentalManagement.Services
         // Create a checkout session with specified payment type
         Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, PaymentType paymentType);
         
+        // Create a checkout session with default payment type and failure URL
+        Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, string failureUrl);
+        
+        // Create a checkout session with specified payment type and failure URL
+        Task<string> CreateCheckoutSessionAsync(int appointmentId, decimal amount, string successUrl, string cancelUrl, string failureUrl, PaymentType paymentType);
+        
         // Verify a payment by its intent ID
         Task<bool> VerifyPaymentAsync(string paymentIntentId);
         
