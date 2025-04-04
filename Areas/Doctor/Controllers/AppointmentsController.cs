@@ -8,6 +8,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using DentalManagement.Services;
+
 
 namespace DentalManagement.Areas.Doctor.Controllers
 {
@@ -17,13 +19,20 @@ namespace DentalManagement.Areas.Doctor.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IEmailService _emailService;
+
+
 
         public AppointmentsController(
             ApplicationDbContext context,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IEmailService emailService)
+
         {
             _context = context;
             _userManager = userManager;
+            _emailService = emailService;
+
         }
 
         // GET: Doctor/Appointments
@@ -211,9 +220,13 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 return RedirectToAction("AccessDenied", "Home", new { area = "" });
             }
 
-            // Find the appointment
+            // Find the appointment with all necessary data for email
             var appointment = await _context.Appointments
                 .Include(a => a.TreatmentReports)
+                .Include(a => a.Patient)
+                .ThenInclude(p => p.User)
+                .Include(a => a.Doctor)
+                .Include(a => a.TreatmentType)
                 .FirstOrDefaultAsync(a => a.Id == id && a.DoctorId == doctor.Id);
 
             if (appointment == null)
@@ -264,10 +277,39 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 
                 TempData["SuccessMessage"] = $"Appointment status has been updated to {status}.";
                 
-                // If completed, prompt for treatment report
+                // If completed, prompt for treatment report and send completion email
                 if (status == "Completed")
                 {
                     TempData["ShowTreatmentReportModal"] = true;
+                    
+                    // Calculate remaining balance - using the TotalAmount and DepositAmount
+                    decimal remainingBalance = appointment.TotalAmount - appointment.DepositAmount;
+                    
+                    // Create appointment details view model
+                    var appointmentDetails = new DentalManagement.Areas.Patient.Models.AppointmentDetailViewModel
+                    {
+                        Id = appointment.Id,
+                        TreatmentName = appointment.TreatmentType.Name,
+                        DoctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}",
+                        DoctorSpecialization = appointment.Doctor.Specialty,
+                        AppointmentDate = appointment.AppointmentDate,
+                        AppointmentTime = appointment.AppointmentTime,
+                        Status = status,
+                        CreatedOn = appointment.CreatedAt,
+                        TreatmentCost = appointment.TotalAmount,
+                        TreatmentDuration = appointment.Duration
+                    };
+                    
+                    // Create in-app notification for completed appointment
+                    await CreateAppointmentCompletedNotification(appointment);
+                    
+                    // Send the completion email
+                    await _emailService.SendAppointmentCompletedEmailAsync(
+                        appointment.Patient.User.Email,
+                        $"{appointment.Patient.FirstName} {appointment.Patient.LastName}",
+                        appointmentDetails,
+                        remainingBalance
+                    );
                 }
             }
             catch (Exception ex)
@@ -277,7 +319,52 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
             return RedirectToAction(nameof(Details), new { id });
         }
-        
+
+        // Helper method to create a notification for completed appointments
+        private async Task CreateAppointmentCompletedNotification(Appointment appointment)
+        {
+            try 
+            {
+                var user = appointment.Patient.User;
+                var treatment = appointment.TreatmentType;
+                var doctor = appointment.Doctor;
+
+                // Format appointment date and time
+                string formattedDate = appointment.AppointmentDate.ToString("MMMM d, yyyy");
+                bool isPM = appointment.AppointmentTime.Hours >= 12;
+                int hour12 = appointment.AppointmentTime.Hours % 12;
+                if (hour12 == 0) hour12 = 12;
+                string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
+
+                // Calculate remaining balance
+                decimal remainingBalance = appointment.TotalAmount - appointment.DepositAmount;
+                string paymentMessage = remainingBalance > 0 
+                    ? $" You have a remaining balance of RM{remainingBalance:0.00} to pay."
+                    : " Your payment is complete.";
+
+                // Create in-app notification
+                var notification = new UserNotification
+                {
+                    UserId = user.Id,
+                    NotificationType = "Appointment_Completed",
+                    Title = "Appointment Completed",
+                    Message = $"Your {treatment.Name} appointment with Dr. {doctor.FirstName} {doctor.LastName} on {formattedDate} at {formattedTime} has been completed.{paymentMessage}",
+                    RelatedEntityId = appointment.Id,
+                    ActionController = "Appointments",
+                    ActionName = "Details",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Silently handle the error - no logging
+                // This prevents errors from stopping the status update process
+            }
+        }
         // POST: Doctor/Appointments/AddTreatmentReport/5
         [HttpPost]
         [ValidateAntiForgeryToken]

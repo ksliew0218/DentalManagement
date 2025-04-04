@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your Appointment Completed - SmileCraft Dental</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Outfit:wght@400;500;700&display=swap');
+
+      body {
+        font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      }
+      .email-header {
+        background-color: #ffffff;
+        padding: 30px 24px;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+      }
+      .logo-icon {
+        color: #c2d8d9;
+        font-size: 24px;
+        margin-right: 10px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .logo-text {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 500;
+        font-size: 30px;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        line-height: 1;
+      }
+      .email-body {
+        padding: 32px 24px;
+      }
+      .greeting {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #2d3748;
+      }
+      .message {
+        font-size: 16px;
+        margin-bottom: 24px;
+        color: #4a5568;
+      }
+      .appointment-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border-left: 4px solid #38a169;
+      }
+      .appointment-header {
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+      }
+      .appointment-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0 0 4px 0;
+      }
+      .appointment-id {
+        font-size: 14px;
+        color: #718096;
+        margin: 0;
+      }
+      .detail-row {
+        display: flex;
+        margin-bottom: 12px;
+      }
+      .detail-label {
+        flex: 0 0 120px;
+        font-weight: 600;
+        color: #4a5568;
+      }
+      .detail-value {
+        flex: 1;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background-color: #e6f6ee;
+        color: #38a169;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1;
+      }
+      .cta-button {
+        display: inline-block;
+        background-color: #4769f7;
+        color: #ffffff !important;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 12px 32px;
+        border-radius: 4px;
+        margin: 16px 0 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+      .cta-button:hover {
+        background-color: #3451d1;
+      }
+      .information-section {
+        background-color: #f8f8f8;
+        padding: 16px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+      }
+      .section-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2d3748;
+      }
+      .footer-note {
+        font-size: 14px;
+        color: #718096;
+        font-style: italic;
+        margin-top: 24px;
+      }
+      .email-footer {
+        background-color: #f8f8f8;
+        padding: 16px 24px;
+        text-align: center;
+        font-size: 12px;
+        color: #64748b;
+        border-top: 1px solid #e2e8f0;
+      }
+      .care-instructions {
+        background-color: #f0f7ff;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+      }
+      .feedback-link {
+        color: #4769f7;
+        text-decoration: underline;
+      }
+      @media only screen and (max-width: 600px) {
+        .email-body {
+          padding: 24px 16px;
+        }
+        .logo-text {
+          font-size: 26px;
+        }
+        .detail-row {
+          flex-direction: column;
+        }
+        .detail-label {
+          margin-bottom: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <div class="logo-container">
+          <div class="logo-icon">🦷</div>
+          <div class="logo-text">SmileCraft</div>
+        </div>
+      </div>
+      <div class="email-body">
+        <div class="greeting">Hello {{PatientName}},</div>
+        <div class="message">
+          Your appointment at SmileCraft Dental has been completed. Thank you for trusting us with your dental care. Here's a summary of your recent visit:
+        </div>
+
+        <div class="appointment-card">
+          <div class="appointment-header">
+            <div class="appointment-title">Completed Appointment</div>
+            <div class="appointment-id">Reference #: {{AppointmentId}}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Treatment:</div>
+            <div class="detail-value">{{TreatmentName}}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Date:</div>
+            <div class="detail-value">{{AppointmentDate}}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Time:</div>
+            <div class="detail-value">{{AppointmentTime}}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Doctor:</div>
+            <div class="detail-value">{{DoctorName}}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Status:</div>
+            <div class="detail-value">
+              <span class="status-badge">Completed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="care-instructions">
+          <div class="section-title">Post-Treatment Care Instructions</div>
+          <p>{{CareInstructions}}</p>
+          <p>If you have any questions about your post-treatment care, please don't hesitate to contact us.</p>
+        </div>
+
+        <div class="appointment-card" style="border-left: 4px solid #f59e0b;">
+          <div class="appointment-header">
+            <div class="appointment-title">Payment Reminder</div>
+          </div>
+          <div class="message" style="margin-bottom: 12px;">
+            Please remember to pay your remaining balance of <strong>RM{{RemainingBalance}}</strong> as soon as possible to complete your treatment process.
+          </div>
+          <div style="text-align: center; margin-bottom: 8px;">
+            <a href="{{PaymentUrl}}" class="cta-button" style="background-color: #f59e0b; margin: 8px 0;">Pay Now</a>
+          </div>
+        </div>
+
+        <div class="message">
+          Need to schedule a follow-up appointment? You can book your next visit online through our patient portal or by contacting us directly.
+        </div>
+
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="{{BookAppointmentUrl}}" class="cta-button">Book Your Next Appointment</a>
+        </div>
+
+        <div class="information-section">
+          <div class="section-title">Have Questions?</div>
+          <p>
+            If you have any questions about your treatment or need to speak with our team, please contact us:
+          </p>
+          <div style="margin-top: 8px">
+            <strong>Phone:</strong> +60 14-3281137<br />
+            <strong>Email:</strong> contact@smilecraft.com<br />
+            <strong>Hours:</strong> Monday-Friday, 9:00 AM - 6:00 PM
+          </div>
+        </div>
+
+        <div class="footer-note">
+          Thank you for choosing SmileCraft Dental for your dental care. We look forward to seeing you at your next appointment!
+        </div>
+      </div>
+      <div class="email-footer">
+        <p>&copy; {{CurrentYear}} SmileCraft Dental. All rights reserved.</p>
+        <p>123 Jalan Besar, Sri Petaling, Malaysia | +60 14-3281137</p>
+      </div>
+    </div>
+  </body>
+</html>
