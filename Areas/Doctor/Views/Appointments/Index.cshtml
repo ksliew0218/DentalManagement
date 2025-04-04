@@ -180,7 +180,7 @@
                     <ul class="dropdown-menu dropdown-menu-end shadow" id="statusFilter">
                         <li><h6 class="dropdown-header">Filter By Status:</h6></li>
                         <li><a class="dropdown-item" href="#" data-status="all">All Statuses</a></li>
-                        <li><a class="dropdown-item" href="#" data-status="Scheduled">Scheduled</a></li>
+                        <li><a class="dropdown-item" href="#" data-status="Confirmed">Confirmed</a></li>
                         <li><a class="dropdown-item" href="#" data-status="Completed">Completed</a></li>
                         <li><a class="dropdown-item" href="#" data-status="Cancelled">Cancelled</a></li>
                         <li><a class="dropdown-item" href="#" data-status="No-Show">No-Show</a></li>
@@ -235,7 +235,7 @@
                         <tbody>
                             @foreach (var appointment in Model)
                             {
-                                var isUpcoming = appointment.AppointmentDateTime > DateTime.Now && appointment.Status == "Scheduled";
+                                var isUpcoming = appointment.AppointmentDateTime > DateTime.Now && (appointment.Status == "Scheduled" || appointment.Status == "Confirmed");
                                 var isToday = appointment.AppointmentDate.Date == DateTime.Today;
 
                                 <tr class="@GetRowClass(appointment.Status, isToday)">
@@ -351,6 +351,7 @@
         return status switch 
         {
             "Scheduled" => $"{baseClass} border-left-info",
+            "Confirmed" => $"{baseClass} border-left-info",
             "Completed" => $"{baseClass} border-left-success",
             "Cancelled" => $"{baseClass} border-left-danger",
             "No-Show" => $"{baseClass} border-left-warning",
@@ -363,6 +364,7 @@
         return status switch
         {
             "Scheduled" => "bg-info",
+            "Confirmed" => "bg-info",
             "Completed" => "bg-success",
             "Cancelled" => "bg-danger",
             "No-Show" => "bg-warning",
@@ -375,6 +377,7 @@
         return status switch
         {
             "Scheduled" => "bi bi-calendar-check",
+            "Confirmed" => "bi bi-calendar-check",
             "Completed" => "bi bi-check-circle",
             "Cancelled" => "bi bi-x-circle",
             "No-Show" => "bi bi-exclamation-triangle",

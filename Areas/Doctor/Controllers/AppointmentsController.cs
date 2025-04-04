@@ -170,6 +170,7 @@ namespace DentalManagement.Areas.Doctor.Controllers
             return status switch
             {
                 "Scheduled" => "#4e73df", // Blue
+                "Confirmed" => "#4796ff", // Lighter Blue
                 "Completed" => "#1cc88a", // Green
                 "Cancelled" => "#e74a3b", // Red
                 "No-Show" => "#f6c23e", // Yellow
@@ -187,7 +188,7 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
             // Validate status
             if (string.IsNullOrEmpty(status) || 
-                (status != "Scheduled" && status != "Completed" && status != "Cancelled" && status != "No-Show"))
+                (status != "Confirmed" && status != "Completed" && status != "Cancelled" && status != "No-Show"))
             {
                 TempData["ErrorMessage"] = "Invalid status value provided.";
                 return RedirectToAction(nameof(Details), new { id });
