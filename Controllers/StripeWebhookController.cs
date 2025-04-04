@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.Linq;
 using DentalManagement.Areas.Patient.Models;
+using DentalManagement.Areas.Doctor.Models;
 
 namespace DentalManagement.Controllers
 {
@@ -292,9 +293,11 @@ namespace DentalManagement.Controllers
         {
             try 
             {
-                // Ensure we have a user
-                var user = appointment.Patient.User ?? 
+                // Ensure we have users for patient and doctor
+                var patientUser = appointment.Patient.User ?? 
                     await _userManager.FindByIdAsync(appointment.Patient.UserID);
+                
+                var doctorUser = await _userManager.FindByIdAsync(appointment.Doctor.UserID);
                 
                 var treatment = appointment.TreatmentType;
                 var doctor = appointment.Doctor;
@@ -306,10 +309,10 @@ namespace DentalManagement.Controllers
                 if (hour12 == 0) hour12 = 12;
                 string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
 
-                // Create in-app notification
-                var notification = new UserNotification
+                // Create in-app notification for patient
+                var patientNotification = new UserNotification
                 {
-                    UserId = user.Id,
+                    UserId = patientUser.Id,
                     NotificationType = "Appointment_Confirmed",
                     Title = "Appointment Confirmed",
                     Message = $"Your {treatment.Name} appointment with Dr. {doctor.FirstName} {doctor.LastName} has been confirmed for {formattedDate} at {formattedTime}.",
@@ -320,35 +323,55 @@ namespace DentalManagement.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _context.UserNotifications.Add(notification);
+                _context.UserNotifications.Add(patientNotification);
                 await _context.SaveChangesAsync();
 
-                // Send email if preferences allow
-                var preferences = await _context.UserNotificationPreferences
-                    .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                // Send email to patient if preferences allow
+                var patientPreferences = await _context.UserNotificationPreferences
+                    .FirstOrDefaultAsync(p => p.UserId == patientUser.Id);
 
-                if (preferences?.EmailNewAppointments == true)
+                var appointmentDetails = new AppointmentDetailViewModel
                 {
-                    var appointmentDetails = new AppointmentDetailViewModel
-                    {
-                        Id = appointment.Id,
-                        TreatmentName = treatment.Name,
-                        DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
-                        DoctorSpecialization = doctor.Specialty,
-                        AppointmentDate = appointment.AppointmentDate,
-                        AppointmentTime = appointment.AppointmentTime,
-                        Status = appointment.Status,
-                        CreatedOn = appointment.CreatedAt,
-                        TreatmentCost = treatment.Price,
-                        TreatmentDuration = treatment.Duration
-                    };
+                    Id = appointment.Id,
+                    TreatmentName = treatment.Name,
+                    DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
+                    DoctorSpecialization = doctor.Specialty,
+                    AppointmentDate = appointment.AppointmentDate,
+                    AppointmentTime = appointment.AppointmentTime,
+                    Status = appointment.Status,
+                    CreatedOn = appointment.CreatedAt,
+                    TreatmentCost = treatment.Price,
+                    TreatmentDuration = treatment.Duration
+                };
 
+                if (patientPreferences?.EmailNewAppointments == true)
+                {
                     await _emailService.SendAppointmentConfirmationEmailAsync(
-                        user.Email, 
+                        patientUser.Email, 
                         $"{appointment.Patient.FirstName} {appointment.Patient.LastName}", 
                         appointmentDetails
                     );
                 }
+
+                // Send notification to doctor
+                var doctorAppointmentNotification = new DoctorAppointmentNotificationViewModel
+                {
+                    AppointmentId = appointment.Id,
+                    TreatmentName = treatment.Name,
+                    AppointmentDate = appointment.AppointmentDate,
+                    AppointmentTime = appointment.AppointmentTime,
+                    TreatmentDuration = treatment.Duration,
+                    
+                    DoctorId = doctor.Id,
+                    DoctorName = $"Dr. {doctor.FirstName} {doctor.LastName}",
+                    DoctorEmail = doctorUser.Email,
+                    
+                    PatientName = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}",
+                    PatientEmail = patientUser.Email,
+                    PatientPhoneNumber = appointment.Patient.PhoneNumber
+                };
+
+                await _emailService.SendDoctorAppointmentNotificationAsync(doctorAppointmentNotification);
             }
             catch (Exception ex)
             {

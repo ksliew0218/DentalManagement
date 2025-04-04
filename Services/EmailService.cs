@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using DentalManagement.Areas.Patient.Models;
+using DentalManagement.Areas.Doctor.Models;
 using DentalManagement.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace DentalManagement.Services
         Task SendAppointmentCancellationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails);
         Task SendAppointmentReminderEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails, string reminderType, string templateName);
         Task SendAppointmentCompletedEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails, decimal remainingBalance = 0);
+        Task SendDoctorAppointmentNotificationAsync(DoctorAppointmentNotificationViewModel appointmentNotification);
     }
 
     public class EmailService : IEmailService
@@ -333,6 +335,51 @@ namespace DentalManagement.Services
                            "• Avoid hard, sticky, or very hot/cold foods for the next 24 hours<br>" +
                            "• Some sensitivity may be normal - use over-the-counter pain relief if needed<br>" +
                            "• Contact us if you experience severe pain, swelling, or have any concerns";
+            }
+        }
+
+    // And in the EmailService class
+    public async Task SendDoctorAppointmentNotificationAsync(DoctorAppointmentNotificationViewModel appointmentNotification)
+        {
+            try
+            {
+                // Get base URL for links
+                var baseUrl = GetBaseUrl();
+                var appointmentDetailsUrl = $"{baseUrl}/Doctor/Appointments/Details/{appointmentNotification.AppointmentId}";
+                
+                // Prepare template replacements
+                var replacements = new Dictionary<string, string>
+                {
+                    { "DoctorName", string.IsNullOrEmpty(appointmentNotification.DoctorName) ? "Doctor" : appointmentNotification.DoctorName },
+                    { "PatientName", string.IsNullOrEmpty(appointmentNotification.PatientName) ? "Patient" : appointmentNotification.PatientName },
+                    { "PatientEmail", string.IsNullOrEmpty(appointmentNotification.PatientEmail) ? "N/A" : appointmentNotification.PatientEmail },
+                    { "PatientPhone", string.IsNullOrEmpty(appointmentNotification.PatientPhoneNumber) ? "N/A" : appointmentNotification.PatientPhoneNumber },
+                    { "AppointmentId", appointmentNotification.AppointmentId.ToString() },
+                    { "AppointmentDate", appointmentNotification.FormattedAppointmentDate },
+                    { "AppointmentTime", appointmentNotification.FormattedAppointmentTime },
+                    { "TreatmentName", appointmentNotification.TreatmentName },
+                    { "TreatmentDuration", appointmentNotification.TreatmentDuration.ToString() },
+                    { "AppointmentDetailsUrl", appointmentDetailsUrl },
+                    { "CurrentYear", DateTime.Now.Year.ToString() }
+                };
+                
+                // Get the email content
+                string emailContent = await _templateService.GetEmailTemplateAsync("DoctorAppointment", replacements);
+                
+                if (!string.IsNullOrEmpty(emailContent))
+                {
+                    // Send the email
+                    await SendEmailAsync(appointmentNotification.DoctorEmail, "New Appointment Notification - SmileCraft Dental", emailContent);
+                    _logger.LogInformation($"Sent appointment notification email to Dr. {appointmentNotification.DoctorName} for appointment {appointmentNotification.AppointmentId}");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to generate doctor appointment notification email content for {appointmentNotification.DoctorEmail}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending doctor appointment notification email to {appointmentNotification.DoctorEmail}");
             }
         }
     }
