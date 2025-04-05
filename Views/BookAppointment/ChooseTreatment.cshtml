@@ -1,0 +1,81 @@
+@model IEnumerable<DentalManagement.Models.TreatmentType>
+
+@{
+    ViewData["Title"] = "Choose Treatment";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Select a Treatment</h2>
+
+    <div class="row">
+        @foreach (var treatment in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm border-light rounded">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-primary">@treatment.Name</h5>
+                        <p class="card-text text-muted">@treatment.Description</p>
+                        <p><strong>Price:</strong> RM @treatment.Price</p>
+                        <p><strong>Duration:</strong> @treatment.Duration mins</p>
+
+                        <button class="btn btn-outline-primary mt-auto" onclick="openDoctorModal(@treatment.Id)">
+                            Select Doctor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="doctorModal" tabindex="-1" aria-labelledby="doctorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="doctorModalLabel">Select a Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group" id="doctorList">
+                    <!-- Doctor list will be loaded here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openDoctorModal(treatmentId) {
+            fetch(`/BookAppointment/GetDoctorsByTreatment?treatmentId=${treatmentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('doctorList');
+                    list.innerHTML = '';
+
+                    if (data.length === 0) {
+                        list.innerHTML = '<li class="list-group-item text-muted">No doctors available for this treatment.</li>';
+                    } else {
+                        data.forEach(doc => {
+                            list.innerHTML += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${doc.name}</strong><br/>
+                                        <small>${doc.specialty || ''}</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="selectDoctor(${doc.id}, ${treatmentId})">Select</button>
+                                </li>`;
+                        });
+                    }
+
+                    var modal = new bootstrap.Modal(document.getElementById('doctorModal'));
+                    modal.show();
+                });
+        }
+
+        function selectDoctor(doctorId, treatmentId) {
+            window.location.href = `/BookAppointment/Create?treatmentId=${treatmentId}&doctorId=${doctorId}`;
+        }
+    </script>
+}
