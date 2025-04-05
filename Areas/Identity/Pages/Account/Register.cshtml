@@ -1,140 +1,276 @@
 ﻿@page
 @model RegisterModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account";
 }
 
-<h1>@ViewData["Title"]</h1>
+<style>
+    /* Registration Page Custom Styles */
+    .register-container {
+        padding: 40px 20px;
+    }
+    
+    .register-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        margin-bottom: 30px;
+    }
+    
+    .register-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .register-header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #0d47a1;
+    }
+    
+    .register-subtitle {
+        color: #757575;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .section-header {
+        background: #f5f9ff;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 25px 0 20px 0;
+        border-left: 4px solid #1a73e8;
+    }
+    
+    .section-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #0d47a1;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-control {
+        height: 45px;
+        border-radius: 6px;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+    
+    .btn-primary {
+        background-color: #1a73e8;
+        border-color: #1a73e8;
+        padding: 12px 20px;
+        font-weight: 500;
+        margin-top: 20px;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0d47a1;
+        border-color: #0d47a1;
+    }
+    
+    .password-toggle {
+        cursor: pointer;
+    }
+    
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .register-card {
+            padding: 25px;
+        }
+    }
+</style>
 
-<div class="row">
-    <div class="col-md-6">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-
-            <!-- Email -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+<div class="register-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="register-header">
+                <h1>Create Your Account</h1>
+                <p class="register-subtitle">Join our dental care community today</p>
             </div>
+            
+            <div class="register-card">
+                <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="section-header">
+                        <h3><i class="bi bi-person-badge"></i> Account Information</h3>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label asp-for="Input.Email" class="required-field">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                        </div>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
 
-            <!-- Password -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label asp-for="Input.Password" class="required-field">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" placeholder="Create a password" />
+                            <button type="button" class="btn btn-outline-secondary password-toggle" tabindex="-1" data-target="Input_Password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
 
-            <!-- Confirm Password -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label asp-for="Input.ConfirmPassword" class="required-field">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Confirm your password" />
+                            <button type="button" class="btn btn-outline-secondary password-toggle" tabindex="-1" data-target="Input_ConfirmPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
 
-            <hr />
-            <h3>Patient Information</h3>
+                    <div class="section-header">
+                        <h3><i class="bi bi-file-earmark-person"></i> Personal Information</h3>
+                    </div>
 
-            <!-- First Name -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.FirstName" class="form-control" placeholder="First Name" />
-                <label asp-for="Input.FirstName">First Name</label>
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
-            </div>
+                    <div class="row">
+                        <!-- First Name -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.FirstName" class="required-field">First Name</label>
+                                <input asp-for="Input.FirstName" class="form-control" placeholder="First Name" />
+                                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
 
-            <!-- Last Name -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.LastName" class="form-control" placeholder="Last Name" />
-                <label asp-for="Input.LastName">Last Name</label>
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
+                        <!-- Last Name -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.LastName" class="required-field">Last Name</label>
+                                <input asp-for="Input.LastName" class="form-control" placeholder="Last Name" />
+                                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Gender -->
-            <div class="form-floating mb-3">
-                <select asp-for="Input.Gender" class="form-control">
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-                <label asp-for="Input.Gender">Gender</label>
-                <span asp-validation-for="Input.Gender" class="text-danger"></span>
-            </div>
+                    <div class="row">
+                        <!-- Gender -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.Gender" class="required-field">Gender</label>
+                                <select asp-for="Input.Gender" class="form-control">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                            </div>
+                        </div>
 
-            <!-- Date of Birth -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.DateOfBirth" type="date" class="form-control" />
-                <label asp-for="Input.DateOfBirth">Date of Birth</label>
-                <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
-            </div>
+                        <!-- Date of Birth -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.DateOfBirth" class="required-field">Date of Birth</label>
+                                <input asp-for="Input.DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Address -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Address" class="form-control" placeholder="Address" />
-                <label asp-for="Input.Address">Address</label>
-                <span asp-validation-for="Input.Address" class="text-danger"></span>
-            </div>
+                    <!-- Address -->
+                    <div class="form-group">
+                        <label asp-for="Input.Address" class="required-field">Address</label>
+                        <textarea asp-for="Input.Address" class="form-control" placeholder="Address" rows="2"></textarea>
+                        <span asp-validation-for="Input.Address" class="text-danger"></span>
+                    </div>
 
-            <!-- Phone Number -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Phone Number" />
-                <label asp-for="Input.PhoneNumber">Phone Number</label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
+                    <!-- Phone Number -->
+                    <div class="form-group">
+                        <label asp-for="Input.PhoneNumber" class="required-field">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Phone Number" />
+                        </div>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                    </div>
 
-            <!-- Emergency Contact Name -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.EmergencyContactName" class="form-control" placeholder="Emergency Contact Name" />
-                <label asp-for="Input.EmergencyContactName">Emergency Contact Name</label>
-                <span asp-validation-for="Input.EmergencyContactName" class="text-danger"></span>
-            </div>
+                    <div class="section-header">
+                        <h3><i class="bi bi-hospital"></i> Emergency Contact</h3>
+                    </div>
 
-            <!-- Emergency Contact Phone -->
-            <div class="form-floating mb-3">
-                <input asp-for="Input.EmergencyContactPhone" class="form-control" placeholder="Emergency Contact Phone" />
-                <label asp-for="Input.EmergencyContactPhone">Emergency Contact Phone</label>
-                <span asp-validation-for="Input.EmergencyContactPhone" class="text-danger"></span>
-            </div>
+                    <div class="row">
+                        <!-- Emergency Contact Name -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.EmergencyContactName" class="required-field">Emergency Contact Name</label>
+                                <input asp-for="Input.EmergencyContactName" class="form-control" placeholder="Emergency Contact Name" />
+                                <span asp-validation-for="Input.EmergencyContactName" class="text-danger"></span>
+                            </div>
+                        </div>
 
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
-    </div>
+                        <!-- Emergency Contact Phone -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Input.EmergencyContactPhone" class="required-field">Emergency Contact Phone</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
+                                    <input asp-for="Input.EmergencyContactPhone" class="form-control" placeholder="Emergency Contact Phone" />
+                                </div>
+                                <span asp-validation-for="Input.EmergencyContactPhone" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
 
-    <div class="col-md-6">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @if ((Model.ExternalLogins?.Count ?? 0) == 0)
-            {
-                <p>
-                    There are no external authentication services configured. See this
-                    <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
-                        article about setting up this ASP.NET application to support logging in via external services
-                    </a>.
-                </p>
-            }
-            else
-            {
-                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                    <div>
-                        <p>
-                            @foreach (var provider in Model.ExternalLogins!)
-                            {
-                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                                        title="Log in using your @provider.DisplayName account">
-                                    @provider.DisplayName
-                                </button>
-                            }
-                        </p>
+                    <div class="d-grid gap-2">
+                        <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i> Create Account
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <p>Already have an account? <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="text-primary fw-bold">Sign in</a></p>
                     </div>
                 </form>
-            }
-        </section>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function() {
+            // Password visibility toggle
+            $('.password-toggle').on('click', function() {
+                var targetId = $(this).data('target');
+                var passwordInput = $('#' + targetId);
+                var icon = $(this).find('i');
+                
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+        });
+    </script>
 }

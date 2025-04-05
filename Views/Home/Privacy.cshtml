@@ -1,6 +1,225 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<style>
+    .privacy-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    .privacy-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .privacy-title {
+        color: #0d47a1;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .privacy-date {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .privacy-section {
+        margin-bottom: 2.5rem;
+    }
+    
+    .privacy-section h2 {
+        color: #1a73e8;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e8f0fe;
+    }
+    
+    .privacy-section h3 {
+        color: #0d47a1;
+        font-weight: 600;
+        margin: 1.5rem 0 1rem 0;
+    }
+    
+    .privacy-section p, .privacy-section li {
+        color: #333;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    .privacy-section ul, .privacy-section ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+    
+    .privacy-section li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .contact-card {
+        background-color: #f5f9ff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border-left: 4px solid #1a73e8;
+    }
+    
+    .contact-card h3 {
+        margin-top: 0;
+    }
+    
+    .contact-info {
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0;
+    }
+    
+    .contact-info li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+    
+    .contact-info i {
+        color: #1a73e8;
+        margin-right: 12px;
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
+    }
+</style>
+
+<div class="privacy-container">
+    <div class="privacy-header">
+        <h1 class="privacy-title">@ViewData["Title"]</h1>
+        <p class="privacy-date">Last Updated: April 6, 2025</p>
+        <p>At SmileCraft, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy outlines how we collect, use, disclose, and safeguard your data when you use our dental management system.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>1. Information We Collect</h2>
+        <p>We collect several types of information to provide and improve our dental management services:</p>
+        
+        <h3>1.1 Personal Information</h3>
+        <ul>
+            <li><strong>Contact Information:</strong> Name, email address, phone number, and physical address.</li>
+            <li><strong>Identity Information:</strong> Date of birth, gender, and government-issued identification (when required).</li>
+            <li><strong>Health Information:</strong> Dental history, treatment records, medications, allergies, and other health-related information necessary for your dental care.</li>
+            <li><strong>Insurance Information:</strong> Insurance provider details, policy numbers, and coverage information.</li>
+            <li><strong>Emergency Contact Information:</strong> Name and contact details of your emergency contacts.</li>
+        </ul>
+        
+        <h3>1.2 Technical Information</h3>
+        <ul>
+            <li><strong>Usage Data:</strong> Information on how you interact with our platform, including pages visited, features used, and time spent.</li>
+            <li><strong>Device Information:</strong> Browser type, IP address, device type, operating system, and other technical identifiers.</li>
+            <li><strong>Cookies and Similar Technologies:</strong> Data collected through cookies, web beacons, and similar technologies that help enhance your experience.</li>
+        </ul>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>2. How We Use Your Information</h2>
+        <p>We use the collected information for various purposes, including:</p>
+        
+        <ul>
+            <li><strong>Providing Services:</strong> To create and manage your account, schedule appointments, process payments, and deliver dental care services.</li>
+            <li><strong>Communication:</strong> To send appointment reminders, treatment follow-ups, billing information, and respond to your inquiries.</li>
+            <li><strong>Improving Our Services:</strong> To analyze usage patterns, identify trends, and enhance the functionality and user experience of our platform.</li>
+            <li><strong>Administrative Purposes:</strong> For internal operations, including troubleshooting, data analysis, testing, and research.</li>
+            <li><strong>Legal Compliance:</strong> To comply with applicable laws, regulations, and professional standards in the healthcare industry.</li>
+            <li><strong>Security:</strong> To protect our platform, users, and the public from harm, fraud, or illegal activities.</li>
+        </ul>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>3. Information Sharing and Disclosure</h2>
+        <p>We may share your information with:</p>
+        
+        <ul>
+            <li><strong>Healthcare Providers:</strong> Dentists, specialists, and other healthcare professionals involved in your treatment.</li>
+            <li><strong>Service Providers:</strong> Third-party companies that help us operate our platform, process payments, or provide other essential services.</li>
+            <li><strong>Insurance Companies:</strong> When necessary to process claims and verify coverage.</li>
+            <li><strong>Legal Authorities:</strong> When required by law, court order, or government regulation, or to protect our rights, property, or safety.</li>
+        </ul>
+        
+        <p>We do not sell, rent, or lease your personal information to third parties for their marketing purposes without your explicit consent.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>4. Data Security</h2>
+        <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:</p>
+        
+        <ul>
+            <li>Encryption of sensitive data both in transit and at rest</li>
+            <li>Regular security assessments and vulnerability testing</li>
+            <li>Access controls and authentication measures</li>
+            <li>Staff training on data protection and privacy practices</li>
+            <li>Physical and electronic safeguards for our systems</li>
+        </ul>
+        
+        <p>Despite our efforts, no method of transmission over the Internet or electronic storage is 100% secure. We cannot guarantee absolute security of your data.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>5. Your Rights and Choices</h2>
+        <p>Depending on your location, you may have certain rights regarding your personal information:</p>
+        
+        <ul>
+            <li><strong>Access:</strong> Request a copy of the personal information we hold about you.</li>
+            <li><strong>Correction:</strong> Request correction of inaccurate or incomplete information.</li>
+            <li><strong>Deletion:</strong> Request deletion of your personal information in certain circumstances.</li>
+            <li><strong>Restriction:</strong> Request restriction of processing of your personal information.</li>
+            <li><strong>Data Portability:</strong> Request transfer of your personal information to another service provider.</li>
+            <li><strong>Objection:</strong> Object to processing of your personal information in certain circumstances.</li>
+            <li><strong>Withdraw Consent:</strong> Withdraw consent where we rely on consent to process your information.</li>
+        </ul>
+        
+        <p>To exercise these rights, please contact us using the information provided in the "Contact Us" section.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>6. Retention of Information</h2>
+        <p>We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law. The criteria used to determine our retention periods include:</p>
+        
+        <ul>
+            <li>The duration of our ongoing relationship with you</li>
+            <li>Legal obligations to retain data for certain periods</li>
+            <li>Statutes of limitations under applicable law</li>
+            <li>Ongoing or potential disputes or legal claims</li>
+            <li>Guidelines from dental and healthcare regulatory bodies</li>
+        </ul>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>7. Children's Privacy</h2>
+        <p>Our services are not intended for children under the age of 13 without parental consent. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, please contact us, and we will take steps to delete such information.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>8. Changes to This Privacy Policy</h2>
+        <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. We encourage you to review this Privacy Policy periodically.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>9. Contact Us</h2>
+        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:</p>
+        
+        <div class="contact-card">
+            <h3>SmileCraft Dental Management</h3>
+            <ul class="contact-info">
+                <li><i class="bi bi-geo-alt"></i> 123 Jalan Besar, Sri Petaling</li>
+                <li><i class="bi bi-telephone"></i> +60 14-3281137</li>
+                <li><i class="bi bi-envelope"></i> contact@smilecraft.com</li>
+                <li><i class="bi bi-clock"></i> Mon-Fri: 9:00 AM - 6:00 PM</li>
+            </ul>
+            
+            <p>We will respond to your inquiry as soon as possible and within the timeframe required by applicable law.</p>
+        </div>
+    </div>
+</div>
