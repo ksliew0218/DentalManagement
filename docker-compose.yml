@@ -10,5 +10,20 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:80"
       ConnectionStrings__DefaultConnection: "Host=ep-aged-dawn-a1b43ker-pooler.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_asjynoYCvM74;SSL Mode=Require;Trust Server Certificate=True"
+      EmailSettings__Host: "smtp-relay.brevo.com"
+      EmailSettings__Port: "587"
+      EmailSettings__SenderEmail: "ddacsmilecraft@gmail.com"
+      EmailSettings__SenderName: "SmileCraft Dental"
+      EmailSettings__Username: "892368002@smtp-brevo.com"
+      EmailSettings__Password: "N18Pa0Y9UQqD4Zjt"
+      EmailSettings__EnableSsl: "true"
+      DOTNET_TLS_ENABLE_HTTP3: "0"  # In case there are HTTP3 issues
     volumes:
       - ./docker-data/images:/app/wwwroot/images
+      # No need to mount EmailTemplates as a volume since it's built into the image
+    networks:
+      - dental_network
+
+networks:
+  dental_network:
+    driver: bridge

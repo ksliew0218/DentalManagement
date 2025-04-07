@@ -16,6 +16,17 @@ RUN dotnet publish "DentalManagement.csproj" -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app .
+
+# Make sure to copy templates and configuration
+COPY ./EmailTemplates/ /app/EmailTemplates/
+COPY appsettings.json /app/appsettings.json
+COPY appsettings.Development.json /app/appsettings.Development.json
+
+# Copy and set permissions for the startup script
 COPY startup.sh .
 RUN chmod +x startup.sh
+
+# Add bash for debugging
+RUN apt-get update && apt-get install -y bash curl iputils-ping
+
 ENTRYPOINT ["./startup.sh"]
