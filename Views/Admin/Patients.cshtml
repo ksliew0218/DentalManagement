@@ -1,0 +1,163 @@
+@model IEnumerable<DentalManagement.Models.Patient>
+@{
+    ViewData["Title"] = "Manage Patients";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Patients</li>
+        </ol>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1><i class="bi bi-people me-2 text-primary"></i>Patient Management</h1>
+            <p class="text-muted mb-0">View patient records, treatments, and medical history</p>
+        </div>
+        <div class="header-actions">
+            <span class="badge bg-info px-3 py-2">
+                <i class="bi bi-eye me-1"></i> View Only
+            </span>
+        </div>
+    </div>
+
+    <div class="alert alert-info mb-4 fade-in">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Admin mode provides view-only access to patient information. For advanced features like dental chart functionality, please log in as a doctor.
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-list-ul me-2"></i>All Patients
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center p-5">
+                    <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                        <i class="bi bi-people fs-1 text-muted"></i>
+                    </div>
+                    <h5 class="fw-bold">No Patients Found</h5>
+                    <p class="text-muted mb-4">There are no patients registered in the system</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table id="patientsTable" class="table table-hover standard-table">
+                        <thead>
+                            <tr>
+                                <th width="60"></th>
+                                <th>Patient</th>
+                                <th>Contact Info</th>
+                                <th>Gender</th>
+                                <th>Age</th>
+                                <th>Status</th>
+                                <th width="100" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var patient in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center text-white">
+                                            @(patient.FirstName[0])@(patient.LastName[0])
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">@patient.FirstName @patient.LastName</span>
+                                            <small class="text-muted">Since @patient.User?.CreatedAt.ToString("MMM yyyy")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>@(string.IsNullOrEmpty(patient.PhoneNumber) ? "N/A" : patient.PhoneNumber)</span>
+                                            <small class="text-muted">@(patient.User?.Email ?? "N/A")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span>@patient.Gender</span>
+                                    </td>
+                                    <td>
+                                        @{
+                                            int age = DateTime.Today.Year - patient.DateOfBirth.Year;
+                                            if (patient.DateOfBirth.Date > DateTime.Today.AddYears(-age))
+                                            {
+                                                age--;
+                                            }
+                                        }
+                                        <span>@age years</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge bg-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-end">
+                                            <a asp-action="PatientDetails" asp-route-id="@patient.Id" class="btn btn-sm btn-primary btn-action" title="View Patient Details">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#patientsTable').DataTable({
+                "pageLength": 10,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search patients...",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ patients",
+                    "infoEmpty": "Showing 0 to 0 of 0 patients",
+                    "infoFiltered": "(filtered from _MAX_ total patients)"
+                },
+                "order": [[1, "asc"]]
+            });
+            
+            // Add classes to DataTables elements for styling
+            $('.dataTables_filter input').addClass('form-control form-control-sm');
+            $('.dataTables_length select').addClass('form-select form-select-sm');
+        });
+    </script>
+} 

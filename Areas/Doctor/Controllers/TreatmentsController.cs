@@ -47,8 +47,10 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     .Include(dt => dt.TreatmentType)
                     .ToListAsync();
 
-                // Get doctor's name for the view
+                // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                // Add doctor profile picture URL to ViewData
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 return View(doctorTreatments);
             }

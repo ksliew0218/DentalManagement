@@ -4,42 +4,39 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-primary">
-        <i class="bi bi-speedometer2 me-2"></i> Dashboard
-    </h1>
-    <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-2"></i> Create New Treatment
-    </a>
+<div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+        <p class="text-muted mb-0">System overview and quick actions</p>
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
 {
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show mb-4 fade-in" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.ErrorMessage
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<div class="row">
+<!-- Stat Cards Row -->
+<div class="row mb-4">
     <!-- Doctors Card -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card dashboard-card border-0 shadow-sm h-100 bg-gradient-primary text-white">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <div class="card-title text-uppercase mb-1">DOCTORS</div>
-                        <div class="count mb-0">@Model.DoctorCount</div>
+        <div class="card h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="text-uppercase fw-bold mb-0 text-secondary fs-6">DOCTORS</h5>
+                        <h2 class="display-4 fw-bold text-primary mt-2 mb-0">@Model.DoctorCount</h2>
                     </div>
-                    <div class="col-auto">
-                        <i class="bi bi-person-badge icon"></i>
+                    <div class="icon-circle bg-primary bg-opacity-10 p-3 rounded-circle">
+                        <i class="bi bi-person-badge fs-1 text-primary"></i>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 py-3">
-                <a asp-area="" asp-controller="Doctor" asp-action="Index" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                    <span>View Details</span>
-                    <i class="bi bi-arrow-right"></i>
+                <a asp-area="" asp-controller="Doctor" asp-action="Index" class="stretched-link mt-3 d-flex justify-content-between align-items-center text-decoration-none">
+                    <span class="small text-primary">View Details</span>
+                    <i class="bi bi-arrow-right text-primary"></i>
                 </a>
             </div>
         </div>
@@ -47,22 +44,20 @@
 
     <!-- Patients Card -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card dashboard-card border-0 shadow-sm h-100 bg-gradient-success text-white">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <div class="card-title text-uppercase mb-1">PATIENTS</div>
-                        <div class="count mb-0">@Model.PatientCount</div>
+        <div class="card h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="text-uppercase fw-bold mb-0 text-secondary fs-6">PATIENTS</h5>
+                        <h2 class="display-4 fw-bold text-success mt-2 mb-0">@Model.PatientCount</h2>
                     </div>
-                    <div class="col-auto">
-                        <i class="bi bi-people icon"></i>
+                    <div class="icon-circle bg-success bg-opacity-10 p-3 rounded-circle">
+                        <i class="bi bi-people fs-1 text-success"></i>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 py-3">
-                <a href="#" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                    <span>View Details</span>
-                    <i class="bi bi-arrow-right"></i>
+                <a asp-area="" asp-controller="Admin" asp-action="Patients" class="stretched-link mt-3 d-flex justify-content-between align-items-center text-decoration-none">
+                    <span class="small text-success">View Details</span>
+                    <i class="bi bi-arrow-right text-success"></i>
                 </a>
             </div>
         </div>
@@ -70,22 +65,20 @@
 
     <!-- Treatments Card -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card dashboard-card border-0 shadow-sm h-100 bg-gradient-info text-white">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <div class="card-title text-uppercase mb-1">TREATMENTS</div>
-                        <div class="count mb-0">@Model.TreatmentTypeCount</div>
+        <div class="card h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="text-uppercase fw-bold mb-0 text-secondary fs-6">TREATMENTS</h5>
+                        <h2 class="display-4 fw-bold text-info mt-2 mb-0">@Model.TreatmentTypeCount</h2>
                     </div>
-                    <div class="col-auto">
-                        <i class="bi bi-clipboard2-pulse icon"></i>
+                    <div class="icon-circle bg-info bg-opacity-10 p-3 rounded-circle">
+                        <i class="bi bi-clipboard2-pulse fs-1 text-info"></i>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 py-3">
-                <a asp-area="" asp-controller="TreatmentType" asp-action="Index" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                    <span>View Details</span>
-                    <i class="bi bi-arrow-right"></i>
+                <a asp-area="" asp-controller="TreatmentType" asp-action="Index" class="stretched-link mt-3 d-flex justify-content-between align-items-center text-decoration-none">
+                    <span class="small text-info">View Details</span>
+                    <i class="bi bi-arrow-right text-info"></i>
                 </a>
             </div>
         </div>
@@ -93,22 +86,20 @@
 
     <!-- Appointments Card -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card dashboard-card border-0 shadow-sm h-100 bg-gradient-warning text-white">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <div class="card-title text-uppercase mb-1">APPOINTMENTS</div>
-                        <div class="count mb-0">@Model.AppointmentCount</div>
+        <div class="card h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="text-uppercase fw-bold mb-0 text-secondary fs-6">APPOINTMENTS</h5>
+                        <h2 class="display-4 fw-bold text-warning mt-2 mb-0">@Model.AppointmentCount</h2>
                     </div>
-                    <div class="col-auto">
-                        <i class="bi bi-calendar-check icon"></i>
+                    <div class="icon-circle bg-warning bg-opacity-10 p-3 rounded-circle">
+                        <i class="bi bi-check2-square fs-1 text-warning"></i>
                     </div>
                 </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 py-3">
-                <a href="#" class="text-white stretched-link d-flex justify-content-between align-items-center">
-                    <span>View Details</span>
-                    <i class="bi bi-arrow-right"></i>
+                <a asp-area="" asp-controller="Admin" asp-action="Appointments" class="stretched-link mt-3 d-flex justify-content-between align-items-center text-decoration-none">
+                    <span class="small text-warning">View Details</span>
+                    <i class="bi bi-arrow-right text-warning"></i>
                 </a>
             </div>
         </div>
@@ -117,27 +108,43 @@
 
 <div class="row">
     <div class="col-lg-8 mb-4">
-        <div class="card shadow-sm border-0 rounded-3 mb-4">
-            <div class="card-header bg-light py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="bi bi-lightning-charge me-2"></i>Quick Actions
-                </h6>
+        <div class="card border-0 shadow-sm rounded-3 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-lightning-charge text-primary me-2 fs-5"></i>
+                    <h5 class="mb-0 fw-bold">Quick Actions</h5>
+                </div>
             </div>
-            <div class="card-body py-4">
-                <div class="row g-3">
+            <div class="card-body p-4">
+                <div class="row g-4">
                     <div class="col-md-4">
-                        <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center">
-                            <i class="bi bi-plus-circle me-2"></i> Add Treatment
+                        <a asp-area="" asp-controller="TreatmentType" asp-action="Create" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-circle bg-primary bg-opacity-10 mx-auto mb-3 p-3 rounded-circle">
+                                    <i class="bi bi-plus-circle fs-2 text-primary"></i>
+                                </div>
+                                <h6 class="mb-0 text-primary">Add Treatment</h6>
+                            </div>
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a asp-area="" asp-controller="Doctor" asp-action="Create" class="btn btn-success w-100 py-3 d-flex align-items-center justify-content-center">
-                            <i class="bi bi-person-plus me-2"></i> Add Doctor
+                        <a asp-area="" asp-controller="Doctor" asp-action="Create" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-circle bg-success bg-opacity-10 mx-auto mb-3 p-3 rounded-circle">
+                                    <i class="bi bi-person-plus fs-2 text-success"></i>
+                                </div>
+                                <h6 class="mb-0 text-success">Add Doctor</h6>
+                            </div>
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="#" class="btn btn-info w-100 py-3 text-white d-flex align-items-center justify-content-center">
-                            <i class="bi bi-calendar-plus me-2"></i> New Appointment
+                        <a asp-area="Admin" asp-controller="TimeSlot" asp-action="Create" class="card h-100 border-0 shadow-sm text-decoration-none">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-circle bg-info bg-opacity-10 mx-auto mb-3 p-3 rounded-circle">
+                                    <i class="bi bi-calendar-plus fs-2 text-info"></i>
+                                </div>
+                                <h6 class="mb-0 text-info">Add Time Slots</h6>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -146,29 +153,30 @@
     </div>
 
     <div class="col-lg-4 mb-4">
-        <div class="card shadow-sm border-0 rounded-3 mb-4">
-            <div class="card-header bg-light py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="bi bi-info-circle me-2"></i>System Info
-                </h6>
+        <div class="card border-0 shadow-sm rounded-3 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle text-primary me-2 fs-5"></i>
+                    <h5 class="mb-0 fw-bold">System Info</h5>
+                </div>
             </div>
-            <div class="card-body py-3">
+            <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 py-2">
-                        <span class="text-muted">Application Version</span>
-                        <span class="badge bg-light text-dark">v1.0.0</span>
+                    <div class="list-group-item px-4 d-flex justify-content-between align-items-center border-0 py-3">
+                        <span class="text-secondary">Application Version</span>
+                        <span class="badge rounded-pill bg-light text-dark">v1.0.0</span>
                     </div>
-                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 py-2">
-                        <span class="text-muted">Database Status</span>
-                        <span class="badge bg-success">Connected</span>
+                    <div class="list-group-item px-4 d-flex justify-content-between align-items-center py-3">
+                        <span class="text-secondary">Database Status</span>
+                        <span class="status-badge status-badge-sm status-confirmed">Connected</span>
                     </div>
-                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 py-2">
-                        <span class="text-muted">Last Backup</span>
-                        <span class="badge bg-light text-dark">@DateTime.Now.AddDays(-1).ToString("MMM dd, yyyy")</span>
+                    <div class="list-group-item px-4 d-flex justify-content-between align-items-center py-3">
+                        <span class="text-secondary">Last Backup</span>
+                        <span class="badge rounded-pill bg-light text-dark">@DateTime.Now.AddDays(-1).ToString("MMM dd, yyyy")</span>
                     </div>
-                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 py-2">
-                        <span class="text-muted">Server Time</span>
-                        <span class="badge bg-light text-dark">@DateTime.Now.ToString("HH:mm:ss")</span>
+                    <div class="list-group-item px-4 d-flex justify-content-between align-items-center py-3 border-bottom-0">
+                        <span class="text-secondary">Server Time</span>
+                        <span class="badge rounded-pill bg-light text-dark">@DateTime.Now.ToString("HH:mm:ss")</span>
                     </div>
                 </div>
             </div>
@@ -177,33 +185,24 @@
 </div>
 
 @section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert-dismissible').alert('close');
+        }, 5000);
+    </script>
+    
     <style>
-        .dashboard-card .icon {
-            font-size: 2.8rem;
-            opacity: 0.7;
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .dashboard-card .count {
+        .display-4 {
             font-size: 2.5rem;
-            font-weight: 700;
-        }
-        
-        .dashboard-card .card-title {
-            font-size: 0.9rem;
-            letter-spacing: 0.05rem;
-        }
-        
-        .dashboard-card .card-footer {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-        }
-        
-        .card {
-            border-radius: 8px;
         }
     </style>
 } 

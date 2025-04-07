@@ -56,6 +56,8 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
                 // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                // Add doctor profile picture URL to ViewData
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
                 
                 // Get leave balances for the current year
                 var currentYear = DateTime.UtcNow.Year;

@@ -44,8 +44,9 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return RedirectToAction("AccessDenied", "Home", new { area = "" });
                 }
 
-                // Set doctor name in ViewData for the layout
+                // Set doctor name and profile picture in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 // Get time slots for this doctor
                 var timeSlots = await _context.TimeSlots
@@ -83,8 +84,9 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return RedirectToAction("AccessDenied", "Home", new { area = "" });
                 }
 
-                // Set doctor name in ViewData for the layout
+                // Set doctor name and profile picture in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 // Get time slots for this doctor
                 var timeSlots = await _context.TimeSlots

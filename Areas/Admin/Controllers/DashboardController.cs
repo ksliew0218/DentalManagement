@@ -31,8 +31,7 @@ namespace DentalManagement.Areas.Admin.Controllers
                     DoctorCount = _context.Doctors.Count(d => !d.IsDeleted),
                     PatientCount = _context.Patients.Count(),
                     TreatmentTypeCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count(),
-                    AppointmentCount = 0, // Update this if you implement appointments
-                    TotalRevenue = 0 // Update this if you implement revenue tracking
+                    AppointmentCount = _context.Appointments.Count(),
                 };
 
                 return View(model);

@@ -1,0 +1,265 @@
+@{
+    ViewData["Title"] = "Status Styles Guide";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Status Styles Guide</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="title">
+                <i class="bi bi-palette me-2 text-primary"></i>Status Styles Guide
+            </h4>
+            <p class="subtitle">Reference guide for consistent status styling across the application</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-info-circle me-2"></i>About Status Styles
+                </h6>
+            </div>
+            <div class="card-body">
+                <p>This guide demonstrates all status badge styles available in the application. Use these consistent styles for appointment statuses, payment statuses, and other status indicators throughout the application.</p>
+                <p>Include the stylesheet by adding: <code>&lt;link rel="stylesheet" href="~/css/status-styles.css" /&gt;</code></p>
+                <p>The main layout files already include this stylesheet.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointment Status Badges -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-calendar-check me-2"></i>Appointment Status Badges
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">Standard Size</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="status-badge status-confirmed status-badge-with-icon">
+                            <i class="bi bi-calendar-check-fill"></i> Confirmed
+                        </span>
+                        <span class="status-badge status-completed status-badge-with-icon">
+                            <i class="bi bi-check-circle-fill"></i> Completed
+                        </span>
+                        <span class="status-badge status-pending status-badge-with-icon">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </span>
+                        <span class="status-badge status-cancelled status-badge-with-icon">
+                            <i class="bi bi-x-circle-fill"></i> Cancelled
+                        </span>
+                        <span class="status-badge status-rescheduled status-badge-with-icon">
+                            <i class="bi bi-arrow-repeat"></i> Rescheduled
+                        </span>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Small Size</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="status-badge status-badge-sm status-confirmed status-badge-with-icon">
+                            <i class="bi bi-calendar-check-fill"></i> Confirmed
+                        </span>
+                        <span class="status-badge status-badge-sm status-completed status-badge-with-icon">
+                            <i class="bi bi-check-circle-fill"></i> Completed
+                        </span>
+                        <span class="status-badge status-badge-sm status-pending status-badge-with-icon">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </span>
+                        <span class="status-badge status-badge-sm status-cancelled status-badge-with-icon">
+                            <i class="bi bi-x-circle-fill"></i> Cancelled
+                        </span>
+                        <span class="status-badge status-badge-sm status-rescheduled status-badge-with-icon">
+                            <i class="bi bi-arrow-repeat"></i> Rescheduled
+                        </span>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Large Size</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="status-badge status-badge-lg status-confirmed status-badge-with-icon">
+                            <i class="bi bi-calendar-check-fill"></i> Confirmed
+                        </span>
+                        <span class="status-badge status-badge-lg status-completed status-badge-with-icon">
+                            <i class="bi bi-check-circle-fill"></i> Completed
+                        </span>
+                        <span class="status-badge status-badge-lg status-pending status-badge-with-icon">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </span>
+                        <span class="status-badge status-badge-lg status-cancelled status-badge-with-icon">
+                            <i class="bi bi-x-circle-fill"></i> Cancelled
+                        </span>
+                        <span class="status-badge status-badge-lg status-rescheduled status-badge-with-icon">
+                            <i class="bi bi-arrow-repeat"></i> Rescheduled
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="code-block bg-light p-3 rounded">
+                    <h6 class="fw-bold">Usage Example</h6>
+                    <pre><code>&lt;span class="status-badge status-confirmed status-badge-with-icon"&gt;
+    &lt;i class="bi bi-calendar-check-fill"&gt;&lt;/i&gt; Confirmed
+&lt;/span&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Status Badges -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-credit-card me-2"></i>Payment Status Badges
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">Standard Size</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="status-badge payment-paid status-badge-with-icon">
+                            <i class="bi bi-check-circle-fill"></i> Paid
+                        </span>
+                        <span class="status-badge payment-partially-paid status-badge-with-icon">
+                            <i class="bi bi-credit-card-fill"></i> Partially Paid
+                        </span>
+                        <span class="status-badge payment-pending status-badge-with-icon">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </span>
+                        <span class="status-badge payment-failed status-badge-with-icon">
+                            <i class="bi bi-x-circle-fill"></i> Failed
+                        </span>
+                        <span class="status-badge payment-refunded status-badge-with-icon">
+                            <i class="bi bi-arrow-return-left"></i> Refunded
+                        </span>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Small Size</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="status-badge status-badge-sm payment-paid status-badge-with-icon">
+                            <i class="bi bi-check-circle-fill"></i> Paid
+                        </span>
+                        <span class="status-badge status-badge-sm payment-partially-paid status-badge-with-icon">
+                            <i class="bi bi-credit-card-fill"></i> Partially Paid
+                        </span>
+                        <span class="status-badge status-badge-sm payment-pending status-badge-with-icon">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </span>
+                        <span class="status-badge status-badge-sm payment-failed status-badge-with-icon">
+                            <i class="bi bi-x-circle-fill"></i> Failed
+                        </span>
+                        <span class="status-badge status-badge-sm payment-refunded status-badge-with-icon">
+                            <i class="bi bi-arrow-return-left"></i> Refunded
+                        </span>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Large Size</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="status-badge status-badge-lg payment-paid status-badge-with-icon">
+                            <i class="bi bi-check-circle-fill"></i> Paid
+                        </span>
+                        <span class="status-badge status-badge-lg payment-partially-paid status-badge-with-icon">
+                            <i class="bi bi-credit-card-fill"></i> Partially Paid
+                        </span>
+                        <span class="status-badge status-badge-lg payment-pending status-badge-with-icon">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </span>
+                        <span class="status-badge status-badge-lg payment-failed status-badge-with-icon">
+                            <i class="bi bi-x-circle-fill"></i> Failed
+                        </span>
+                        <span class="status-badge status-badge-lg payment-refunded status-badge-with-icon">
+                            <i class="bi bi-arrow-return-left"></i> Refunded
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="code-block bg-light p-3 rounded">
+                    <h6 class="fw-bold">Usage Example</h6>
+                    <pre><code>&lt;span class="status-badge payment-paid status-badge-with-icon"&gt;
+    &lt;i class="bi bi-check-circle-fill"&gt;&lt;/i&gt; Paid
+&lt;/span&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Receipt Status Styles -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-receipt me-2"></i>Receipt Status Styles
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <p>These styles are specifically designed for use in printed receipts and reports.</p>
+                    <div class="p-4 border rounded mb-3">
+                        <h6 class="fw-bold mb-3">Receipt Status Examples</h6>
+                        <div class="mb-3">
+                            <span class="receipt-status-paid">Paid</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="receipt-status-partial">Partially Paid</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="receipt-status-pending">Pending</span>
+                        </div>
+                        <div>
+                            <span class="receipt-status-failed">Failed</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block bg-light p-3 rounded">
+                    <h6 class="fw-bold">Usage Example</h6>
+                    <pre><code>&lt;span class="receipt-status-paid"&gt;Paid&lt;/span&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Animated Status Badges -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-stars me-2"></i>Animated Status Badges
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <p>Add the <code>animated</code> class to create attention-grabbing pulse animation.</p>
+                    <div class="p-4 border rounded mb-3">
+                        <h6 class="fw-bold mb-3">Animated Examples</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="status-badge status-confirmed status-badge-with-icon animated">
+                                <i class="bi bi-calendar-check-fill"></i> Confirmed
+                            </span>
+                            <span class="status-badge payment-paid status-badge-with-icon animated">
+                                <i class="bi bi-check-circle-fill"></i> Paid
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="code-block bg-light p-3 rounded">
+                    <h6 class="fw-bold">Usage Example</h6>
+                    <pre><code>&lt;span class="status-badge status-confirmed status-badge-with-icon animated"&gt;
+    &lt;i class="bi bi-calendar-check-fill"&gt;&lt;/i&gt; Confirmed
+&lt;/span&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

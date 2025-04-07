@@ -1,0 +1,424 @@
+@model List<DentalManagement.Models.Appointment>
+@{
+    ViewData["Title"] = "All Appointments";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Appointments</li>
+        </ol>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1><i class="bi bi-calendar3 me-2 text-primary"></i>All Appointments</h1>
+            <p class="text-muted mb-0">View appointments across all patients and doctors</p>
+        </div>
+        <div class="header-actions">
+            <button type="button" id="toggleFiltersBtn" class="btn btn-outline-secondary">
+                <i class="bi bi-funnel me-1"></i>Toggle Filters
+            </button>
+            <span class="badge bg-info px-3 py-2">
+                <i class="bi bi-eye me-1"></i> View Only
+            </span>
+        </div>
+    </div>
+
+    <div class="alert alert-info mb-4 fade-in">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Admin mode provides view-only access to patient and appointment information. For dental chart functionality, please log in as a doctor.
+    </div>
+
+    <!-- Filters Card -->
+    <div class="row mb-4" id="filterSection">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-funnel me-2"></i>Filter Appointments
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="statusFilter" class="form-label">Appointment Status</label>
+                            <select id="statusFilter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="paymentStatusFilter" class="form-label">Payment Status</label>
+                            <select id="paymentStatusFilter" class="form-select">
+                                <option value="">All Payment Statuses</option>
+                                <option value="Paid">Paid</option>
+                                <option value="PartiallyPaid">Partially Paid</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Failed">Failed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="patientFilter" class="form-label">Patient</label>
+                            <select id="patientFilter" class="form-select">
+                                <option value="">All Patients</option>
+                                <!-- Options populated via JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="doctorFilter" class="form-label">Doctor</label>
+                            <select id="doctorFilter" class="form-select">
+                                <option value="">All Doctors</option>
+                                <!-- Options populated via JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="treatmentFilter" class="form-label">Treatment Type</label>
+                            <select id="treatmentFilter" class="form-select">
+                                <option value="">All Treatments</option>
+                                <!-- Options populated via JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="dateRangeFilter" class="form-label">Date Range</label>
+                            <div class="input-group">
+                                <input type="date" id="startDateFilter" class="form-control" placeholder="Start Date">
+                                <span class="input-group-text">to</span>
+                                <input type="date" id="endDateFilter" class="form-control" placeholder="End Date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 mb-3 d-flex">
+                            <div class="d-grid gap-2 d-md-flex ms-auto">
+                                <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Clear Filters
+                                </button>
+                                <button type="button" id="applyFiltersBtn" class="btn btn-primary">
+                                    <i class="bi bi-funnel-fill me-2"></i>Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-calendar-check me-2"></i>Appointments
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover standard-table" id="appointmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th class="d-none">ID</th>
+                                        <th>Patient</th>
+                                        <th>Doctor</th>
+                                        <th>Treatment</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Payment</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var appointment in Model)
+                                    {
+                                        <tr>
+                                            <td class="d-none">@appointment.Id</td>
+                                            <td>
+                                                <a asp-action="PatientDetails" asp-route-id="@appointment.PatientId" class="text-decoration-none">
+                                                    @appointment.Patient?.FirstName @appointment.Patient?.LastName
+                                                </a>
+                                            </td>
+                                            <td>Dr. @appointment.Doctor?.FirstName @appointment.Doctor?.LastName</td>
+                                            <td>@appointment.TreatmentType?.Name</td>
+                                            <td>@appointment.AppointmentDate.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                @{
+                                                    var time = appointment.AppointmentTime;
+                                                    var hours = time.Hours;
+                                                    var minutes = time.Minutes;
+                                                    var amPm = hours >= 12 ? "PM" : "AM";
+                                                    hours = hours % 12;
+                                                    if (hours == 0) hours = 12;
+                                                    <text>@hours:@minutes.ToString("D2") @amPm</text>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = appointment.Status switch
+                                                    {
+                                                        "Completed" => "status-badge bg-success",
+                                                        "Cancelled" => "status-badge bg-danger",
+                                                        "Confirmed" => "status-badge bg-primary",
+                                                        "Scheduled" => "status-badge bg-info",
+                                                        "Pending" => "status-badge bg-warning text-dark",
+                                                        _ => "status-badge bg-secondary"
+                                                    };
+                                                }
+                                                <span class="@statusClass">@appointment.Status</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var paymentStatusClass = appointment.PaymentStatus switch
+                                                    {
+                                                        PaymentStatus.Paid => "status-badge bg-success",
+                                                        PaymentStatus.PartiallyPaid => "status-badge bg-warning text-dark",
+                                                        PaymentStatus.Pending => "status-badge bg-secondary",
+                                                        PaymentStatus.Failed => "status-badge bg-danger",
+                                                        PaymentStatus.Cancelled => "status-badge bg-danger",
+                                                        _ => "status-badge bg-secondary"
+                                                    };
+                                                }
+                                                <span class="@paymentStatusClass">@appointment.PaymentStatus</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a asp-action="PatientAppointmentDetails" asp-route-id="@appointment.Id" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                    else
+                    {
+                        <div class="text-center p-5">
+                            <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                                <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                            </div>
+                            <h5 class="fw-bold">No Appointments Found</h5>
+                            <p class="text-muted mb-4">There are no appointments matching your filters</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable with custom filter options
+            var appointmentsTable = $('#appointmentsTable').DataTable({
+                order: [[4, 'desc'], [5, 'asc']], // Sort by date desc, then time asc
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search appointments..."
+                },
+                lengthMenu: [10, 25, 50, 100],
+                pageLength: 25,
+                // Don't automatically search - let our custom filters do the work
+                search: {
+                    return: true
+                },
+                columnDefs: [
+                    { targets: 0, visible: false } // Hide ID column
+                ]
+            });
+            
+            // Initialize filter dropdowns
+            initializeFilterDropdowns();
+            
+            // Add custom filtering function
+            setupCustomFiltering();
+            
+            // Setup event handlers for filter buttons
+            setupFilterButtons();
+            
+            // Add styles to DataTables elements
+            styleDataTable();
+            
+            // Setup filter toggle functionality
+            setupFilterToggle();
+            
+            // Function to initialize filter dropdowns
+            function initializeFilterDropdowns() {
+                // Initialize patients dropdown
+                populateDropdown('patientFilter', 1);
+                
+                // Initialize doctors dropdown
+                populateDropdown('doctorFilter', 2);
+                
+                // Initialize treatments dropdown
+                populateDropdown('treatmentFilter', 3);
+            }
+            
+            // Function to populate dropdown with unique values from a column
+            function populateDropdown(dropdownId, columnIndex) {
+                var values = [];
+                $('#appointmentsTable tbody tr').each(function() {
+                    var value = $(this).find(`td:nth-child(${columnIndex})`).text().trim();
+                    if (values.indexOf(value) === -1) {
+                        values.push(value);
+                    }
+                });
+                values.sort();
+                values.forEach(function(value) {
+                    $(`#${dropdownId}`).append($('<option>', {
+                        value: value,
+                        text: value
+                    }));
+                });
+            }
+            
+            // Function to setup custom filtering
+            function setupCustomFiltering() {
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                        // Skip if not our table
+                        if (settings.nTable.id !== 'appointmentsTable') return true;
+                        
+                        // Get filter values
+                        var statusFilter = $('#statusFilter').val();
+                        var paymentStatusFilter = $('#paymentStatusFilter').val();
+                        var patientFilter = $('#patientFilter').val();
+                        var doctorFilter = $('#doctorFilter').val();
+                        var treatmentFilter = $('#treatmentFilter').val();
+                        var startDateFilter = $('#startDateFilter').val();
+                        var endDateFilter = $('#endDateFilter').val();
+                        
+                        // Get row data
+                        var patient = data[1].trim();
+                        var doctor = data[2].trim();
+                        var treatment = data[3].trim();
+                        var date = data[4].trim();
+                        var status = data[6];
+                        var paymentStatus = data[7];
+                        
+                        // Extract status text from HTML (badge)
+                        if (status.includes('<span class="badge')) {
+                            var statusMatch = status.match(/>([^<]+)</);
+                            if (statusMatch && statusMatch[1]) {
+                                status = statusMatch[1].trim();
+                            }
+                        } else {
+                            status = status.trim();
+                        }
+                        
+                        // Extract payment status text from HTML (badge)
+                        if (paymentStatus.includes('<span class="badge')) {
+                            var paymentStatusMatch = paymentStatus.match(/>([^<]+)</);
+                            if (paymentStatusMatch && paymentStatusMatch[1]) {
+                                paymentStatus = paymentStatusMatch[1].trim();
+                            }
+                        } else {
+                            paymentStatus = paymentStatus.trim();
+                        }
+                        
+                        // Apply filters
+                        var passesStatus = !statusFilter || status === statusFilter;
+                        var passesPaymentStatus = !paymentStatusFilter || paymentStatus === paymentStatusFilter;
+                        var passesPatient = !patientFilter || patient.includes(patientFilter);
+                        var passesDoctor = !doctorFilter || doctor === doctorFilter;
+                        var passesTreatment = !treatmentFilter || treatment === treatmentFilter;
+                        
+                        // Date range filter
+                        var passesDate = true;
+                        if (startDateFilter || endDateFilter) {
+                            // Convert display date to YYYY-MM-DD format for comparison
+                            var dateArr = date.split(',')[0].split(' ');
+                            var month = {
+                                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                                'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                            }[dateArr[0]];
+                            var day = dateArr[1].padStart(2, '0');
+                            var year = dateArr[2];
+                            var rowDate = year + '-' + month + '-' + day;
+                            
+                            if (startDateFilter && endDateFilter) {
+                                // Both start and end dates are specified
+                                passesDate = rowDate >= startDateFilter && rowDate <= endDateFilter;
+                            } else if (startDateFilter) {
+                                // Only start date is specified
+                                passesDate = rowDate >= startDateFilter;
+                            } else if (endDateFilter) {
+                                // Only end date is specified
+                                passesDate = rowDate <= endDateFilter;
+                            }
+                        }
+                        
+                        return passesStatus && passesPaymentStatus && passesPatient && passesDoctor && passesTreatment && passesDate;
+                    }
+                );
+            }
+            
+            // Function to setup filter buttons
+            function setupFilterButtons() {
+                // Apply filters button click
+                $('#applyFiltersBtn').on('click', function() {
+                    appointmentsTable.draw();
+                });
+                
+                // Clear filters button click
+                $('#clearFiltersBtn').on('click', function() {
+                    $('#statusFilter, #paymentStatusFilter, #patientFilter, #doctorFilter, #treatmentFilter').val('');
+                    $('#startDateFilter, #endDateFilter').val('');
+                    appointmentsTable.draw();
+                });
+            }
+            
+            // Function to setup filter toggle
+            function setupFilterToggle() {
+                $('#toggleFiltersBtn').on('click', function() {
+                    $('#filterSection').slideToggle(300, function() {
+                        var isVisible = $(this).is(':visible');
+                        $('#toggleFiltersBtn').html(
+                            isVisible ? 
+                            '<i class="bi bi-funnel-fill me-1"></i>Hide Filters' : 
+                            '<i class="bi bi-funnel me-1"></i>Show Filters'
+                        );
+                    });
+                });
+            }
+            
+            // Function to style DataTable elements
+            function styleDataTable() {
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+            }
+        });
+    </script>
+} 

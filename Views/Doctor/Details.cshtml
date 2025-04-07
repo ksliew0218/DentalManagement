@@ -2,65 +2,187 @@
 
 @{
     ViewData["Title"] = "Doctor Details";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white text-center">
-            <h2 class="mb-0">Doctor Details</h2>
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Doctors</a></li>
+            <li class="breadcrumb-item active">Details</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-person-badge me-2 text-primary"></i>Doctor Details</h1>
+            <p class="text-muted mb-0">View detailed information for this doctor</p>
+        </div>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-info-circle me-2"></i>Doctor Information
+                </h6>
+                <span class="badge @(Model.Status == StatusType.Active ? "bg-success" : "bg-danger")">
+                    @Model.Status
+                </span>
+            </div>
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-4 text-center">
+                <div class="col-md-4 text-center mb-4">
                     <img src="@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "/Images/default-profile.png" : Model.ProfilePictureUrl)" 
                          alt="Doctor Image" class="img-fluid rounded-circle shadow" style="width: 180px; height: 180px; object-fit: cover;" />
+                    
+                    <div class="mt-3">
+                        <h4 class="mb-1">Dr. @Model.FirstName @Model.LastName</h4>
+                        <p class="text-primary mb-0">@Model.Specialty</p>
+                    </div>
                 </div>
                 <div class="col-md-8">
-                    <table class="table table-borderless">
-                        <tbody>
-                            <tr>
-                                <th class="text-muted">Name:</th>
-                                <td>@Model.FirstName @Model.LastName</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Email:</th>
-                                <td>@Model.User.Email</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Gender:</th>
-                                <td>@Model.Gender</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Phone Number:</th>
-                                <td>@Model.PhoneNumber</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Specialty:</th>
-                                <td>@Model.Specialty</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Qualifications:</th>
-                                <td>@Model.Qualifications</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Experience (Years):</th>
-                                <td>@Model.ExperienceYears</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Status:</th>
-                                <td>
-                                    <span class="badge @(Model.Status == StatusType.Active ? "bg-success" : "bg-danger")">
-                                        @Model.Status
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0"><i class="bi bi-person me-2"></i>Personal Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <span class="text-muted fw-bold">Email:</span>
+                                        <div>@Model.User.Email</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted fw-bold">Gender:</span>
+                                        <div>@Model.Gender</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted fw-bold">Phone Number:</span>
+                                        <div>@Model.PhoneNumber</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0"><i class="bi bi-award me-2"></i>Professional Details</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <span class="text-muted fw-bold">Qualifications:</span>
+                                        <div>@Model.Qualifications</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted fw-bold">Experience:</span>
+                                        <div>@Model.ExperienceYears years</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted fw-bold">Status:</span>
+                                        <div>
+                                            <span class="badge @(Model.Status == StatusType.Active ? "bg-success" : "bg-danger")">
+                                                @Model.Status
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="card-footer text-end">
-            <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+    </div>
+
+    <!-- Assigned Treatments Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>Assigned Treatments
+                </h6>
+                <a asp-controller="DoctorTreatment" asp-action="ManageAssignments" asp-route-doctorId="@Model.Id" class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil-square me-1"></i>Manage Treatments
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.DoctorTreatments.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-clipboard-x text-muted" style="font-size: 2rem;"></i>
+                    <p class="mt-3 mb-0">No treatments assigned to this doctor</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Treatment Name</th>
+                                <th>Duration</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var treatment in Model.DoctorTreatments)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-controller="TreatmentType" asp-action="Details" asp-route-id="@treatment.TreatmentTypeId" class="text-decoration-none">
+                                            @treatment.TreatmentType.Name
+                                        </a>
+                                    </td>
+                                    <td>@treatment.TreatmentType.Duration minutes</td>
+                                    <td>RM @treatment.TreatmentType.Price.ToString("F2")</td>
+                                    <td>
+                                        <span class="badge @(treatment.TreatmentType.IsActive ? "bg-success" : "bg-secondary")">
+                                            @(treatment.TreatmentType.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-calendar-check me-2"></i>Upcoming Appointments
+                </h6>
+                <span class="badge bg-secondary">Coming Soon</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="text-center py-4">
+                <i class="bi bi-calendar-date text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Appointment Schedule</h5>
+                <p class="text-muted mb-0">
+                    This section will show upcoming appointments for this doctor.
+                    <br>This feature is coming soon!
+                </p>
+            </div>
         </div>
     </div>
 </div>

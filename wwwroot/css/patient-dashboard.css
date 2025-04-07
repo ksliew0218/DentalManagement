@@ -38,6 +38,7 @@ body {
   border-right: 1px solid #edf2f9;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar-scroll-area {
@@ -59,6 +60,22 @@ body {
 .sidebar-scroll-area::-webkit-scrollbar-thumb {
   background: #e0e0e0;
   border-radius: 4px;
+}
+
+/* Fade in animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Header Section */
@@ -201,6 +218,12 @@ body {
 .nav-menu li form .logout.active {
   background: var(--active-item-bg);
   color: var(--primary-color);
+}
+
+.nav-menu li a:hover {
+  background-color: var(--hover-item-bg);
+  color: var(--active-item-color);
+  text-decoration: none;
 }
 
 .nav-menu li form .logout {

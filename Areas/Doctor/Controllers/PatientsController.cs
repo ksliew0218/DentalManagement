@@ -47,6 +47,8 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
                 // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                // Add doctor profile picture URL to ViewData
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 // Get all appointments for this doctor with their associated patients
                 var patientsQuery = await _context.Appointments
@@ -92,6 +94,8 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
                 // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                // Add doctor profile picture URL to ViewData
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 // Check if the patient exists and has had appointments with this doctor
                 var patient = await _context.Patients

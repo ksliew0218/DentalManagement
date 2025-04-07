@@ -2,14 +2,25 @@
 
 @{
     ViewData["Title"] = "Treatment Details";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2 mb-0">
-            <i class="bi bi-clipboard2-pulse text-primary me-2"></i>
-            Treatment Details
-        </h1>
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Treatment Types</a></li>
+            <li class="breadcrumb-item active">Details</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-clipboard2-pulse me-2 text-primary"></i>Treatment Details</h1>
+            <p class="text-muted mb-0">View detailed information for this treatment</p>
+        </div>
         <div>
             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
                 <i class="bi bi-pencil"></i> Edit
@@ -23,10 +34,12 @@
     <div class="row">
         <!-- Treatment Information Card -->
         <div class="col-lg-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Treatment Information</h5>
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="bi bi-info-circle me-2"></i>Treatment Information
+                        </h6>
                         <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
                             @(Model.IsActive ? "Active" : "Inactive")
                         </span>
@@ -109,10 +122,12 @@
 
         <!-- Assigned Doctors Card -->
         <div class="col-lg-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Assigned Doctors</h5>
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="bi bi-people me-2"></i>Assigned Doctors
+                        </h6>
                         <div>
                             <a asp-controller="DoctorTreatment" asp-action="ManageAssignments" asp-route-id="@Model.Id" class="btn btn-sm btn-primary">
                                 <i class="bi bi-pencil-square"></i> Manage
@@ -163,25 +178,40 @@
     </div>
 
     <!-- Treatment History Card (Placeholder for future implementation) -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Treatment History</h5>
-                <span class="badge bg-secondary">Coming Soon</span>
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clock-history me-2"></i>Treatment History
+                </h6>
+                @{
+                    var historyData = ViewData["TreatmentHistory"] as List<DentalManagement.ViewModels.TreatmentHistoryViewModel>;
+                    var hasHistory = historyData != null && historyData.Any();
+                }
+                @if (hasHistory)
+                {
+                    <span class="badge bg-primary">@historyData.Count Records</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No Records</span>
+                }
             </div>
         </div>
         <div class="card-body">
-            <div class="text-center py-4">
-                <i class="bi bi-clock-history text-muted" style="font-size: 3rem;"></i>
-                <h5 class="mt-3">Patient Treatment History</h5>
-                <p class="text-muted mb-0">
-                    This section will show a history of patients who have received this treatment.
-                    <br>This feature is coming soon!
-                </p>
-            </div>
-            
-            <!-- Placeholder for future implementation -->
-            <div class="mt-4" style="opacity: 0.5;">
+            @if (!hasHistory)
+            {
+                <div class="text-center py-4">
+                    <i class="bi bi-clock-history text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Patient Treatment History</h5>
+                    <p class="text-muted mb-0">
+                        This section shows a history of patients who have received this treatment.
+                        <br>There are no completed appointments for this treatment yet.
+                    </p>
+                </div>
+            }
+            else
+            {
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -189,33 +219,47 @@
                                 <th>Patient</th>
                                 <th>Doctor</th>
                                 <th>Date</th>
+                                <th>Time</th>
                                 <th>Status</th>
                                 <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="5" class="text-center">No treatment history available</td>
-                            </tr>
+                            @foreach (var item in historyData)
+                            {
+                                <tr>
+                                    <td>@item.PatientName</td>
+                                    <td>@item.DoctorName</td>
+                                    <td>@item.FormattedDate</td>
+                                    <td>@item.FormattedTime</td>
+                                    <td><span class="badge bg-success">@item.Status</span></td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(item.Notes))
+                                        {
+                                            <span class="text-muted fst-italic">No notes</span>
+                                        }
+                                        else
+                                        {
+                                            <span data-bs-toggle="tooltip" title="@item.Notes">
+                                                @(item.Notes.Length > 30 ? item.Notes.Substring(0, 27) + "..." : item.Notes)
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
-            </div>
+            }
         </div>
-    </div>
-    
-    <div class="d-flex justify-content-between mt-4">
-        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-            <i class="bi bi-trash"></i> Delete
-        </a>
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back to List
-        </a>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // For future implementation of interactive features
+        // Initialize tooltips
+        $(document).ready(function() {
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
     </script>
 } 

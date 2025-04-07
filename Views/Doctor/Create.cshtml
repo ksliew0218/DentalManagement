@@ -2,13 +2,32 @@
 
 @{
     ViewData["Title"] = "Create Doctor";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <!-- Display Success or Error Messages -->
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Doctors</a></li>
+            <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1><i class="bi bi-person-badge me-2 text-primary"></i>Create Doctor</h1>
+            <p class="text-muted mb-0">Add a new doctor to the system</p>
+        </div>
+    </div>
+
+    <!-- Display success message if available in TempData -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
             @TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -16,134 +35,171 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
             @TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-controller="Doctor" asp-action="Index">Doctors</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Create Doctor</li>
-        </ol>
-    </nav>
     
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Create Doctor</h2>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-plus-circle me-2"></i>Doctor Information
+            </h6>
         </div>
         <div class="card-body">
-            <form asp-controller="Doctor" asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <!-- Add error message display section -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger mb-4 fade-in">
+                    <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>Error</h5>
+                    <ul class="mb-0">
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                 @Html.AntiForgeryToken()
                 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="FirstName" class="form-label">First Name <span class="text-danger">*</span></label>
-                            <input asp-for="FirstName" class="form-control" required />
-                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light py-2">
+                                <h6 class="mb-0"><i class="bi bi-image me-2"></i>Profile Picture</h6>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <input type="file" name="ProfileImage" id="profileImage" class="form-control" accept="image/*" required />
+                                    <small class="text-muted">Maximum file size: 5MB. Recommended size: 400x400 pixels.</small>
+                                    <div id="imagePreview" class="mt-2" style="display: none;">
+                                        <!-- Preview image will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="LastName" class="form-label">Last Name <span class="text-danger">*</span></label>
-                            <input asp-for="LastName" class="form-control" required />
-                            <span asp-validation-for="LastName" class="text-danger"></span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label for="Email" class="form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="Email" class="form-control" required />
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="FirstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <input asp-for="FirstName" class="form-control" required />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter a first name</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="LastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    <input asp-for="LastName" class="form-control" required />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter a last name</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="PhoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
-                            <input asp-for="PhoneNumber" class="form-control" required />
-                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
-                            <select asp-for="Gender" class="form-select">
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="Email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" name="Email" class="form-control" required />
+                                    <div class="invalid-feedback">Please enter a valid email</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                    <input asp-for="PhoneNumber" class="form-control" required />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter a phone number</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                            <input asp-for="DateOfBirth" class="form-control" type="date" required />
-                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="Specialty" class="form-label">Specialty <span class="text-danger">*</span></label>
-                            <input asp-for="Specialty" class="form-control" required />
-                            <span asp-validation-for="Specialty" class="text-danger"></span>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                                    <select asp-for="Gender" class="form-select" required>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please select a gender</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                    <input asp-for="DateOfBirth" class="form-control" type="date" required />
+                                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter a date of birth</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="ExperienceYears" class="form-label">Experience (Years) <span class="text-danger">*</span></label>
-                            <input asp-for="ExperienceYears" class="form-control" type="number" required />
-                            <span asp-validation-for="ExperienceYears" class="text-danger"></span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <div class="form-group">
-                            <label asp-for="Qualifications" class="form-label">Qualifications <span class="text-danger">*</span></label>
-                            <input asp-for="Qualifications" class="form-control" required />
-                            <span asp-validation-for="Qualifications" class="text-danger"></span>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="Specialty" class="form-label">Specialty <span class="text-danger">*</span></label>
+                                    <input asp-for="Specialty" class="form-control" required />
+                                    <span asp-validation-for="Specialty" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter a specialty</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="ExperienceYears" class="form-label">Experience (Years) <span class="text-danger">*</span></label>
+                                    <input asp-for="ExperienceYears" class="form-control" type="number" required />
+                                    <span asp-validation-for="ExperienceYears" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter years of experience</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="ProfilePictureUrl" class="form-label">Profile Picture <span class="text-danger">*</span></label>
-                            <input type="file" name="ProfileImage" class="form-control" accept="image/*" required />
-                            <small class="text-muted">Upload a profile picture. Recommended size: 400x400 pixels.</small>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="Qualifications" class="form-label">Qualifications <span class="text-danger">*</span></label>
+                                    <textarea asp-for="Qualifications" class="form-control" rows="3" required></textarea>
+                                    <span asp-validation-for="Qualifications" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please enter qualifications</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="form-group">
-                            <label asp-for="Status" class="form-label">Status</label>
-                            <select asp-for="Status" class="form-select">
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
-                            <span asp-validation-for="Status" class="text-danger"></span>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label asp-for="Status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select asp-for="Status" class="form-select" required>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                    <div class="invalid-feedback">Please select a status</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                     <a asp-action="Index" class="btn btn-outline-secondary me-md-2">
-                        <i class="bi bi-arrow-left"></i> Back to Doctors
+                        <i class="bi bi-arrow-left"></i> Cancel
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span class="spinner-border spinner-border-sm d-none me-2" id="submitSpinner" role="status" aria-hidden="true"></span>
                         <i class="bi bi-save"></i> Save Doctor
                     </button>
                 </div>
@@ -158,12 +214,20 @@
         (function () {
             'use strict'
             var forms = document.querySelectorAll('.needs-validation')
+            const submitBtn = document.getElementById('submitBtn');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
             Array.prototype.slice.call(forms)
                 .forEach(function (form) {
                     form.addEventListener('submit', function (event) {
                         if (!form.checkValidity()) {
                             event.preventDefault()
                             event.stopPropagation()
+                        } else {
+                            // Show loading state
+                            submitBtn.disabled = true;
+                            submitSpinner.classList.remove('d-none');
+                            submitBtn.innerHTML = submitBtn.innerHTML.replace('Save Doctor', 'Saving...');
                         }
                         form.classList.add('was-validated')
                     }, false)
@@ -172,25 +236,18 @@
         
         // Auto-dismiss alerts after 5 seconds
         setTimeout(function() {
-            $('.alert-dismissible').alert('close');
+            $('.alert-dismissible').fadeOut('slow');
         }, 5000);
         
         // Image preview functionality
-        document.querySelector('input[name="ProfileImage"]').addEventListener('change', function(e) {
+        document.getElementById('profileImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                
-                // Create preview element if it doesn't exist
-                let previewContainer = document.getElementById('imagePreview');
-                if (!previewContainer) {
-                    previewContainer = document.createElement('div');
-                    previewContainer.id = 'imagePreview';
-                    previewContainer.className = 'mt-2';
-                    this.parentNode.appendChild(previewContainer);
-                }
+                const previewContainer = document.getElementById('imagePreview');
                 
                 reader.onload = function(e) {
+                    previewContainer.style.display = 'block';
                     previewContainer.innerHTML = `
                         <div class="card">
                             <div class="card-body p-2">

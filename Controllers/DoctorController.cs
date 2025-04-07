@@ -191,6 +191,27 @@ namespace DentalManagement.Controllers
             return RedirectToAction("Index");
         }
 
+        // GET: Doctor/Delete/{id}
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var doctor = await _context.Doctors
+                .Include(d => d.User)
+                .Include(d => d.DoctorTreatments)
+                    .ThenInclude(dt => dt.TreatmentType)
+                .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+            return View(doctor);
+        }
 
         // GET: Doctor/Details/{id}
         public async Task<IActionResult> Details(int id)

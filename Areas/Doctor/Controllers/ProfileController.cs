@@ -69,6 +69,10 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     ProfilePictureUrl = doctor.ProfilePictureUrl
                 };
 
+                // Set doctor name and profile picture in ViewData for the layout
+                ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
+
                 return View(model);
             }
             catch (Exception ex)

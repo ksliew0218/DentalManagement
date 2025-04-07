@@ -1,0 +1,513 @@
+@model DentalManagement.Models.Appointment
+@{
+    ViewData["Title"] = "Appointment Details";
+    var amountPaid = ViewBag.AmountPaid;
+    var remainingAmount = ViewBag.RemainingAmount;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/status-styles.css" />
+
+<div class="admin-page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Patients">Patients</a></li>
+            <li class="breadcrumb-item"><a asp-action="PatientDetails" asp-route-id="@Model.PatientId">@Model.Patient?.FirstName @Model.Patient?.LastName</a></li>
+            <li class="breadcrumb-item active">Appointment Details</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="title">
+                <i class="bi bi-calendar-check me-2 text-primary"></i>Appointment Details
+            </h4>
+            <p class="subtitle">View appointment information, treatment details, and payment status</p>
+        </div>
+        <div>
+            <span class="status-badge status-badge-sm">
+                <i class="bi bi-eye me-1"></i> View Only
+            </span>
+            <a asp-action="PatientDetails" asp-route-id="@Model.PatientId" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Patient
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Appointment Details Card -->
+    <div class="col-lg-7 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-info-circle me-2"></i>Appointment Information
+                </h6>
+                <div>
+                    @{
+                        var statusClass = Model.Status switch
+                        {
+                            "Completed" => "status-badge status-completed status-badge-with-icon",
+                            "Cancelled" => "status-badge status-cancelled status-badge-with-icon",
+                            "Confirmed" => "status-badge status-confirmed status-badge-with-icon",
+                            "Pending" => "status-badge status-pending status-badge-with-icon",
+                            "Rescheduled" => "status-badge status-rescheduled status-badge-with-icon",
+                            _ => "status-badge status-badge-with-icon"
+                        };
+                        
+                        var statusIcon = Model.Status switch
+                        {
+                            "Completed" => "bi-check-circle-fill",
+                            "Cancelled" => "bi-x-circle-fill",
+                            "Confirmed" => "bi-calendar-check-fill",
+                            "Pending" => "bi-hourglass-split",
+                            "Rescheduled" => "bi-arrow-repeat",
+                            _ => "bi-question-circle-fill"
+                        };
+                    }
+                    <span class="@statusClass"><i class="bi @statusIcon"></i> @Model.Status</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="patient-info-section p-3 bg-light rounded mb-3">
+                            <h5 class="section-title">
+                                <i class="bi bi-calendar-date me-2"></i>Date & Time
+                            </h5>
+                            <div class="mb-3">
+                                <p class="info-label">Date</p>
+                                <p class="info-value">@Model.AppointmentDate.ToString("dddd, MMMM d, yyyy")</p>
+                            </div>
+                            <div class="mb-3">
+                                <p class="info-label">Time</p>
+                                <p class="info-value">
+                                    @{
+                                        var time = Model.AppointmentTime;
+                                        var hours = time.Hours;
+                                        var minutes = time.Minutes;
+                                        var amPm = hours >= 12 ? "PM" : "AM";
+                                        hours = hours % 12;
+                                        if (hours == 0) hours = 12;
+                                        <text>@hours:@minutes.ToString("D2") @amPm</text>
+                                    }
+                                </p>
+                            </div>
+                            <div class="mb-0">
+                                <p class="info-label">Duration</p>
+                                <p class="info-value mb-0">@Model.Duration minutes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="patient-info-section p-3 bg-light rounded mb-3">
+                            <h5 class="section-title">
+                                <i class="bi bi-person-badge me-2"></i>Treatment & Doctor
+                            </h5>
+                            <div class="mb-3">
+                                <p class="info-label">Treatment</p>
+                                <p class="info-value">@Model.TreatmentType?.Name</p>
+                            </div>
+                            <div class="mb-3">
+                                <p class="info-label">Doctor</p>
+                                <p class="info-value">Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName</p>
+                            </div>
+                            <div class="mb-0">
+                                <p class="info-label">Specialty</p>
+                                <p class="info-value mb-0">@Model.Doctor?.Specialty</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-info-section p-3 bg-light rounded mb-3">
+                    <h5 class="section-title">
+                        <i class="bi bi-card-text me-2"></i>Patient Notes
+                    </h5>
+                    <div>
+                        @if (string.IsNullOrEmpty(Model.Notes))
+                        {
+                            <p class="text-muted">No notes provided.</p>
+                        }
+                        else
+                        {
+                            <p>@Model.Notes</p>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.TreatmentReports != null && Model.TreatmentReports.Any())
+                {
+                    <div class="patient-info-section p-3 bg-light rounded">
+                        <h5 class="section-title">
+                            <i class="bi bi-file-earmark-medical me-2"></i>Treatment Reports
+                        </h5>
+                        <div class="list-group list-group-flush">
+                            @foreach (var report in Model.TreatmentReports)
+                            {
+                                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
+                                    <div>
+                                        <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                        <span>Treatment Report - @report.TreatmentDate.ToString("MMM d, yyyy")</span>
+                                    </div>
+                                    <a asp-action="PatientTreatmentReport" asp-route-id="@report.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye-fill me-1"></i>View
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Details Card -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-credit-card me-2"></i>Payment Details
+                </h6>
+                <div>
+                    @{
+                        var paymentStatusClass = Model.PaymentStatus switch
+                        {
+                            PaymentStatus.Paid => "status-badge payment-paid status-badge-with-icon",
+                            PaymentStatus.PartiallyPaid => "status-badge payment-partially-paid status-badge-with-icon",
+                            PaymentStatus.Pending => "status-badge payment-pending status-badge-with-icon",
+                            PaymentStatus.Failed => "status-badge payment-failed status-badge-with-icon",
+                            PaymentStatus.Cancelled => "status-badge payment-failed status-badge-with-icon",
+                            _ => "status-badge payment-pending status-badge-with-icon"
+                        };
+                        
+                        var paymentStatusIcon = Model.PaymentStatus switch
+                        {
+                            PaymentStatus.Paid => "bi-check-circle-fill",
+                            PaymentStatus.PartiallyPaid => "bi-credit-card-fill",
+                            PaymentStatus.Pending => "bi-hourglass-split",
+                            PaymentStatus.Failed => "bi-x-circle-fill",
+                            PaymentStatus.Cancelled => "bi-x-circle-fill",
+                            _ => "bi-question-circle-fill"
+                        };
+                    }
+                    <span class="@paymentStatusClass"><i class="bi @paymentStatusIcon"></i> @Model.PaymentStatus</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="patient-info-section p-3 bg-light rounded mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <p class="info-label mb-0">Treatment Cost</p>
+                                <span class="fw-bold">RM @Model.TotalAmount.ToString("F2")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <p class="info-label mb-0">Amount Paid</p>
+                                <span class="text-success">RM @amountPaid.ToString("F2")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-0">
+                                <p class="info-label mb-0">Remaining Balance</p>
+                                <span class="@(remainingAmount > 0 ? "text-danger" : "text-success") fw-bold">RM @remainingAmount.ToString("F2")</span>
+                            </div>
+                        </div>
+                        
+                        @if (Model.Payments != null && Model.Payments.Any())
+                        {
+                            <h5 class="section-title">
+                                <i class="bi bi-receipt me-2"></i>Payment History
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var payment in Model.Payments.OrderByDescending(p => p.CreatedAt))
+                                        {
+                                            <tr>
+                                                <td>@payment.CreatedAt.ToString("MM/dd/yyyy")</td>
+                                                <td>@payment.PaymentType</td>
+                                                <td>RM @payment.Amount.ToString("F2")</td>
+                                                <td>
+                                                    @{
+                                                        var pStatusClass = payment.Status switch
+                                                        {
+                                                            "succeeded" => "status-badge status-badge-sm payment-paid",
+                                                            "pending" => "status-badge status-badge-sm payment-pending",
+                                                            "failed" => "status-badge status-badge-sm payment-failed",
+                                                            _ => "status-badge status-badge-sm"
+                                                        };
+                                                    }
+                                                    <span class="@pStatusClass">@payment.Status</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="button" id="printReceiptBtn" class="btn btn-outline-primary">
+                                    <i class="bi bi-printer me-2"></i>Print Receipt
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center p-4">
+                                <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-credit-card fs-1 text-muted"></i>
+                                </div>
+                                <h6 class="fw-bold">No Payment Records</h6>
+                                <p class="text-muted mb-4">No payments have been processed for this appointment</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Print Receipt functionality
+            $("#printReceiptBtn").on("click", function() {
+                // Create a new window for printing
+                const printWindow = window.open("", "_blank", "width=800,height=600");
+                
+                // Get receipt information
+                const patientName = "@Model.Patient?.FirstName @Model.Patient?.LastName";
+                const appointmentDate = "@Model.AppointmentDate.ToString("MMMM d, yyyy")";
+                const treatment = "@Model.TreatmentType?.Name";
+                const doctorName = "Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName";
+                const totalAmount = "@Model.TotalAmount.ToString("F2")";
+                const amountPaid = "@amountPaid.ToString("F2")";
+                const remainingAmount = "@remainingAmount.ToString("F2")";
+                const paymentStatus = "@Model.PaymentStatus";
+                
+                // Generate receipt HTML
+                let receiptHTML = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Payment Receipt</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .receipt-container {
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 20px;
+                            border: 1px solid #ddd;
+                        }
+                        .receipt-header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 20px;
+                            border-bottom: 2px solid #f0f0f0;
+                        }
+                        .receipt-logo {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #3a66c1;
+                            margin-bottom: 5px;
+                        }
+                        .receipt-title {
+                            font-size: 20px;
+                            text-transform: uppercase;
+                            color: #555;
+                        }
+                        .receipt-info {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 20px;
+                        }
+                        .receipt-info-section {
+                            flex: 1;
+                        }
+                        .receipt-info-title {
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                            color: #555;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 20px;
+                        }
+                        th, td {
+                            padding: 10px;
+                            text-align: left;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                            font-weight: bold;
+                        }
+                        .total-section {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: flex-end;
+                            margin-top: 20px;
+                            margin-bottom: 40px;
+                        }
+                        .total-row {
+                            display: flex;
+                            justify-content: space-between;
+                            width: 300px;
+                            margin-bottom: 5px;
+                        }
+                        .total-label {
+                            font-weight: bold;
+                        }
+                        .grand-total {
+                            font-size: 18px;
+                            font-weight: bold;
+                            border-top: 2px solid #333;
+                            padding-top: 5px;
+                            margin-top: 5px;
+                        }
+                        .receipt-status-paid {
+                            background-color: #d4edda;
+                            color: #155724;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            font-weight: bold;
+                            border: 1px solid #c3e6cb;
+                        }
+                        .receipt-status-partial {
+                            background-color: #fff3cd;
+                            color: #856404;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            font-weight: bold;
+                            border: 1px solid #ffeeba;
+                        }
+                        .receipt-status-pending {
+                            background-color: #f8f9fa;
+                            color: #6c757d;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            font-weight: bold;
+                            border: 1px solid #e9ecef;
+                        }
+                        .receipt-status-failed {
+                            background-color: #f8d7da;
+                            color: #721c24;
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            font-weight: bold;
+                            border: 1px solid #f5c6cb;
+                        }
+                        .footer {
+                            margin-top: 40px;
+                            text-align: center;
+                            color: #777;
+                            font-size: 14px;
+                        }
+                        @@media print {
+                            body {
+                                print-color-adjust: exact;
+                                -webkit-print-color-adjust: exact;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt-container">
+                        <div class="receipt-header">
+                            <div class="receipt-logo">Dental Management System</div>
+                            <div class="receipt-title">Payment Receipt</div>
+                        </div>
+                        
+                        <div class="receipt-info">
+                            <div class="receipt-info-section">
+                                <div>Patient: ${patientName}</div>
+                                <div>Treatment: ${treatment}</div>
+                                <div>Date: ${appointmentDate}</div>
+                                <div>Doctor: ${doctorName}</div>
+                            </div>
+                            <div class="receipt-info-section" style="text-align: right;">
+                                <div>Receipt #: ${new Date().getTime().toString().slice(-8)}</div>
+                                <div>Receipt Date: ${new Date().toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        
+                        <h3>Treatment and Payment Details</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${treatment}</td>
+                                    <td>RM ${totalAmount}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="total-section">
+                            <div class="total-row">
+                                <span class="total-label">Total Amount:</span>
+                                <span>RM ${totalAmount}</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="total-label">Amount Paid:</span>
+                                <span>RM ${amountPaid}</span>
+                            </div>
+                            <div class="total-row grand-total">
+                                <span class="total-label">Balance Due:</span>
+                                <span>RM ${remainingAmount}</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="total-label">Payment Status:</span>
+                                <span class="receipt-status-${paymentStatus === "Paid" ? "paid" :
+                                    paymentStatus === "PartiallyPaid" ? "partial" :
+                                    paymentStatus === "Failed" ? "failed" : "pending"}">${paymentStatus}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Thank you for choosing our Dental Management System</p>
+                            <p>For any inquiries, please contact our support team.</p>
+                            <p>Printed on ${new Date().toLocaleString()}</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                `;
+                
+                // Write the HTML to the new window and trigger print
+                printWindow.document.open();
+                printWindow.document.write(receiptHTML);
+                printWindow.document.close();
+                
+                // Wait for the content to load before printing
+                printWindow.onload = function() {
+                    // Auto-print when the page has loaded
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 500);
+                };
+            });
+        });
+    </script>
+}

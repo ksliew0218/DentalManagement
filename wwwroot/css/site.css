@@ -273,3 +273,123 @@ body {
         transform: translateY(0);
     }
 }
+
+/* Standardized Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.page-header h1 {
+    margin-bottom: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.page-header .header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Standardized Back Button */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-color);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-back i {
+    margin-right: 0.5rem;
+}
+
+.btn-back:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+/* Breadcrumb Styling */
+.breadcrumb-custom {
+    background-color: transparent;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-custom .breadcrumb-item {
+    font-size: 0.875rem;
+}
+
+.breadcrumb-custom .breadcrumb-item.active {
+    color: var(--text-medium);
+}
+
+.breadcrumb-custom .breadcrumb-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.breadcrumb-custom .breadcrumb-item a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* Improved Table Styles */
+.table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+}
+
+.standard-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.standard-table thead th {
+    background-color: var(--bg-light);
+    color: var(--text-medium);
+    font-weight: 600;
+    border-top: none;
+    padding: 1rem;
+    white-space: nowrap;
+}
+
+.standard-table tbody td {
+    vertical-align: middle;
+    padding: 1rem;
+}
+
+.standard-table tbody tr:hover {
+    background-color: rgba(59, 125, 221, 0.05);
+}
+
+.standard-table .status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Standard Alert Styles */
+.alert-dismissible {
+    position: relative;
+    padding-right: 4rem;
+}
+
+.alert-dismissible .btn-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1.25rem 1rem;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}

@@ -6,17 +6,23 @@
 }
 
 <div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <div class="d-flex align-items-center">
-            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="back-button me-3">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-            <h1 class="h3 mb-0 text-primary">
-                <i class="bi bi-calendar-minus me-2"></i>Leave Management
-            </h1>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Leave Management</li>
+        </ol>
+    </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1><i class="bi bi-calendar-minus me-2 text-primary"></i>Leave Management</h1>
+            <p class="text-muted mb-0">Manage doctor leave requests and approvals</p>
         </div>
     </div>
 
+    <!-- Status Tabs -->
     <div class="row mb-4">
         <div class="col-md-12">
             <ul class="nav nav-pills" id="leaveStatusTabs" role="tablist">
@@ -45,84 +51,113 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card shadow-sm border-0 rounded-3 mb-4">
-                <div class="card-header py-3 bg-light">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="bi bi-list-check me-2"></i>
-                        @currentStatus Leave Requests
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle" id="leaveRequestsTable" width="100%" cellspacing="0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Doctor</th>
-                                    <th>Leave Type</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Days</th>
-                                    <th>Request Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @{
-                                    var requests = currentStatus switch
-                                    {
-                                        "Approved" => Model.ApprovedRequests,
-                                        "Rejected" => Model.RejectedRequests,
-                                        _ => Model.PendingRequests
-                                    };
-                                }
-                                
-                                @foreach (var request in requests)
-                                {
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span class="avatar-placeholder bg-primary text-white rounded-circle me-2">
-                                                    @request.Doctor.FirstName[0]@request.Doctor.LastName[0]
-                                                </span>
-                                                <span>Dr. @request.Doctor.FirstName @request.Doctor.LastName</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge @(request.LeaveType.IsPaid ? "bg-info" : "bg-secondary")">
-                                                @request.LeaveType.Name
-                                            </span>
-                                        </td>
-                                        <td>@request.StartDate.ToString("MMM dd, yyyy")</td>
-                                        <td>@request.EndDate.ToString("MMM dd, yyyy")</td>
-                                        <td>
-                                            <span class="badge bg-dark">@request.TotalDays days</span>
-                                        </td>
-                                        <td>@request.RequestDate.ToString("MMM dd, yyyy")</td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                
-                                                @if (request.Status == LeaveRequestStatus.Pending)
-                                                {
-                                                    <a asp-action="Approve" asp-route-id="@request.Id" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Approve">
-                                                        <i class="bi bi-check-lg"></i>
-                                                    </a>
-                                                    <a asp-action="Reject" asp-route-id="@request.Id" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Reject">
-                                                        <i class="bi bi-x-lg"></i>
-                                                    </a>
-                                                }
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <!-- Display messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show mb-4 fade-in" role="alert">
+            <i class="bi bi-info-circle me-2"></i> @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Leave Requests -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-list-check me-2"></i>@currentStatus Leave Requests
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover standard-table" id="leaveRequestsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Leave Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Days</th>
+                            <th>Request Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var requests = currentStatus switch
+                            {
+                                "Approved" => Model.ApprovedRequests,
+                                "Rejected" => Model.RejectedRequests,
+                                _ => Model.PendingRequests
+                            };
+                        }
+                        
+                        @foreach (var request in requests)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="avatar-sm bg-primary text-white rounded-circle me-2">
+                                            @request.Doctor.FirstName[0]@request.Doctor.LastName[0]
+                                        </span>
+                                        <span>Dr. @request.Doctor.FirstName @request.Doctor.LastName</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge @(request.LeaveType.IsPaid ? "bg-info" : "bg-secondary")">
+                                        @request.LeaveType.Name
+                                    </span>
+                                </td>
+                                <td>@request.StartDate.ToString("MMM dd, yyyy")</td>
+                                <td>@request.EndDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <span class="status-badge bg-dark">@request.TotalDays days</span>
+                                </td>
+                                <td>@request.RequestDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        
+                                        @if (request.Status == LeaveRequestStatus.Pending)
+                                        {
+                                            <a asp-action="Approve" asp-route-id="@request.Id" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Approve">
+                                                <i class="bi bi-check-lg"></i>
+                                            </a>
+                                            <a asp-action="Reject" asp-route-id="@request.Id" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Reject">
+                                                <i class="bi bi-x-lg"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -155,42 +190,15 @@
             $('.dataTables_filter input').addClass('form-control form-control-sm ms-2');
             $('.dataTables_filter input').attr('placeholder', 'Search...');
             
-            // Display any success message
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <text>
-                toastr.success('@TempData["SuccessMessage"]');
-                </text>
-            }
-            
-            // Display any error message
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <text>
-                toastr.error('@TempData["ErrorMessage"]');
-                </text>
-            }
-            
-            // Display any warning message
-            @if (TempData["WarningMessage"] != null)
-            {
-                <text>
-                toastr.warning('@TempData["WarningMessage"]');
-                </text>
-            }
-            
-            // Display any info message
-            @if (TempData["InfoMessage"] != null)
-            {
-                <text>
-                toastr.info('@TempData["InfoMessage"]');
-                </text>
-            }
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert-dismissible').alert('close');
+            }, 5000);
         });
     </script>
     
     <style>
-        .avatar-placeholder {
+        .avatar-sm {
             width: 32px;
             height: 32px;
             display: flex;

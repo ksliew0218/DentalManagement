@@ -59,6 +59,8 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
                 // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                // Add doctor profile picture URL to ViewData
+                ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 // Get all appointments for the doctor
                 var appointments = await _context.Appointments
@@ -121,6 +123,8 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
             // Set doctor name in ViewData for the layout
             ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            // Add doctor profile picture URL to ViewData
+            ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
             return View(appointment);
         }
@@ -147,6 +151,8 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
             // Set doctor name in ViewData for the layout
             ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            // Add doctor profile picture URL to ViewData
+            ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
             // Get all appointments for the doctor
             var appointments = await _context.Appointments

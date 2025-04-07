@@ -1,0 +1,188 @@
+/* Status Styles - Dental Management System 
+ * Standardized status styling for consistent appearance across the application
+ */
+
+/* Badge Base Styles */
+.status-badge {
+    display: inline-block;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #fff;
+}
+
+/* Status Badge Sizes */
+.status-badge-sm {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+}
+
+.status-badge-lg {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+}
+
+/* Appointment Status Colors */
+.status-confirmed {
+    color: #fff;
+    background-color: #4361ee;
+    border: 1px solid #3a56d4;
+    box-shadow: 0 2px 4px rgba(67, 97, 238, 0.15);
+}
+
+.status-completed {
+    color: #fff;
+    background-color: #2ecc71;
+    border: 1px solid #27ae60;
+    box-shadow: 0 2px 4px rgba(46, 204, 113, 0.15);
+}
+
+.status-scheduled {
+    color: #fff;
+    background-color: #00b4d8;
+    border: 1px solid #0096c7;
+    box-shadow: 0 2px 4px rgba(0, 180, 216, 0.15);
+}
+
+.status-pending {
+    color: #fff;
+    background-color: #6c757d;
+    border: 1px solid #5a6268;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.15);
+}
+
+.status-cancelled {
+    color: #fff;
+    background-color: #e74c3c;
+    border: 1px solid #c0392b;
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.15);
+}
+
+.status-rescheduled {
+    color: #fff;
+    background-color: #9c27b0;
+    border: 1px solid #7b1fa2;
+    box-shadow: 0 2px 4px rgba(156, 39, 176, 0.15);
+}
+
+/* Payment Status Colors */
+.payment-paid {
+    color: #fff;
+    background-color: #27ae60;
+    border: 1px solid #219653;
+    box-shadow: 0 2px 4px rgba(39, 174, 96, 0.15);
+}
+
+.payment-partially-paid {
+    color: #fff;
+    background-color: #f39c12;
+    border: 1px solid #d35400;
+    box-shadow: 0 2px 4px rgba(243, 156, 18, 0.15);
+}
+
+.payment-pending {
+    color: #fff;
+    background-color: #6c757d;
+    border: 1px solid #5a6268;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.15);
+}
+
+.payment-failed {
+    color: #fff;
+    background-color: #dc3545;
+    border: 1px solid #bd2130;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.15);
+}
+
+.payment-refunded {
+    color: #fff;
+    background-color: #17a2b8;
+    border: 1px solid #138496;
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.15);
+}
+
+/* Status Badges with Icons */
+.status-badge-with-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-badge-with-icon i {
+    margin-right: 0.35rem;
+}
+
+/* Status Badge Hover Effects */
+.status-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated Statuses for Key Actions */
+.status-badge.animated {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(67, 97, 238, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+    }
+}
+
+/* Print Media Styling for Receipts and Reports */
+@media print {
+    .status-badge {
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+/* Receipt Status Colors */
+.receipt-status-paid {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    border: 1px solid #c3e6cb;
+}
+
+.receipt-status-partial {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    border: 1px solid #ffeeba;
+}
+
+.receipt-status-pending {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    border: 1px solid #e9ecef;
+}
+
+.receipt-status-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    border: 1px solid #f5c6cb;
+} 

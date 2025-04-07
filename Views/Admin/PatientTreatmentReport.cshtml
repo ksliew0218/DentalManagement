@@ -1,0 +1,455 @@
+@model DentalManagement.Models.TreatmentReport
+@{
+    ViewData["Title"] = "Treatment Report";
+    var payments = ViewBag.Payments as List<DentalManagement.Models.Payment>;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Patients">Patients</a></li>
+            <li class="breadcrumb-item"><a asp-action="PatientDetails" asp-route-id="@Model.PatientId">@Model.Patient?.FirstName @Model.Patient?.LastName</a></li>
+            <li class="breadcrumb-item"><a asp-action="PatientAppointmentDetails" asp-route-id="@Model.AppointmentId">Appointment</a></li>
+            <li class="breadcrumb-item active">Treatment Report</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="title">
+                <i class="bi bi-file-earmark-medical me-2 text-primary"></i>Treatment Report
+            </h4>
+            <p class="subtitle">View treatment details, dental charts, and notes</p>
+        </div>
+        <div>
+            <span class="badge bg-info me-2 px-3 py-2">
+                <i class="bi bi-eye me-1"></i> View Only
+            </span>
+            <a asp-action="PatientAppointmentDetails" asp-route-id="@Model.AppointmentId" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Appointment
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Treatment Report Card -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>Treatment Details
+                </h6>
+                <div>
+                    <span class="badge bg-primary rounded-pill px-3">
+                        <i class="bi bi-calendar-check me-1"></i> @Model.TreatmentDate.ToString("MMMM d, yyyy")
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="patient-info-section p-3 bg-light rounded mb-3">
+                            <h5 class="section-title">
+                                <i class="bi bi-person me-2"></i>Patient Information
+                            </h5>
+                            <div class="mb-3">
+                                <p class="info-label">Patient</p>
+                                <p class="info-value">@Model.Patient?.FirstName @Model.Patient?.LastName</p>
+                            </div>
+                            <div class="mb-3">
+                                <p class="info-label">Doctor</p>
+                                <p class="info-value">Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName</p>
+                            </div>
+                            <div class="mb-0">
+                                <p class="info-label">Treatment</p>
+                                <p class="info-value mb-0">@Model.Appointment?.TreatmentType?.Name</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="patient-info-section p-3 bg-light rounded mb-3">
+                            <h5 class="section-title">
+                                <i class="bi bi-calendar-date me-2"></i>Treatment Information
+                            </h5>
+                            <div class="mb-3">
+                                <p class="info-label">Date</p>
+                                <p class="info-value">@Model.TreatmentDate.ToString("MMMM d, yyyy")</p>
+                            </div>
+                            <div class="mb-0">
+                                <p class="info-label">Created At</p>
+                                <p class="info-value mb-0">@Model.CreatedAt.ToString("MM/dd/yyyy hh:mm tt")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-info-section p-3 bg-light rounded mb-4">
+                    <h5 class="section-title">
+                        <i class="bi bi-card-text me-2"></i>Treatment Notes
+                    </h5>
+                    <div>
+                        @if (string.IsNullOrEmpty(Model.Notes))
+                        {
+                            <p class="text-muted">No treatment notes available.</p>
+                        }
+                        else
+                        {
+                            <p>@Model.Notes</p>
+                        }
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.DentalChart))
+                {
+                    <div class="patient-info-section p-3 bg-light rounded">
+                        <h5 class="section-title">
+                            <i class="bi bi-diagram-3 me-2"></i>Dental Chart
+                        </h5>
+                        <div class="dental-chart-container border rounded p-3 mt-3 bg-white">
+                            <div id="dentalChartPreview" class="text-center">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Dental chart data is available, but full interactive chart functionality is only available in doctor mode.
+                                </div>
+                                <p class="text-muted mb-0">This treatment includes dental chart data recorded by the doctor.</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="card-footer bg-white d-grid">
+                <button id="printReportBtn" class="btn btn-outline-primary">
+                    <i class="bi bi-printer me-2"></i>Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Information Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-credit-card me-2"></i>Payment Information
+                </h6>
+            </div>
+            <div class="card-body">
+                @if (payments != null && payments.Any())
+                {
+                    <div class="patient-info-section p-3 bg-light rounded mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <p class="info-label mb-0">Treatment Cost</p>
+                            <span class="fw-bold">RM @Model.Appointment?.TotalAmount.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-0">
+                            <p class="info-label mb-0">Amount Paid</p>
+                            <span class="text-success">
+                                RM @(payments.Where(p => p.Status == "succeeded").Sum(p => p.Amount).ToString("F2"))
+                            </span>
+                        </div>
+                    </div>
+
+                    <h6 class="section-title mb-3">
+                        <i class="bi bi-receipt me-2"></i>Payment History
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var payment in payments.OrderByDescending(p => p.CreatedAt))
+                                {
+                                    <tr>
+                                        <td>@payment.CreatedAt.ToString("MM/dd/yyyy")</td>
+                                        <td>RM @payment.Amount.ToString("F2")</td>
+                                        <td>
+                                            @{
+                                                var pStatusClass = payment.Status switch
+                                                {
+                                                    "succeeded" => "badge bg-success",
+                                                    "pending" => "badge bg-warning text-dark",
+                                                    "failed" => "badge bg-danger",
+                                                    _ => "badge bg-secondary"
+                                                };
+                                            }
+                                            <span class="@pStatusClass">@payment.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center p-4">
+                        <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-credit-card fs-1 text-muted"></i>
+                        </div>
+                        <h6 class="fw-bold">No Payment Records</h6>
+                        <p class="text-muted mb-4">No payments have been processed for this treatment</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Print Report functionality
+            $("#printReportBtn").on("click", function() {
+                // Create a new window for printing
+                const printWindow = window.open("", "_blank", "width=800,height=600");
+                
+                // Get report information
+                const patientName = "@Model.Patient?.FirstName @Model.Patient?.LastName";
+                const doctorName = "Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName";
+                const treatmentDate = "@Model.TreatmentDate.ToString("MMMM d, yyyy")";
+                const treatmentType = "@Model.Appointment?.TreatmentType?.Name";
+                const notes = "@(string.IsNullOrEmpty(Model.Notes) ? "No treatment notes available." : Model.Notes.Replace("\n", " ").Replace("\r", " "))";
+                const hasDentalChart = @(string.IsNullOrEmpty(Model.DentalChart) ? "false" : "true").toString();
+                
+                // Generate report HTML
+                let reportHTML = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Treatment Report</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .report-container {
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 20px;
+                            border: 1px solid #ddd;
+                        }
+                        .report-header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 20px;
+                            border-bottom: 2px solid #f0f0f0;
+                        }
+                        .report-logo {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #3a66c1;
+                            margin-bottom: 5px;
+                        }
+                        .report-title {
+                            font-size: 20px;
+                            text-transform: uppercase;
+                            color: #555;
+                        }
+                        .report-info {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 20px;
+                        }
+                        .report-info-section {
+                            flex: 1;
+                        }
+                        .report-info-title {
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                            color: #555;
+                            font-size: 16px;
+                            border-bottom: 1px solid #eee;
+                            padding-bottom: 5px;
+                        }
+                        .info-row {
+                            margin-bottom: 8px;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            color: #555;
+                        }
+                        .section {
+                            margin-bottom: 25px;
+                            padding: 15px;
+                            background-color: #f9f9f9;
+                            border-radius: 5px;
+                        }
+                        .section-title {
+                            font-weight: bold;
+                            color: #3a66c1;
+                            margin-bottom: 10px;
+                            border-bottom: 1px solid #eee;
+                            padding-bottom: 5px;
+                        }
+                        .dental-chart-note {
+                            background-color: #e9f3fd;
+                            padding: 10px;
+                            border-radius: 5px;
+                            font-style: italic;
+                            color: #555;
+                        }
+                        .notes-content {
+                            white-space: pre-line;
+                            line-height: 1.5;
+                        }
+                        .payment-info {
+                            margin-top: 20px;
+                        }
+                        .payment-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 20px;
+                        }
+                        .payment-table th, .payment-table td {
+                            padding: 10px;
+                            text-align: left;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .payment-table th {
+                            background-color: #f5f5f5;
+                            font-weight: bold;
+                        }
+                        .report-footer {
+                            margin-top: 40px;
+                            text-align: center;
+                            font-size: 14px;
+                            color: #777;
+                        }
+                        .print-date {
+                            margin-top: 30px;
+                            font-size: 12px;
+                            color: #999;
+                            text-align: center;
+                        }
+                        @@media print {
+                            .no-print {
+                                display: none;
+                            }
+                            body {
+                                padding: 0;
+                            }
+                            .report-container {
+                                border: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="report-container">
+                        <div class="report-header">
+                            <div class="report-logo">SmileCraft Dental Clinic</div>
+                            <div class="report-title">Treatment Report</div>
+                        </div>
+                        
+                        <div class="report-info">
+                            <div class="report-info-section">
+                                <div class="report-info-title">Patient Information</div>
+                                <div class="info-row"><span class="info-label">Patient:</span> ${patientName}</div>
+                                <div class="info-row"><span class="info-label">Treatment:</span> ${treatmentType}</div>
+                                <div class="info-row"><span class="info-label">Doctor:</span> ${doctorName}</div>
+                            </div>
+                            <div class="report-info-section">
+                                <div class="report-info-title">Treatment Information</div>
+                                <div class="info-row"><span class="info-label">Date:</span> ${treatmentDate}</div>
+                                <div class="info-row"><span class="info-label">Report Generated:</span> ${new Date().toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">Treatment Notes</div>
+                            <div class="notes-content">${notes}</div>
+                        </div>`;
+                        
+                if (hasDentalChart === "true") {
+                    reportHTML += `
+                        <div class="section">
+                            <div class="section-title">Dental Chart Information</div>
+                            <div class="dental-chart-note">
+                                Dental chart data is recorded for this treatment. Please refer to the digital chart in the clinic system for detailed visualization.
+                            </div>
+                        </div>`;
+                }
+
+                // Check if payments exist and add them to the report
+                const hasPayments = @(payments != null && payments.Any() ? "true" : "false").toString();
+                
+                if (hasPayments === "true") {
+                    reportHTML += `
+                        <div class="section payment-info">
+                            <div class="section-title">Payment Information</div>
+                            <div class="info-row"><span class="info-label">Treatment Cost:</span> RM @Model.Appointment?.TotalAmount.ToString("F2")</div>
+                            <div class="info-row"><span class="info-label">Amount Paid:</span> RM @(payments?.Where(p => p.Status == "succeeded").Sum(p => p.Amount).ToString("F2") ?? "0.00")</div>
+                            
+                            <table class="payment-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    
+                    @if (payments != null) 
+                    {
+                        foreach (var payment in payments.OrderByDescending(p => p.CreatedAt))
+                        {
+                            @:reportHTML += `<tr>
+                            @:    <td>@payment.CreatedAt.ToString("MM/dd/yyyy")</td>
+                            @:    <td>RM @payment.Amount.ToString("F2")</td>
+                            @:    <td>@payment.Status</td>
+                            @:</tr>`;
+                        }
+                    }
+                    
+                    reportHTML += `
+                                </tbody>
+                            </table>
+                        </div>`;
+                }
+                
+                reportHTML += `
+                        <div class="report-footer">
+                            Thank you for choosing SmileCraft Dental Clinic for your dental care.
+                        </div>
+                        
+                        <div class="print-date">
+                            Printed on ${new Date().toLocaleString()}
+                        </div>
+                        
+                        <div class="no-print" style="text-align: center; margin-top: 30px;">
+                            <button onclick="window.print();" style="padding: 10px 20px; cursor: pointer;">Print Report</button>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                `;
+                
+                // Write the HTML to the new window and trigger print
+                printWindow.document.open();
+                printWindow.document.write(reportHTML);
+                printWindow.document.close();
+                
+                // Wait for the content to load before printing
+                printWindow.onload = function() {
+                    // Auto-print when the page has loaded
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 500);
+                };
+            });
+        });
+    </script>
+}

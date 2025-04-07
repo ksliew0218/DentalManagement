@@ -3,71 +3,158 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Dashboard</title>
+    <title>@ViewData["Title"] - SmileCraft Admin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/status-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+    <style>
+        /* Footer positioning */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: row;
+        }
+        
+        #page-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .content-container {
+            flex: 1 0 auto;
+            margin-bottom: 60px; /* Equal to footer height */
+        }
+        
+        .footer {
+            flex-shrink: 0;
+            height: 60px;
+            width: 100%;
+            background-color: white;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <div class="d-flex" id="wrapper">
         <!-- Sidebar -->
-        <div class="bg-dark text-white" id="sidebar-wrapper">
-            <div class="sidebar-heading p-3 border-bottom">
-                <a class="text-white text-decoration-none" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                    <i class="bi bi-hospital"></i> Dental Admin
-                </a>
+        <div class="modern-sidebar shadow-sm" id="sidebar-wrapper">
+            <!-- User Profile Section -->
+            <div class="user-profile text-center p-4 border-bottom">
+                <div class="doctor-avatar mb-2">
+                    <div class="doctor-initials">
+                        AD
+                    </div>
+                </div>
+                <h6 class="mb-0 fw-bold">Administrator</h6>
+                <div class="user-role d-flex align-items-center justify-content-center mt-1">
+                    <span class="status-dot me-1"></span>
+                    <small>System Admin</small>
+                </div>
             </div>
-            <div class="list-group list-group-flush">
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+
+            <!-- Navigation Links -->
+            <div class="sidebar-menu py-3">
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
+                   asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+                    <span>Dashboard</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" asp-area="" asp-controller="TreatmentType" asp-action="Index">
-                    <i class="bi bi-clipboard2-pulse me-2"></i> Treatments
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "TreatmentType" ? "active" : "")" 
+                   asp-area="" asp-controller="TreatmentType" asp-action="Index">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-clipboard2-pulse"></i>
+                    </div>
+                    <span>Treatments</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" asp-area="" asp-controller="Doctor" asp-action="Index">
-                    <i class="bi bi-person-badge me-2"></i> Doctor
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Doctor" ? "active" : "")" 
+                   asp-area="" asp-controller="Doctor" asp-action="Index">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <span>Doctors</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" asp-area="Admin" asp-controller="TimeSlot" asp-action="Index">
-                    <i class="bi bi-calendar-week me-2"></i> Manage Doctor Slots
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "Patients" ? "active" : "")" 
+                   asp-area="" asp-controller="Admin" asp-action="Patients">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <span>Patients</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" asp-area="Admin" asp-controller="LeaveManagement" asp-action="Index">
-                    <i class="bi bi-calendar-minus me-2"></i> Leave Management
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "TimeSlot" ? "active" : "")" 
+                   asp-area="Admin" asp-controller="TimeSlot" asp-action="Index">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-calendar-week"></i>
+                    </div>
+                    <span>Doctor Slots</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" href="#">
-                    <i class="bi bi-people me-2"></i> Patients
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "LeaveManagement" ? "active" : "")" 
+                   asp-area="Admin" asp-controller="LeaveManagement" asp-action="Index">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-calendar-minus"></i>
+                    </div>
+                    <span>Leave Management</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" href="#">
-                    <i class="bi bi-calendar-check me-2"></i> Appointments
+                <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Admin" && ViewContext.RouteData.Values["Action"].ToString() == "Appointments" ? "active" : "")" 
+                   asp-area="" asp-controller="Admin" asp-action="Appointments">
+                    <div class="sidebar-icon me-3">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <span>Appointments</span>
                 </a>
-                <a class="list-group-item list-group-item-action bg-dark text-white p-3" href="#">
-                    <i class="bi bi-gear me-2"></i> Settings
-                </a>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="sidebar-item d-flex align-items-center px-4 py-3 w-100 text-start border-0 bg-transparent">
+                        <div class="sidebar-icon me-3">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </div>
+                        <span>Logout</span>
+                    </button>
+                </form>
             </div>
         </div>
+        
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
                 <div class="container-fluid">
-                    <button class="btn btn-outline-secondary" id="sidebarToggle">
-                        <i class="bi bi-list"></i>
-                    </button>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
+                    <button class="btn btn-light border" id="sidebarToggle">
+                        <i class="bi bi-chevron-left"></i>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown"
                                    aria-haspopup="true" aria-expanded="false">
-                                    <i class="bi bi-person-circle me-1"></i> Admin
+                                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2 text-white">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <span>Admin</span>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Profile</a>
+                                <div class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                                    <div class="dropdown-header">
+                                        <h6 class="text-primary mb-0">Administrator</h6>
+                                        <small class="text-muted">System Admin</small>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                        <i class="bi bi-person-circle me-2 text-muted"></i> My Profile
+                                    </a>
                                     <div class="dropdown-divider"></div>
                                     <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                                        <button type="submit" class="dropdown-item">Logout</button>
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-box-arrow-right me-2 text-muted"></i> Logout
+                                        </button>
                                     </form>
                                 </div>
                             </li>
@@ -76,24 +163,62 @@
                 </div>
             </nav>
 
-            <div class="container-fluid p-4">
-                @RenderBody()
+            <div class="content-container">
+                <div class="container-fluid p-4 fade-in">
+                    @RenderBody()
+                </div>
             </div>
+            
+            <!-- Footer -->
+            <footer class="footer border-top text-muted bg-white">
+                <div class="container-fluid py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            &copy; 2025 - SmileCraft Dental Management System
+                        </div>
+                        <div>
+                            <a href="#" class="text-muted me-2">Privacy</a>
+                            <a href="#" class="text-muted">Terms</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     
     <script>
         // Toggle sidebar
         window.addEventListener('DOMContentLoaded', event => {
+            // Check if sidebar state is saved in localStorage
+            const sidebarToggled = localStorage.getItem('sb|sidebar-toggle') === 'true';
+            if (sidebarToggled) {
+                document.body.classList.add('sb-sidenav-toggled');
+                document.querySelector('#sidebarToggle i').classList.remove('bi-chevron-left');
+                document.querySelector('#sidebarToggle i').classList.add('bi-chevron-right');
+            }
+            
             const sidebarToggle = document.body.querySelector('#sidebarToggle');
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', event => {
                     event.preventDefault();
                     document.body.classList.toggle('sb-sidenav-toggled');
+                    
+                    // Toggle the chevron icon
+                    const icon = sidebarToggle.querySelector('i');
+                    if (document.body.classList.contains('sb-sidenav-toggled')) {
+                        icon.classList.remove('bi-chevron-left');
+                        icon.classList.add('bi-chevron-right');
+                    } else {
+                        icon.classList.remove('bi-chevron-right');
+                        icon.classList.add('bi-chevron-left');
+                    }
+                    
                     localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
                 });
             }

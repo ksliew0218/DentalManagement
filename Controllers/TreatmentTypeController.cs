@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using DentalManagement.Authorization;
+using DentalManagement.ViewModels;
 
 namespace DentalManagement.Controllers
 {
@@ -95,6 +96,27 @@ namespace DentalManagement.Controllers
                 {
                     return NotFound();
                 }
+
+                // Get completed appointments for this treatment type
+                var treatmentHistory = await _context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.Doctor)
+                    .Where(a => a.TreatmentTypeId == id && a.Status == "Completed")
+                    .OrderByDescending(a => a.AppointmentDate)
+                    .ThenByDescending(a => a.AppointmentTime)
+                    .Take(10) // Limit to 10 most recent for performance
+                    .Select(a => new TreatmentHistoryViewModel
+                    {
+                        AppointmentId = a.Id,
+                        PatientName = $"{a.Patient.FirstName} {a.Patient.LastName}",
+                        DoctorName = $"Dr. {a.Doctor.FirstName} {a.Doctor.LastName}",
+                        AppointmentDate = a.AppointmentDate,
+                        AppointmentTime = a.AppointmentTime,
+                        Notes = a.Notes
+                    })
+                    .ToListAsync();
+
+                ViewData["TreatmentHistory"] = treatmentHistory;
 
                 return View(treatmentType);
             }

@@ -1,0 +1,592 @@
+@model DentalManagement.Models.Patient
+@{
+    ViewData["Title"] = "Patient Details";
+    var appointments = ViewBag.Appointments as List<DentalManagement.Models.Appointment>;
+    var age = ViewBag.Age;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="admin-page-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Patients">Patients</a></li>
+            <li class="breadcrumb-item active">@Model.FirstName @Model.LastName</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="title">
+                <i class="bi bi-person-badge me-2 text-primary"></i>Patient Profile
+            </h4>
+            <p class="subtitle">View patient information, medical history, and appointments</p>
+        </div>
+        <div>
+            <span class="badge bg-info me-2 px-3 py-2">
+                <i class="bi bi-eye me-1"></i> View Only
+            </span>
+            <a asp-action="Appointments" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Appointments
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Patient Info Card -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 d-flex flex-column align-items-center mb-3 mb-md-0">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePic))
+                        {
+                            <img src="@Model.ProfilePic" alt="@Model.FirstName @Model.LastName" class="patient-avatar img-thumbnail shadow-sm" />
+                        }
+                        else
+                        {
+                            <div class="patient-avatar d-flex align-items-center justify-content-center bg-primary text-white fs-1 fw-bold">
+                                @Model.FirstName[0]@Model.LastName[0]
+                            </div>
+                        }
+                        <div class="text-center mt-3">
+                            <h5 class="fw-bold mb-1">@Model.FirstName @Model.LastName</h5>
+                            <span class="badge bg-success rounded-pill mb-2">Active Patient</span>
+                            <p class="text-muted small mb-0">Member since @Model.User?.CreatedAt.ToString("MMMM yyyy")</p>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="patient-info-section p-3 bg-light rounded mb-3">
+                                    <h5 class="section-title">
+                                        <i class="bi bi-person me-2"></i>Personal Details
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Full Name</p>
+                                            <p class="info-value mb-0">@Model.FirstName @Model.LastName</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Email</p>
+                                            <p class="info-value mb-0">@Model.User?.Email</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Gender</p>
+                                            <p class="info-value mb-0">@Model.Gender</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Age</p>
+                                            <p class="info-value mb-0">@age years old</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="patient-info-section p-3 bg-light rounded mb-3">
+                                    <h5 class="section-title">
+                                        <i class="bi bi-telephone me-2"></i>Contact Information
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Phone</p>
+                                            <p class="info-value mb-0">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Address</p>
+                                            <p class="info-value mb-0">@(string.IsNullOrEmpty(Model.Address) ? "N/A" : Model.Address)</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Emergency Contact</p>
+                                            <p class="info-value mb-0">@(string.IsNullOrEmpty(Model.EmergencyContactName) ? "N/A" : Model.EmergencyContactName)</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <p class="info-label">Emergency Phone</p>
+                                            <p class="info-value mb-0">@(string.IsNullOrEmpty(Model.EmergencyContactPhone) ? "N/A" : Model.EmergencyContactPhone)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Treatment & Appointment History Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>Treatment & Appointment History
+                </h6>
+                @if (appointments != null && appointments.Any())
+                {
+                    <button type="button" id="printHistoryBtn" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-printer me-2"></i>Print History
+                    </button>
+                }
+            </div>
+            <div class="card-body">
+                @if (appointments == null || !appointments.Any())
+                {
+                    <div class="text-center p-5">
+                        <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                        </div>
+                        <h5 class="fw-bold">No Appointments Found</h5>
+                        <p class="text-muted mb-4">This patient hasn't had any appointments yet</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover treatment-history-table" id="appointmentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Treatment</th>
+                                    <th>Doctor</th>
+                                    <th>Status</th>
+                                    <th>Payment Status</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var appointment in appointments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-bold">@appointment.AppointmentDate.ToString("MMM d, yyyy")</span>
+                                                <small class="text-muted">
+                                                    @{
+                                                        var time = appointment.AppointmentTime;
+                                                        var hours = time.Hours;
+                                                        var minutes = time.Minutes;
+                                                        var amPm = hours >= 12 ? "PM" : "AM";
+                                                        hours = hours % 12;
+                                                        if (hours == 0) hours = 12;
+                                                        <text>@hours:@minutes.ToString("D2") @amPm</text>
+                                                    }
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>@appointment.TreatmentType?.Name</td>
+                                        <td>Dr. @appointment.Doctor?.FirstName @appointment.Doctor?.LastName</td>
+                                        <td>
+                                            @{
+                                                var statusClass = appointment.Status switch
+                                                {
+                                                    "Completed" => "badge bg-success",
+                                                    "Cancelled" => "badge bg-danger",
+                                                    "Confirmed" => "badge bg-primary",
+                                                    "Pending" => "badge bg-warning text-dark",
+                                                    _ => "badge bg-secondary"
+                                                };
+                                            }
+                                            <span class="@statusClass">@appointment.Status</span>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var paymentStatusClass = appointment.PaymentStatus switch
+                                                {
+                                                    PaymentStatus.Paid => "badge bg-success",
+                                                    PaymentStatus.PartiallyPaid => "badge bg-warning text-dark",
+                                                    PaymentStatus.Pending => "badge bg-secondary",
+                                                    PaymentStatus.Failed => "badge bg-danger",
+                                                    PaymentStatus.Cancelled => "badge bg-danger",
+                                                    _ => "badge bg-secondary"
+                                                };
+                                            }
+                                            <span class="@paymentStatusClass">@appointment.PaymentStatus</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span>RM @appointment.TotalAmount.ToString("F2")</span>
+                                                @if (appointment.PaymentStatus == PaymentStatus.PartiallyPaid)
+                                                {
+                                                    <small class="text-muted">
+                                                        @{
+                                                            var amountPaid = appointment.Payments?.Where(p => p.Status == "succeeded").Sum(p => p.Amount) ?? 0;
+                                                            var remaining = appointment.TotalAmount - amountPaid;
+                                                        }
+                                                        Paid: RM @amountPaid.ToString("F2") | Due: RM @remaining.ToString("F2")
+                                                    </small>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a asp-action="PatientAppointmentDetails" asp-route-id="@appointment.Id" class="btn btn-sm btn-primary btn-action me-1" title="View Details">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </a>
+                                                @if (appointment.TreatmentReports != null && appointment.TreatmentReports.Any())
+                                                {
+                                                    <a asp-action="PatientTreatmentReport" asp-route-id="@appointment.TreatmentReports.First().Id" class="btn btn-sm btn-info btn-action" title="View Report">
+                                                        <i class="bi bi-file-earmark-text"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#appointmentsTable').DataTable({
+                "order": [[0, "desc"]],
+                "pageLength": 10,
+                "lengthChange": true,
+                "searching": true,
+                "info": true,
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search appointments...",
+                    "lengthMenu": "Show _MENU_ appointments",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ appointments",
+                    "infoEmpty": "Showing 0 to 0 of 0 appointments",
+                    "infoFiltered": "(filtered from _MAX_ total appointments)"
+                }
+            });
+            
+            // Add classes to DataTables elements for styling
+            $('.dataTables_filter input').addClass('form-control form-control-sm');
+            $('.dataTables_length select').addClass('form-select form-select-sm');
+            
+            // Print History functionality
+            $("#printHistoryBtn").on("click", function() {
+                // Create a new window for printing
+                const printWindow = window.open("", "_blank", "width=800,height=600");
+                
+                // Get patient information
+                const patientName = "@Model.FirstName @Model.LastName";
+                const patientEmail = "@Model.User?.Email";
+                const patientPhone = "@(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)";
+                const memberSince = "@Model.User?.CreatedAt.ToString("MMMM yyyy")";
+                const patientAge = "@age";
+                
+                // Generate HTML for the history report
+                let historyHTML = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Patient History Report</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .report-container {
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 20px;
+                            border: 1px solid #ddd;
+                        }
+                        .report-header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 20px;
+                            border-bottom: 2px solid #f0f0f0;
+                        }
+                        .report-logo {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #3a66c1;
+                            margin-bottom: 5px;
+                        }
+                        .report-title {
+                            font-size: 20px;
+                            text-transform: uppercase;
+                            color: #555;
+                        }
+                        .patient-info {
+                            background-color: #f9f9f9;
+                            border-radius: 5px;
+                            padding: 15px;
+                            margin-bottom: 20px;
+                        }
+                        .info-row {
+                            display: flex;
+                            flex-wrap: wrap;
+                            margin: 0 -10px;
+                        }
+                        .info-col {
+                            flex: 0 0 50%;
+                            max-width: 50%;
+                            padding: 0 10px;
+                            margin-bottom: 10px;
+                            box-sizing: border-box;
+                        }
+                        .info-label {
+                            font-weight: bold;
+                            color: #555;
+                            margin-bottom: 5px;
+                        }
+                        .info-value {
+                            margin: 0;
+                        }
+                        .section-title {
+                            font-size: 18px;
+                            color: #3a66c1;
+                            margin-bottom: 15px;
+                            padding-bottom: 5px;
+                            border-bottom: 1px solid #eee;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        th, td {
+                            padding: 10px;
+                            text-align: left;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                            font-weight: bold;
+                        }
+                        .status-badge {
+                            display: inline-block;
+                            padding: 3px 8px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            color: white;
+                        }
+                        .status-completed {
+                            background-color: #28a745;
+                        }
+                        .status-cancelled {
+                            background-color: #dc3545;
+                        }
+                        .status-confirmed {
+                            background-color: #007bff;
+                        }
+                        .status-pending {
+                            background-color: #ffc107;
+                            color: #212529;
+                        }
+                        .payment-paid {
+                            background-color: #28a745;
+                        }
+                        .payment-partial {
+                            background-color: #ffc107;
+                            color: #212529;
+                        }
+                        .payment-pending {
+                            background-color: #6c757d;
+                        }
+                        .payment-failed {
+                            background-color: #dc3545;
+                        }
+                        .payment-cancelled {
+                            background-color: #dc3545;
+                        }
+                        .no-records {
+                            text-align: center;
+                            padding: 30px;
+                            background-color: #f9f9f9;
+                            border-radius: 5px;
+                            color: #6c757d;
+                        }
+                        .report-footer {
+                            margin-top: 40px;
+                            text-align: center;
+                            font-size: 14px;
+                            color: #777;
+                        }
+                        .print-date {
+                            margin-top: 30px;
+                            font-size: 12px;
+                            color: #999;
+                            text-align: center;
+                        }
+                        @@media print {
+                            .no-print {
+                                display: none;
+                            }
+                            body {
+                                padding: 0;
+                            }
+                            .report-container {
+                                border: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="report-container">
+                        <div class="report-header">
+                            <div class="report-logo">SmileCraft Dental Clinic</div>
+                            <div class="report-title">Patient History Report</div>
+                        </div>
+                        
+                        <div class="patient-info">
+                            <h3 class="section-title">Patient Information</h3>
+                            <div class="info-row">
+                                <div class="info-col">
+                                    <div class="info-label">Patient Name</div>
+                                    <p class="info-value">${patientName}</p>
+                                </div>
+                                <div class="info-col">
+                                    <div class="info-label">Email</div>
+                                    <p class="info-value">${patientEmail}</p>
+                                </div>
+                                <div class="info-col">
+                                    <div class="info-label">Phone Number</div>
+                                    <p class="info-value">${patientPhone}</p>
+                                </div>
+                                <div class="info-col">
+                                    <div class="info-label">Member Since</div>
+                                    <p class="info-value">${memberSince}</p>
+                                </div>
+                                <div class="info-col">
+                                    <div class="info-label">Age</div>
+                                    <p class="info-value">${patientAge} years old</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 class="section-title">Appointment History</h3>`;
+                
+                // Check if there are appointments
+                const appointmentsExist = @(appointments != null && appointments.Any() ? "true" : "false");
+                
+                if (appointmentsExist) {
+                    historyHTML += `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Treatment</th>
+                                    <th>Doctor</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    
+                    @foreach (var appointment in appointments)
+                    {
+                        var statusClass = appointment.Status switch
+                        {
+                            "Completed" => "status-completed",
+                            "Cancelled" => "status-cancelled",
+                            "Confirmed" => "status-confirmed",
+                            "Pending" => "status-pending",
+                            _ => ""
+                        };
+                        
+                        var paymentStatusClass = appointment.PaymentStatus switch
+                        {
+                            PaymentStatus.Paid => "payment-paid",
+                            PaymentStatus.PartiallyPaid => "payment-partial",
+                            PaymentStatus.Pending => "payment-pending",
+                            PaymentStatus.Failed => "payment-failed",
+                            PaymentStatus.Cancelled => "payment-cancelled",
+                            _ => ""
+                        };
+                        
+                        var appointmentTime = "";
+                        var time = appointment.AppointmentTime;
+                        var hours = time.Hours;
+                        var minutes = time.Minutes;
+                        var amPm = hours >= 12 ? "PM" : "AM";
+                        hours = hours % 12;
+                        if (hours == 0) hours = 12;
+                        appointmentTime = $"{hours}:{minutes:D2} {amPm}";
+                        
+                        @:historyHTML += `
+                        @:    <tr>
+                        @:        <td>
+                        @:            <div>
+                        @:                <strong>@appointment.AppointmentDate.ToString("MMM d, yyyy")</strong><br>
+                        @:                <small>@appointmentTime</small>
+                        @:            </div>
+                        @:        </td>
+                        @:        <td>@appointment.TreatmentType?.Name</td>
+                        @:        <td>Dr. @appointment.Doctor?.FirstName @appointment.Doctor?.LastName</td>
+                        @:        <td><span class="status-badge @statusClass">@appointment.Status</span></td>
+                        @:        <td>RM @appointment.TotalAmount.ToString("F2")</td>
+                        @:    </tr>`;
+                    }
+                    
+                    historyHTML += `
+                            </tbody>
+                        </table>`;
+                } else {
+                    historyHTML += `
+                        <div class="no-records">
+                            <p>No appointment records found for this patient.</p>
+                        </div>`;
+                }
+                
+                historyHTML += `
+                        <div class="report-footer">
+                            Thank you for choosing SmileCraft Dental Clinic for your dental care.
+                        </div>
+                        
+                        <div class="print-date">
+                            Printed on ${new Date().toLocaleString()}
+                        </div>
+                        
+                        <div class="no-print" style="text-align: center; margin-top: 30px;">
+                            <button onclick="window.print();" style="padding: 10px 20px; cursor: pointer;">Print History</button>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                `;
+                
+                // Write the HTML to the new window and trigger print
+                printWindow.document.open();
+                printWindow.document.write(historyHTML);
+                printWindow.document.close();
+                
+                // Wait for the content to load before printing
+                printWindow.onload = function() {
+                    // Auto-print when the page has loaded
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 500);
+                };
+            });
+        });
+    </script>
+} 

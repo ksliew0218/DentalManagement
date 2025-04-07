@@ -1,17 +1,33 @@
 @model DentalManagement.Models.TreatmentType
 
-<div class="container mt-4">
+@{
+    ViewData["Title"] = "Create Treatment";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-controller="TreatmentType" asp-action="Index">Treatment Types</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Create Treatment</li>
+        <ol class="breadcrumb breadcrumb-custom">
+            <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Treatment Types</a></li>
+            <li class="breadcrumb-item active">Create Treatment</li>
         </ol>
     </nav>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1><i class="bi bi-clipboard2-plus me-2 text-primary"></i>Create Treatment</h1>
+            <p class="text-muted mb-0">Add a new treatment type to the system</p>
+        </div>
+    </div>
 
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Create Treatment Type</h2>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-pencil-square me-2"></i>Treatment Details
+            </h6>
         </div>
         <div class="card-body">
             <form asp-action="Create" class="needs-validation" enctype="multipart/form-data" novalidate>
@@ -42,6 +58,7 @@
                         <div class="form-group">
                             <label class="form-label">Name <span class="text-danger">*</span></label>
                             <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
                             <div class="invalid-feedback">Please enter a treatment name</div>
                         </div>
                     </div>
@@ -49,6 +66,7 @@
                         <div class="form-group">
                             <label class="form-label">Price (RM) <span class="text-danger">*</span></label>
                             <input asp-for="Price" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="Price" class="text-danger"></span>
                             <div class="invalid-feedback">Please enter a valid price</div>
                         </div>
                     </div>
@@ -59,6 +77,7 @@
                         <div class="form-group">
                             <label class="form-label">Duration (Minutes) <span class="text-danger">*</span></label>
                             <input asp-for="Duration" type="number" class="form-control" required />
+                            <span asp-validation-for="Duration" class="text-danger"></span>
                             <div class="invalid-feedback">Please enter the duration in minutes</div>
                         </div>
                     </div>
@@ -69,6 +88,7 @@
                                 <option value="true">Active</option>
                                 <option value="false">Inactive</option>
                             </select>
+                            <span asp-validation-for="IsActive" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -78,27 +98,71 @@
                         <div class="form-group">
                             <label class="form-label">Description</label>
                             <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
                 
                 <div class="row">
-                    <div class="col-12 mb-3">
+                    <div class="col-12 mb-4">
                         <div class="form-group">
                             <label class="form-label">Treatment Image <small class="text-muted">(Optional)</small></label>
                             <input type="file" name="ImageFile" class="form-control" accept="image/*" data-val="false" />
                             <small class="text-muted">Upload an image for this treatment (optional). Recommended size: 800x600 pixels.</small>
+                            <div id="imagePreview" class="mt-2" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <span>Image Preview</span>
+                                    </div>
+                                    <div class="card-body p-2" id="previewContent">
+                                        <!-- Preview image will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="imageUploadError" class="text-danger mt-1" style="display: none;">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                <span>Error uploading image. Please try again with a different image.</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-12 mb-3">
+                    <div class="col-12 mb-4">
                         <div class="form-group">
-                            <label class="form-label">Assign Doctors <span class="text-danger">*</span></label>
-                            <select name="DoctorIds" class="form-select" multiple asp-items="ViewBag.DoctorIds" required>
-                            </select>
-                            <small class="text-muted">Hold Ctrl/Cmd to select multiple doctors</small>
+                            <label class="form-label d-block mb-2">Assign Doctors <span class="text-danger">*</span></label>
+                            
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Select doctors who can perform this treatment</span>
+                                        <span class="badge bg-primary" id="selectedDoctorsCount">0 selected</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush doctor-selection">
+                                        <select name="DoctorIds" id="doctorSelection" class="form-select d-none" multiple asp-items="ViewBag.DoctorIds" required>
+                                        </select>
+                                        
+                                        @foreach (var item in ViewBag.DoctorIds)
+                                        {
+                                            <div class="list-group-item doctor-item" data-doctor-id="@item.Value">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="bi bi-person-badge me-2"></i>
+                                                        @item.Text
+                                                    </div>
+                                                    <div>
+                                                        <button type="button" class="btn btn-sm btn-success add-doctor">
+                                                            <i class="bi bi-plus-circle"></i> Add
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                             <div class="invalid-feedback">Please assign at least one doctor</div>
                         </div>
                     </div>
@@ -108,7 +172,8 @@
                     <a asp-action="Index" class="btn btn-outline-secondary me-md-2">
                         <i class="bi bi-arrow-left"></i> Back to Treatments
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span class="spinner-border spinner-border-sm d-none me-2" id="submitSpinner" role="status" aria-hidden="true"></span>
                         <i class="bi bi-save"></i> Save Treatment
                     </button>
                 </div>
@@ -123,12 +188,20 @@
         (function () {
             'use strict'
             var forms = document.querySelectorAll('.needs-validation')
+            const submitBtn = document.getElementById('submitBtn');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
             Array.prototype.slice.call(forms)
                 .forEach(function (form) {
                     form.addEventListener('submit', function (event) {
                         if (!form.checkValidity()) {
                             event.preventDefault()
                             event.stopPropagation()
+                        } else {
+                            // Show loading state
+                            submitBtn.disabled = true;
+                            submitSpinner.classList.remove('d-none');
+                            submitBtn.innerHTML = submitBtn.innerHTML.replace('Save Treatment', 'Saving...');
                         }
                         form.classList.add('was-validated')
                     }, false)
@@ -198,40 +271,157 @@
                     break;
                 case 'crown':
                     nameInput.value = 'Dental Crown';
-                    priceInput.value = '950.00';
+                    priceInput.value = '600.00';
                     durationInput.value = '90';
-                    descriptionInput.value = 'Custom-fitted cap that covers a damaged or weak tooth to restore its shape and function.';
+                    descriptionInput.value = 'Prosthetic restoration of a damaged tooth to restore its shape, size, and function.';
                     break;
             }
         });
         
-        // Image preview functionality
-        document.querySelector('input[name="ImageFile"]').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
+        // Doctor selection functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const doctorItems = document.querySelectorAll('.doctor-item');
+            const doctorSelection = document.getElementById('doctorSelection');
+            const selectedDoctorsCount = document.getElementById('selectedDoctorsCount');
+            
+            // Initialize selected count
+            updateSelectedCount();
+            
+            // Add click handlers for all doctor items
+            doctorItems.forEach(item => {
+                const doctorId = item.getAttribute('data-doctor-id');
                 
-                // Create preview element if it doesn't exist
-                let previewContainer = document.getElementById('imagePreview');
-                if (!previewContainer) {
-                    previewContainer = document.createElement('div');
-                    previewContainer.id = 'imagePreview';
-                    previewContainer.className = 'mt-2';
-                    this.parentNode.appendChild(previewContainer);
+                // Add doctor button
+                const addBtn = item.querySelector('.add-doctor');
+                if (addBtn) {
+                    addBtn.addEventListener('click', function() {
+                        selectDoctor(doctorId, item);
+                    });
+                }
+            });
+            
+            // Select doctor function
+            function selectDoctor(doctorId, item) {
+                // Update the UI
+                item.classList.add('selected');
+                
+                // Replace the add button with a remove button
+                const buttonContainer = item.querySelector('.add-doctor').parentElement;
+                buttonContainer.innerHTML = `
+                    <button type="button" class="btn btn-sm btn-danger remove-doctor">
+                        <i class="bi bi-dash-circle"></i> Remove
+                    </button>
+                `;
+                
+                // Add click handler for the new remove button
+                const newRemoveBtn = buttonContainer.querySelector('.remove-doctor');
+                newRemoveBtn.addEventListener('click', function() {
+                    unselectDoctor(doctorId, item);
+                });
+                
+                // Update the hidden select
+                for (let i = 0; i < doctorSelection.options.length; i++) {
+                    if (doctorSelection.options[i].value === doctorId) {
+                        doctorSelection.options[i].selected = true;
+                        break;
+                    }
                 }
                 
-                reader.onload = function(e) {
-                    previewContainer.innerHTML = `
-                        <div class="card">
-                            <div class="card-body p-2">
-                                <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" />
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                reader.readAsDataURL(file);
+                updateSelectedCount();
             }
+            
+            // Unselect doctor function
+            function unselectDoctor(doctorId, item) {
+                // Update the UI
+                item.classList.remove('selected');
+                
+                // Replace the remove button with an add button
+                const buttonContainer = item.querySelector('.remove-doctor').parentElement;
+                buttonContainer.innerHTML = `
+                    <button type="button" class="btn btn-sm btn-success add-doctor">
+                        <i class="bi bi-plus-circle"></i> Add
+                    </button>
+                `;
+                
+                // Add click handler for the new add button
+                const newAddBtn = buttonContainer.querySelector('.add-doctor');
+                newAddBtn.addEventListener('click', function() {
+                    selectDoctor(doctorId, item);
+                });
+                
+                // Update the hidden select
+                for (let i = 0; i < doctorSelection.options.length; i++) {
+                    if (doctorSelection.options[i].value === doctorId) {
+                        doctorSelection.options[i].selected = false;
+                        break;
+                    }
+                }
+                
+                updateSelectedCount();
+            }
+            
+            // Update selected count function
+            function updateSelectedCount() {
+                let count = 0;
+                for (let i = 0; i < doctorSelection.options.length; i++) {
+                    if (doctorSelection.options[i].selected) {
+                        count++;
+                    }
+                }
+                selectedDoctorsCount.textContent = count + ' selected';
+            }
+            
+            // Image preview functionality
+            const imageInput = document.querySelector('input[name="ImageFile"]');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewContent = document.getElementById('previewContent');
+            const imageUploadError = document.getElementById('imageUploadError');
+            
+            imageInput.addEventListener('change', function() {
+                // Reset error message
+                imageUploadError.style.display = 'none';
+                
+                // Clear the preview
+                previewContent.innerHTML = '';
+                
+                // Check if a file was selected
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    
+                    // Validate file type
+                    if (!file.type.match('image.*')) {
+                        imageUploadError.style.display = 'block';
+                        imageUploadError.querySelector('span').textContent = 'Please select an image file (JPG, PNG, etc.).';
+                        this.value = ''; // Clear the input
+                        return;
+                    }
+                    
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        imageUploadError.style.display = 'block';
+                        imageUploadError.querySelector('span').textContent = 'Image size exceeds 5MB. Please select a smaller image.';
+                        this.value = ''; // Clear the input
+                        return;
+                    }
+                    
+                    // Create and display the preview image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-fluid rounded';
+                        img.style.maxHeight = '200px';
+                        previewContent.appendChild(img);
+                        
+                        // Show the preview container
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // No file selected, hide the preview
+                    imagePreview.style.display = 'none';
+                }
+            });
         });
     </script>
 }
