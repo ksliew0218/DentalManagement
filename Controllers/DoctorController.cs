@@ -98,13 +98,13 @@ namespace DentalManagement.Controllers
                 // Handle Image Upload
                 if (ProfileImage != null && ProfileImage.Length > 0)
                 {
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                    var uploadsFolder = Path.Combine("/app", "wwwroot", "images", "profiles");
                     if (!Directory.Exists(uploadsFolder))
                     {
                         Directory.CreateDirectory(uploadsFolder);
                     }
 
-                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(ProfileImage.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}_{ProfileImage.FileName}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
@@ -112,7 +112,7 @@ namespace DentalManagement.Controllers
                         await ProfileImage.CopyToAsync(stream);
                     }
 
-                    doctor.ProfilePictureUrl = "/uploads/" + uniqueFileName;
+                    doctor.ProfilePictureUrl = $"/images/profiles/{uniqueFileName}";
                 }
 
                 ModelState.Clear();
@@ -285,13 +285,13 @@ namespace DentalManagement.Controllers
                 // Preserve existing image if no new image is uploaded
                 if (ProfileImage != null && ProfileImage.Length > 0)
                 {
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                    var uploadsFolder = Path.Combine("/app", "wwwroot", "images", "profiles");
                     if (!Directory.Exists(uploadsFolder))
                     {
                         Directory.CreateDirectory(uploadsFolder);
                     }
 
-                    var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(ProfileImage.FileName);
+                    var uniqueFileName = $"{Guid.NewGuid()}_{ProfileImage.FileName}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
@@ -299,7 +299,7 @@ namespace DentalManagement.Controllers
                         await ProfileImage.CopyToAsync(stream);
                     }
 
-                    existingDoctor.ProfilePictureUrl = "/uploads/" + uniqueFileName;
+                    existingDoctor.ProfilePictureUrl = $"/images/profiles/{uniqueFileName}";
                 }
 
                 // Debugging logs to check values
