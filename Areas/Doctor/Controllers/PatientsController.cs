@@ -121,6 +121,7 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 var appointments = await _context.Appointments
                     .Include(a => a.TreatmentType)
                     .Include(a => a.TreatmentReports)
+                    .Include(a => a.Payments)
                     .Where(a => a.DoctorId == doctor.Id && a.PatientId == id)
                     .OrderByDescending(a => a.AppointmentDate)
                     .ToListAsync();
