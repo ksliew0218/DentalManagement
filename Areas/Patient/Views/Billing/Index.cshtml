@@ -116,11 +116,11 @@
                         <div class="amount-info">
                             <div class="amount-row">
                                 <span class="amount-label">Total Cost:</span>
-                                <span class="amount-value">@item.TotalAmount.ToString("C2")</span>
+                                <span class="amount-value">RM @item.TotalAmount.ToString("N2")</span>
                             </div>
                             <div class="amount-row">
                                 <span class="amount-label">Deposit Due:</span>
-                                <span class="amount-value highlight">@item.DepositAmount.ToString("C2")</span>
+                                <span class="amount-value highlight">RM @item.DepositAmount.ToString("N2")</span>
                             </div>
                         </div>
                         
@@ -183,11 +183,11 @@
                         <div class="amount-info">
                             <div class="amount-row">
                                 <span class="amount-label">Total Cost:</span>
-                                <span class="amount-value">@item.TotalAmount.ToString("C2")</span>
+                                <span class="amount-value">RM @item.TotalAmount.ToString("N2")</span>
                             </div>
                             <div class="amount-row">
                                 <span class="amount-label">Remaining:</span>
-                                <span class="amount-value highlight">@item.RemainingAmount.ToString("C2")</span>
+                                <span class="amount-value highlight">RM @item.RemainingAmount.ToString("N2")</span>
                             </div>
                         </div>
                         
@@ -254,7 +254,7 @@
                             <div class="amount-row">
                                 <span class="amount-label">Amount:</span>
                                 <span class="amount-value @(item.PaymentType == PaymentType.Refund ? "refund" : "")">
-                                    @(item.PaymentType == PaymentType.Refund ? "" : "-")@item.Amount.ToString("C2")
+                                    @(item.PaymentType == PaymentType.Refund ? "" : "-")RM @item.Amount.ToString("N2")
                                 </span>
                             </div>
                             <div class="amount-row">
