@@ -218,12 +218,29 @@ namespace DentalManagement.Controllers
         {
             var doctor = await _context.Doctors
                 .Include(d => d.User)
+                .Include(d => d.DoctorTreatments)
+                    .ThenInclude(dt => dt.TreatmentType)
                 .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
 
             if (doctor == null)
             {
                 return NotFound();
             }
+
+            // Get upcoming appointments for this doctor
+            var upcomingAppointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.TreatmentType)
+                .Where(a => a.DoctorId == id && 
+                           a.AppointmentDate >= DateTime.SpecifyKind(DateTime.Today, DateTimeKind.Utc) && 
+                           a.Status != "Cancelled" && 
+                           a.Status != "Completed")
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .Take(5) // Limit to 5 upcoming appointments
+                .ToListAsync();
+
+            ViewBag.UpcomingAppointments = upcomingAppointments;
 
             return View(doctor);
         }

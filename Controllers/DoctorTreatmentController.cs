@@ -32,7 +32,8 @@ namespace DentalManagement.Controllers
         }
 
         // GET: DoctorTreatment/ManageAssignments/5 (TreatmentTypeId)
-        public async Task<IActionResult> ManageAssignments(int? id)
+        // GET: DoctorTreatment/ManageAssignments?doctorId=5 (DoctorId)
+        public async Task<IActionResult> ManageAssignments(int? id, int? doctorId)
         {
             try
             {
@@ -42,52 +43,100 @@ namespace DentalManagement.Controllers
                     return RedirectToAction("AccessDenied", "Home");
                 }
 
-                if (id == null)
+                // Check if we have either a treatment type ID or a doctor ID
+                if (id == null && doctorId == null)
                 {
                     return NotFound();
                 }
 
-                // Get the treatment type
-                var treatmentType = await _context.TreatmentTypes
-                    .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-
-                if (treatmentType == null)
+                // If we have a treatment type ID, show doctor assignments for that treatment
+                if (id.HasValue)
                 {
-                    return NotFound();
-                }
+                    // Get the treatment type
+                    var treatmentType = await _context.TreatmentTypes
+                        .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
 
-                // Get all doctors
-                var doctors = await _context.Doctors
-                    .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
-                    .OrderBy(d => d.LastName)
-                    .ThenBy(d => d.FirstName)
-                    .ToListAsync();
-
-                // Get existing doctor assignments for this treatment
-                var existingAssignments = await _context.DoctorTreatments
-                    .Where(dt => dt.TreatmentTypeId == id)
-                    .ToListAsync();
-
-                // Create view model
-                var viewModel = new DoctorTreatmentViewModel
-                {
-                    TreatmentType = treatmentType,
-                    DoctorAssignments = doctors.Select(d => new DoctorAssignmentViewModel
+                    if (treatmentType == null)
                     {
-                        DoctorId = d.Id,
-                        DoctorName = $"Dr. {d.FirstName} {d.LastName}",
-                        DoctorSpecialty = d.Specialty,
-                        IsAssigned = existingAssignments.Any(ea => ea.DoctorId == d.Id && !ea.IsDeleted),
-                        IsActive = existingAssignments.Any(ea => ea.DoctorId == d.Id && ea.IsActive && !ea.IsDeleted),
-                        AssignmentId = existingAssignments.FirstOrDefault(ea => ea.DoctorId == d.Id)?.Id ?? 0
-                    }).ToList()
-                };
+                        return NotFound();
+                    }
 
-                return View(viewModel);
+                    // Get all doctors
+                    var doctors = await _context.Doctors
+                        .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
+                        .OrderBy(d => d.LastName)
+                        .ThenBy(d => d.FirstName)
+                        .ToListAsync();
+
+                    // Get existing doctor assignments for this treatment
+                    var existingAssignments = await _context.DoctorTreatments
+                        .Where(dt => dt.TreatmentTypeId == id)
+                        .ToListAsync();
+
+                    // Create view model
+                    var viewModel = new DoctorTreatmentViewModel
+                    {
+                        TreatmentType = treatmentType,
+                        DoctorAssignments = doctors.Select(d => new DoctorAssignmentViewModel
+                        {
+                            DoctorId = d.Id,
+                            DoctorName = $"Dr. {d.FirstName} {d.LastName}",
+                            DoctorSpecialty = d.Specialty,
+                            IsAssigned = existingAssignments.Any(ea => ea.DoctorId == d.Id && !ea.IsDeleted),
+                            IsActive = existingAssignments.Any(ea => ea.DoctorId == d.Id && ea.IsActive && !ea.IsDeleted),
+                            AssignmentId = existingAssignments.FirstOrDefault(ea => ea.DoctorId == d.Id)?.Id ?? 0
+                        }).ToList()
+                    };
+
+                    ViewBag.ManagementType = "Treatment";
+                    return View(viewModel);
+                }
+                // If we have a doctor ID, show treatment assignments for that doctor
+                else
+                {
+                    // Get the doctor
+                    var doctor = await _context.Doctors
+                        .FirstOrDefaultAsync(d => d.Id == doctorId && !d.IsDeleted);
+
+                    if (doctor == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Get all treatment types
+                    var treatments = await _context.TreatmentTypes
+                        .Where(t => !t.IsDeleted)
+                        .OrderBy(t => t.Name)
+                        .ToListAsync();
+
+                    // Get existing treatments assigned to this doctor
+                    var existingAssignments = await _context.DoctorTreatments
+                        .Where(dt => dt.DoctorId == doctorId)
+                        .ToListAsync();
+
+                    // Create view model
+                    var viewModel = new DoctorTreatmentViewModel
+                    {
+                        Doctor = doctor,
+                        TreatmentAssignments = treatments.Select(t => new TreatmentAssignmentViewModel
+                        {
+                            TreatmentTypeId = t.Id,
+                            TreatmentName = t.Name,
+                            TreatmentDuration = t.Duration,
+                            TreatmentPrice = t.Price,
+                            IsAssigned = existingAssignments.Any(ea => ea.TreatmentTypeId == t.Id && !ea.IsDeleted),
+                            IsActive = existingAssignments.Any(ea => ea.TreatmentTypeId == t.Id && ea.IsActive && !ea.IsDeleted),
+                            AssignmentId = existingAssignments.FirstOrDefault(ea => ea.TreatmentTypeId == t.Id)?.Id ?? 0
+                        }).ToList()
+                    };
+
+                    ViewBag.ManagementType = "Doctor";
+                    return View("ManageTreatments", viewModel);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while loading doctor assignments");
+                _logger.LogError(ex, "Error occurred while loading doctor or treatment assignments");
                 return View("Error", new ErrorViewModel { RequestId = System.Diagnostics.Activity.Current?.Id ?? HttpContext.TraceIdentifier });
             }
         }
@@ -222,7 +271,9 @@ namespace DentalManagement.Controllers
     public class DoctorTreatmentViewModel
     {
         public TreatmentType TreatmentType { get; set; }
+        public Doctor Doctor { get; set; }
         public List<DoctorAssignmentViewModel> DoctorAssignments { get; set; }
+        public List<TreatmentAssignmentViewModel> TreatmentAssignments { get; set; }
     }
 
     public class DoctorAssignmentViewModel
@@ -230,6 +281,17 @@ namespace DentalManagement.Controllers
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }
         public string DoctorSpecialty { get; set; }
+        public bool IsAssigned { get; set; }
+        public bool IsActive { get; set; }
+        public int AssignmentId { get; set; }
+    }
+
+    public class TreatmentAssignmentViewModel
+    {
+        public int TreatmentTypeId { get; set; }
+        public string TreatmentName { get; set; }
+        public int TreatmentDuration { get; set; }
+        public decimal TreatmentPrice { get; set; }
         public bool IsAssigned { get; set; }
         public bool IsActive { get; set; }
         public int AssignmentId { get; set; }

@@ -1,7 +1,7 @@
 @model DentalManagement.Controllers.DoctorTreatmentViewModel
 
 @{
-    ViewData["Title"] = "Manage Doctor Assignments";
+    ViewData["Title"] = "Manage Treatment Assignments";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -10,9 +10,9 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-controller="TreatmentType" asp-action="Index">Treatments</a></li>
-            <li class="breadcrumb-item"><a asp-controller="TreatmentType" asp-action="Details" asp-route-id="@Model.TreatmentType.Id">Treatment Details</a></li>
-            <li class="breadcrumb-item active">Manage Doctors</li>
+            <li class="breadcrumb-item"><a asp-controller="Doctor" asp-action="Index">Doctors</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Doctor" asp-action="Details" asp-route-id="@Model.Doctor.Id">Doctor Details</a></li>
+            <li class="breadcrumb-item active">Manage Treatments</li>
         </ol>
     </nav>
 
@@ -33,47 +33,47 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
             <h5 class="m-0 font-weight-bold text-primary">
-                <i class="bi bi-people me-2"></i>Manage Doctor Assignments
+                <i class="bi bi-clipboard2-pulse me-2"></i>Manage Treatment Assignments
             </h5>
-            <a asp-controller="TreatmentType" asp-action="Details" asp-route-id="@Model.TreatmentType.Id" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Treatment
+            <a asp-controller="Doctor" asp-action="Details" asp-route-id="@Model.Doctor.Id" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Doctor
             </a>
         </div>
         <div class="card-body">
             <div class="mb-4">
-                <h4 class="h5 mb-3">Treatment: @Model.TreatmentType.Name</h4>
-                <p class="text-muted">
-                    @if (string.IsNullOrEmpty(Model.TreatmentType.Description))
+                <div class="d-flex align-items-center mb-3">
+                    @if (!string.IsNullOrEmpty(Model.Doctor.ProfilePictureUrl))
                     {
-                        <span class="fst-italic">No description provided</span>
+                        <img src="@Model.Doctor.ProfilePictureUrl" alt="Doctor" class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
                     }
                     else
                     {
-                        @Model.TreatmentType.Description
+                        <img src="/images/default-profile.png" alt="Doctor" class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
                     }
-                </p>
-                <div class="d-flex gap-3">
-                    <div class="badge bg-primary p-2">
-                        <i class="bi bi-cash-coin me-1"></i> RM @Model.TreatmentType.Price.ToString("F2")
+                    <div>
+                        <h4 class="mb-0">Dr. @Model.Doctor.FirstName @Model.Doctor.LastName</h4>
+                        <span class="text-muted">@Model.Doctor.Specialty</span>
                     </div>
+                </div>
+                <div class="d-flex gap-3 mb-3">
                     <div class="badge bg-primary p-2">
-                        <i class="bi bi-clock me-1"></i> @Model.TreatmentType.Duration minutes
+                        <i class="bi bi-award me-1"></i> @Model.Doctor.ExperienceYears years experience
                     </div>
-                    <div class="badge @(Model.TreatmentType.IsActive ? "bg-success" : "bg-secondary") p-2">
-                        <i class="bi bi-circle-fill me-1"></i> @(Model.TreatmentType.IsActive ? "Active" : "Inactive")
+                    <div class="badge @(Model.Doctor.Status == StatusType.Active ? "bg-success" : "bg-secondary") p-2">
+                        <i class="bi bi-circle-fill me-1"></i> @Model.Doctor.Status
                     </div>
                 </div>
             </div>
 
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">Available Doctors</h5>
+                    <h5 class="mb-0">Available Treatments</h5>
                     <div class="d-flex gap-2">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="showAllDoctors" checked>
-                            <label class="form-check-label" for="showAllDoctors">Show all doctors</label>
+                            <input class="form-check-input" type="checkbox" id="showAllTreatments" checked>
+                            <label class="form-check-label" for="showAllTreatments">Show all treatments</label>
                         </div>
-                        <input type="text" class="form-control form-control-sm" id="doctorSearch" placeholder="Search doctors..." style="width: 200px;">
+                        <input type="text" class="form-control form-control-sm" id="treatmentSearch" placeholder="Search treatments..." style="width: 200px;">
                     </div>
                 </div>
                 
@@ -81,23 +81,25 @@
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>Doctor</th>
-                                <th>Specialty</th>
+                                <th>Treatment Name</th>
+                                <th>Duration</th>
+                                <th>Price</th>
                                 <th>Assignment Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var doctor in Model.DoctorAssignments)
+                            @foreach (var treatment in Model.TreatmentAssignments)
                             {
-                                <tr class="doctor-row @(doctor.IsAssigned ? "assigned-doctor" : "unassigned-doctor")">
-                                    <td>@doctor.DoctorName</td>
-                                    <td>@doctor.DoctorSpecialty</td>
+                                <tr class="treatment-row @(treatment.IsAssigned ? "assigned-treatment" : "unassigned-treatment")">
+                                    <td>@treatment.TreatmentName</td>
+                                    <td>@treatment.TreatmentDuration minutes</td>
+                                    <td>RM @treatment.TreatmentPrice.ToString("F2")</td>
                                     <td>
-                                        @if (doctor.IsAssigned)
+                                        @if (treatment.IsAssigned)
                                         {
-                                            <span class="badge @(doctor.IsActive ? "bg-success" : "bg-warning") assignment-status">
-                                                @(doctor.IsActive ? "Active" : "Inactive")
+                                            <span class="badge @(treatment.IsActive ? "bg-success" : "bg-warning") assignment-status">
+                                                @(treatment.IsActive ? "Active" : "Inactive")
                                             </span>
                                         }
                                         else
@@ -107,28 +109,28 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            @if (doctor.IsAssigned)
+                                            @if (treatment.IsAssigned)
                                             {
-                                                <button type="button" class="btn btn-sm @(doctor.IsActive ? "btn-outline-warning" : "btn-outline-success") toggle-active-btn"
-                                                        data-doctor-id="@doctor.DoctorId" 
-                                                        data-treatment-id="@Model.TreatmentType.Id"
-                                                        data-assignment-id="@doctor.AssignmentId"
-                                                        data-is-active="@doctor.IsActive.ToString().ToLower()">
-                                                    <i class="bi @(doctor.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
-                                                    @(doctor.IsActive ? "Deactivate" : "Activate")
+                                                <button type="button" class="btn btn-sm @(treatment.IsActive ? "btn-outline-warning" : "btn-outline-success") toggle-active-btn"
+                                                        data-doctor-id="@Model.Doctor.Id" 
+                                                        data-treatment-id="@treatment.TreatmentTypeId"
+                                                        data-assignment-id="@treatment.AssignmentId"
+                                                        data-is-active="@treatment.IsActive.ToString().ToLower()">
+                                                    <i class="bi @(treatment.IsActive ? "bi-pause-circle" : "bi-play-circle")"></i>
+                                                    @(treatment.IsActive ? "Deactivate" : "Activate")
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-danger remove-assignment-btn"
-                                                        data-doctor-id="@doctor.DoctorId" 
-                                                        data-treatment-id="@Model.TreatmentType.Id"
-                                                        data-assignment-id="@doctor.AssignmentId">
+                                                        data-doctor-id="@Model.Doctor.Id" 
+                                                        data-treatment-id="@treatment.TreatmentTypeId"
+                                                        data-assignment-id="@treatment.AssignmentId">
                                                     <i class="bi bi-trash"></i> Remove
                                                 </button>
                                             }
                                             else
                                             {
                                                 <button type="button" class="btn btn-sm btn-outline-primary add-assignment-btn"
-                                                        data-doctor-id="@doctor.DoctorId" 
-                                                        data-treatment-id="@Model.TreatmentType.Id">
+                                                        data-doctor-id="@Model.Doctor.Id" 
+                                                        data-treatment-id="@treatment.TreatmentTypeId">
                                                     <i class="bi bi-plus-circle"></i> Assign
                                                 </button>
                                             }
@@ -147,21 +149,21 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Filter doctors
-            $("#doctorSearch").on("keyup", function() {
+            // Filter treatments
+            $("#treatmentSearch").on("keyup", function() {
                 var value = $(this).val().toLowerCase();
-                $(".doctor-row").filter(function() {
+                $(".treatment-row").filter(function() {
                     $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
                 });
             });
             
-            // Toggle showing all doctors or only assigned ones
-            $("#showAllDoctors").on("change", function() {
+            // Toggle showing all treatments or only assigned ones
+            $("#showAllTreatments").on("change", function() {
                 if ($(this).is(":checked")) {
-                    $(".doctor-row").show();
+                    $(".treatment-row").show();
                 } else {
-                    $(".unassigned-doctor").hide();
-                    $(".assigned-doctor").show();
+                    $(".unassigned-treatment").hide();
+                    $(".assigned-treatment").show();
                 }
             });
             
@@ -186,7 +188,7 @@
                     success: function(result) {
                         if (result.success) {
                             // Update UI
-                            row.removeClass("unassigned-doctor").addClass("assigned-doctor");
+                            row.removeClass("unassigned-treatment").addClass("assigned-treatment");
                             row.find(".assignment-status").removeClass("bg-secondary").addClass("bg-success").text("Active");
                             
                             // Replace buttons
@@ -211,13 +213,13 @@
                             attachEventHandlers();
                             
                             // Show success message
-                            showSuccessMessage("Doctor assigned successfully!");
+                            showSuccessMessage("Treatment assigned successfully!");
                         } else {
-                            showErrorMessage(result.message || "An error occurred while assigning the doctor.");
+                            showErrorMessage(result.message || "An error occurred while assigning the treatment.");
                         }
                     },
                     error: function() {
-                        showErrorMessage("An error occurred while assigning the doctor.");
+                        showErrorMessage("An error occurred while assigning the treatment.");
                     }
                 });
             });
@@ -243,7 +245,7 @@
                     success: function(result) {
                         if (result.success) {
                             // Update UI
-                            row.removeClass("assigned-doctor").addClass("unassigned-doctor");
+                            row.removeClass("assigned-treatment").addClass("unassigned-treatment");
                             row.find(".assignment-status").removeClass("bg-success bg-warning").addClass("bg-secondary").text("Not Assigned");
                             
                             // Replace buttons
@@ -260,7 +262,7 @@
                             attachEventHandlers();
                             
                             // Show success message
-                            showSuccessMessage("Doctor assignment removed successfully!");
+                            showSuccessMessage("Treatment assignment removed successfully!");
                         } else {
                             showErrorMessage(result.message || "An error occurred while removing the assignment.");
                         }
@@ -346,7 +348,7 @@
                         success: function(result) {
                             if (result.success) {
                                 // Update UI
-                                row.removeClass("unassigned-doctor").addClass("assigned-doctor");
+                                row.removeClass("unassigned-treatment").addClass("assigned-treatment");
                                 row.find(".assignment-status").removeClass("bg-secondary").addClass("bg-success").text("Active");
                                 
                                 // Replace buttons
@@ -371,13 +373,13 @@
                                 attachEventHandlers();
                                 
                                 // Show success message
-                                showSuccessMessage("Doctor assigned successfully!");
+                                showSuccessMessage("Treatment assigned successfully!");
                             } else {
-                                showErrorMessage(result.message || "An error occurred while assigning the doctor.");
+                                showErrorMessage(result.message || "An error occurred while assigning the treatment.");
                             }
                         },
                         error: function() {
-                            showErrorMessage("An error occurred while assigning the doctor.");
+                            showErrorMessage("An error occurred while assigning the treatment.");
                         }
                     });
                 });
