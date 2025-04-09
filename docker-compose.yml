@@ -21,11 +21,11 @@ services:
       # Stripe Configuration
       Stripe__SecretKey: 'sk_test_51R8cWiHFpiQ09y8fmg5TflF7K4XLkUEJB5HMABaoCuVK0CSkj1ahiXD2i0iUFevW5QF4uC8pB3W7pEMGuxhM2GN200FHLn7laX'
       Stripe__PublishableKey: 'pk_test_51R8cWiHFpiQ09y8fP3oNdZFOOozb4xyQlyBg6BjzN5iSMpQ3pnXOQT6uqLL6yN7vLZpTUfR93RcBUAkdKo8jEkCR00U7YZMrHm'
-      Stripe__WebhookSecret: 'whsec_44f9fa07b7a2e7f29e127c0902354ab80a9e75fd3db86557780d12d30972aec1'
+      Stripe__WebhookSecret: 'whsec_27jehweF4pA7hKoq5OkcXPJXF3sqqIBS'
       Stripe__Currency: 'myr'
       # Application Domain - used for URL generation
       # Don't include the trailing slash
-      APPLICATION_URL: 'http://18.206.163.26:9090'
+      APPLICATION_URL: 'http://34.239.54.73:9090'
     volumes:
       - ./docker-data/images:/app/wwwroot/images
       # No need to mount EmailTemplates as a volume since it's built into the image
