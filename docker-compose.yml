@@ -6,18 +6,26 @@ services:
       dockerfile: Dockerfile
     container_name: dental_app
     ports:
-      - "9090:80"
+      - '9090:80'
     environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:80"
-      ConnectionStrings__DefaultConnection: "Host=ep-aged-dawn-a1b43ker-pooler.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_asjynoYCvM74;SSL Mode=Require;Trust Server Certificate=True"
-      EmailSettings__Host: "smtp-relay.brevo.com"
-      EmailSettings__Port: "587"
-      EmailSettings__SenderEmail: "ddacsmilecraft@gmail.com"
-      EmailSettings__SenderName: "SmileCraft Dental"
-      EmailSettings__Username: "892368002@smtp-brevo.com"
-      EmailSettings__Password: "N18Pa0Y9UQqD4Zjt"
-      EmailSettings__EnableSsl: "true"
-      DOTNET_TLS_ENABLE_HTTP3: "0"  # In case there are HTTP3 issues
+      ASPNETCORE_URLS: 'http://0.0.0.0:80'
+      ConnectionStrings__DefaultConnection: 'Host=ep-aged-dawn-a1b43ker-pooler.ap-southeast-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_asjynoYCvM74;SSL Mode=Require;Trust Server Certificate=True'
+      EmailSettings__Host: 'smtp-relay.brevo.com'
+      EmailSettings__Port: '587'
+      EmailSettings__SenderEmail: 'ddacsmilecraft@gmail.com'
+      EmailSettings__SenderName: 'SmileCraft Dental'
+      EmailSettings__Username: '892368002@smtp-brevo.com'
+      EmailSettings__Password: 'N18Pa0Y9UQqD4Zjt'
+      EmailSettings__EnableSsl: 'true'
+      DOTNET_TLS_ENABLE_HTTP3: '0' # In case there are HTTP3 issues
+      # Stripe Configuration
+      Stripe__SecretKey: 'sk_test_51R8cWiHFpiQ09y8fmg5TflF7K4XLkUEJB5HMABaoCuVK0CSkj1ahiXD2i0iUFevW5QF4uC8pB3W7pEMGuxhM2GN200FHLn7laX'
+      Stripe__PublishableKey: 'pk_test_51R8cWiHFpiQ09y8fP3oNdZFOOozb4xyQlyBg6BjzN5iSMpQ3pnXOQT6uqLL6yN7vLZpTUfR93RcBUAkdKo8jEkCR00U7YZMrHm'
+      Stripe__WebhookSecret: 'whsec_44f9fa07b7a2e7f29e127c0902354ab80a9e75fd3db86557780d12d30972aec1'
+      Stripe__Currency: 'myr'
+      # Application Domain - used for URL generation
+      # Don't include the trailing slash
+      APPLICATION_URL: 'http://18.206.163.26:9090'
     volumes:
       - ./docker-data/images:/app/wwwroot/images
       # No need to mount EmailTemplates as a volume since it's built into the image

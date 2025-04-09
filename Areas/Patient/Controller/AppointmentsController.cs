@@ -27,8 +27,8 @@ namespace DentalManagement.Areas.Patient.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AppointmentsController> _logger;
         private readonly IEmailService _emailService;
-        private readonly IPaymentService _paymentService; // Add this line
-
+        private readonly IPaymentService _paymentService;
+        private readonly string _applicationUrl;
 
         public AppointmentsController(
             ApplicationDbContext context, 
@@ -42,6 +42,10 @@ namespace DentalManagement.Areas.Patient.Controllers
             _logger = logger;
             _emailService = emailService;
             _paymentService = paymentService;
+            
+            // Get the application URL from environment variable or use default
+            string applicationUrl = Environment.GetEnvironmentVariable("APPLICATION_URL") ?? "http://localhost:5001";
+            _applicationUrl = applicationUrl.TrimEnd('/');
         }
 
         // GET: Patient/Appointments
@@ -863,26 +867,23 @@ namespace DentalManagement.Areas.Patient.Controllers
                 await _context.SaveChangesAsync();
                 
                 // Construct URLs
-                string successUrl = Url.Action(
-                    "BookingSuccess", 
-                    "Appointments", 
-                    new { area = "Patient", id = appointment.Id }, 
-                    Request.Scheme
+                string successUrl = BuildActionUrl(
+                    "BookingSuccess",
+                    "Appointments",
+                    new { area = "Patient", id = appointment.Id }
                 );
                 
-                string cancelUrl = Url.Action(
-                    "CancelBooking", 
-                    "Appointments", 
-                    new { area = "Patient" }, 
-                    Request.Scheme
+                string cancelUrl = BuildActionUrl(
+                    "Details",
+                    "Appointments",
+                    new { area = "Patient", id = appointment.Id }
                 );
                 
                 // Add failure URL
-                string failureUrl = Url.Action(
-                    "BookingFailure", 
-                    "Appointments", 
-                    new { area = "Patient", id = appointment.Id }, 
-                    Request.Scheme
+                string failureUrl = BuildActionUrl(
+                    "BookingFailure",
+                    "Appointments",
+                    new { area = "Patient", id = appointment.Id }
                 );
                 
                 // Create Stripe checkout session with failure URL
@@ -1619,28 +1620,28 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
             // Calculate deposit amount (30% of treatment cost)
             decimal depositAmount = appointment.TreatmentType.Price * 0.3m;
             
-            // Construct URLs
-            string successUrl = Url.Action(
-                "BookingSuccess", 
-                "Appointments", 
-                new { area = "Patient", id = appointment.Id }, 
-                Request.Scheme
+            // Construct URLs using the helper method
+            string successUrl = BuildActionUrl(
+                "BookingSuccess",
+                "Appointments",
+                new { area = "Patient", id = appointment.Id }
             );
             
-            string cancelUrl = Url.Action(
-                "Details", 
-                "Appointments", 
-                new { area = "Patient", id = appointment.Id }, 
-                Request.Scheme
+            string cancelUrl = BuildActionUrl(
+                "Details",
+                "Appointments",
+                new { area = "Patient", id = appointment.Id }
             );
             
             // Add failure URL
-            string failureUrl = Url.Action(
-                "BookingFailure", 
-                "Appointments", 
-                new { area = "Patient", id = appointment.Id }, 
-                Request.Scheme
+            string failureUrl = BuildActionUrl(
+                "BookingFailure",
+                "Appointments",
+                new { area = "Patient", id = appointment.Id }
             );
+            
+            // Add logging for debugging URLs
+            _logger.LogInformation($"Payment URLs - Success: {successUrl}, Cancel: {cancelUrl}, Failure: {failureUrl}");
             
             // Create Stripe checkout session with failure URL
             var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
@@ -1650,6 +1651,9 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 cancelUrl,
                 failureUrl
             );
+            
+            // Log the checkout URL for debugging
+            _logger.LogInformation($"Stripe checkout URL: {checkoutUrl}");
             
             // Redirect to Stripe checkout
             return Redirect(checkoutUrl);
@@ -1702,27 +1706,24 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return RedirectToAction("Details", new { id = appointment.Id });
             }
 
-            // Construct URLs
-            string successUrl = Url.Action(
-                "PaymentSuccess", 
-                "Appointments", 
-                new { area = "Patient", id = appointment.Id, type = "remaining" }, 
-                Request.Scheme
+            // Construct URLs using the helper method
+            string successUrl = BuildActionUrl(
+                "PaymentSuccess",
+                "Appointments",
+                new { area = "Patient", id = appointment.Id, type = "remaining" }
             );
             
-            string cancelUrl = Url.Action(
-                "Details", 
-                "Appointments", 
-                new { area = "Patient", id = appointment.Id }, 
-                Request.Scheme
+            string cancelUrl = BuildActionUrl(
+                "Details",
+                "Appointments",
+                new { area = "Patient", id = appointment.Id }
             );
             
             // Add failure URL
-            string failureUrl = Url.Action(
-                "BookingFailure", 
-                "Appointments", 
-                new { area = "Patient", id = appointment.Id, error = "Your remaining payment could not be processed." }, 
-                Request.Scheme
+            string failureUrl = BuildActionUrl(
+                "BookingFailure",
+                "Appointments",
+                new { area = "Patient", id = appointment.Id, error = "Your remaining payment could not be processed." }
             );
             
             // Create Stripe checkout session for the remaining amount with failure URL
@@ -1870,6 +1871,41 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
             _logger.LogError(ex, $"Error retrieving treatment report for appointment {id}");
             return StatusCode(500, new { message = "An error occurred while retrieving the treatment report" });
         }
+    }
+
+    // Replace the BuildActionUrl method with this completely new implementation
+    private string BuildActionUrl(string action, string controller, object routeValues)
+    {
+        // First generate the relative URL part
+        var relativeUrl = Url.Action(action, controller, routeValues);
+        
+        // Log what was generated
+        _logger.LogInformation($"Generated relative URL: {relativeUrl}");
+        
+        // Check if it's already an absolute URL (shouldn't be, but just in case)
+        if (relativeUrl != null && relativeUrl.StartsWith("http"))
+        {
+            _logger.LogWarning($"URL.Action returned an absolute URL: {relativeUrl}");
+            return relativeUrl;
+        }
+        
+        // Get the base URL from the environment variable
+        var baseUrl = Environment.GetEnvironmentVariable("APPLICATION_URL") ?? "http://localhost:5001";
+        baseUrl = baseUrl.TrimEnd('/');
+        
+        // Ensure the relative URL has a leading slash
+        if (relativeUrl != null && !relativeUrl.StartsWith("/"))
+        {
+            relativeUrl = "/" + relativeUrl;
+        }
+        
+        // Combine them properly
+        var fullUrl = baseUrl + relativeUrl;
+        
+        // Log the final result
+        _logger.LogInformation($"Final URL constructed: {fullUrl}");
+        
+        return fullUrl;
     }
     }
 }
