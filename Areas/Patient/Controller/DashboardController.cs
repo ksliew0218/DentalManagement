@@ -176,10 +176,11 @@ namespace DentalManagement.Areas.Patient.Controllers
                             name = dt.Doctor.FirstName + " " + dt.Doctor.LastName, 
                             specialty = dt.Doctor.Specialty ?? "General Dentistry",
                             profilePictureUrl = dt.Doctor.ProfilePictureUrl ?? ""
+                        })
                         .ToList()
                 })
                 .FirstOrDefaultAsync();
-
+                
             if (treatmentDetails == null)
             {
                 return NotFound(new { message = "Treatment not found" });

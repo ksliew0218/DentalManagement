@@ -104,7 +104,7 @@ namespace DentalManagement.Models
                 .Property(a => a.Duration)
                 .HasDefaultValue(60);
 
-            t
+            
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.PaymentStatus)
                 .HasDefaultValue(PaymentStatus.Pending);
