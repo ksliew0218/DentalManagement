@@ -74,7 +74,6 @@ namespace DentalManagement.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to send email to {email}");
-                // Don't throw here so that email failures don't break application flow
             }
         }
 
@@ -108,11 +107,9 @@ namespace DentalManagement.Services
         {
             try
             {
-                // Get base URL for links
                 var baseUrl = GetBaseUrl();
                 var appointmentsUrl = $"{baseUrl}/Patient/Appointments";
                 
-                // Prepare template replacements
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
@@ -127,12 +124,10 @@ namespace DentalManagement.Services
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
                 
-                // Get the email content
                 string emailContent = await _templateService.GetEmailTemplateAsync("AppointmentConfirmation", replacements);
                 
                 if (!string.IsNullOrEmpty(emailContent))
                 {
-                    // Send the email
                     await SendEmailAsync(email, "Your Appointment Confirmation - SmileCraft Dental", emailContent);
                 }
                 else
@@ -150,11 +145,9 @@ namespace DentalManagement.Services
         {
             try
             {
-                // Get base URL for links
                 var baseUrl = GetBaseUrl();
                 var bookAppointmentUrl = $"{baseUrl}/Patient/Appointments/Book";
                 
-                // Prepare template replacements
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
@@ -167,12 +160,10 @@ namespace DentalManagement.Services
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
                 
-                // Get the email content
                 string emailContent = await _templateService.GetEmailTemplateAsync("AppointmentCancellation", replacements);
                 
                 if (!string.IsNullOrEmpty(emailContent))
                 {
-                    // Send the email
                     await SendEmailAsync(email, "Your Appointment Cancellation - SmileCraft Dental", emailContent);
                 }
                 else
@@ -190,15 +181,12 @@ namespace DentalManagement.Services
         {
             try
             {
-                // Get base URL for links
                 var baseUrl = GetBaseUrl();
                 var bookAppointmentUrl = $"{baseUrl}/Patient/Appointments/Book";
                 var paymentUrl = $"{baseUrl}/Patient/Appointments/Details/{appointmentDetails.Id}";
                 
-                // Get care instructions based on treatment type (example implementation)
                 string careInstructions = GetCareInstructionsForTreatment(appointmentDetails.TreatmentName);
                 
-                // Prepare template replacements
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
@@ -214,12 +202,10 @@ namespace DentalManagement.Services
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
                 
-                // Get the email content
                 string emailContent = await _templateService.GetEmailTemplateAsync("AppointmentCompleted", replacements);
                 
                 if (!string.IsNullOrEmpty(emailContent))
                 {
-                    // Send the email
                     await SendEmailAsync(email, "Your Appointment Completed - SmileCraft Dental", emailContent);
                     _logger.LogInformation($"Sent completion email to {email} for appointment {appointmentDetails.Id}");
                 }
@@ -238,11 +224,9 @@ namespace DentalManagement.Services
         {
             try
             {
-                // Get base URL for links
                 var baseUrl = GetBaseUrl();
                 var appointmentDetailsUrl = $"{baseUrl}/Patient/Appointments/Details/{appointmentDetails.Id}";
                 
-                // Prepare template replacements
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
@@ -258,16 +242,13 @@ namespace DentalManagement.Services
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
                 
-                // Use templateName if provided, otherwise use a default
                 string templateToUse = !string.IsNullOrEmpty(templateName) ? 
                     templateName : "AppointmentReminder";
                 
-                // Get the email content
                 string emailContent = await _templateService.GetEmailTemplateAsync(templateToUse, replacements);
                 
                 if (!string.IsNullOrEmpty(emailContent))
                 {
-                    // Send the email
                     string subject = $"Appointment Reminder - Your appointment is {reminderType} away";
                     await SendEmailAsync(email, subject, emailContent);
                     
@@ -275,7 +256,6 @@ namespace DentalManagement.Services
                 }
                 else
                 {
-                    // Log warning if template not found
                     _logger.LogWarning($"Failed to generate appointment reminder email content for {email} using template {templateName}");
                 }
             }
@@ -294,14 +274,12 @@ namespace DentalManagement.Services
             }
             catch
             {
-                return "https://www.smilecraftdental.com";  // Fallback if HttpContext is not available
+                return "https://www.smilecraftdental.com";  
             }
         }
         
         private string GetCareInstructionsForTreatment(string treatmentName)
         {
-            // This could be expanded to retrieve custom care instructions from a database
-            // For now, we'll provide some generic instructions based on treatment type
             switch (treatmentName.ToLower())
             {
                 case "cleaning":
@@ -338,16 +316,13 @@ namespace DentalManagement.Services
             }
         }
 
-    // And in the EmailService class
     public async Task SendDoctorAppointmentNotificationAsync(DoctorAppointmentNotificationViewModel appointmentNotification)
         {
             try
             {
-                // Get base URL for links
                 var baseUrl = GetBaseUrl();
                 var appointmentDetailsUrl = $"{baseUrl}/Doctor/Appointments/Details/{appointmentNotification.AppointmentId}";
                 
-                // Prepare template replacements
                 var replacements = new Dictionary<string, string>
                 {
                     { "DoctorName", string.IsNullOrEmpty(appointmentNotification.DoctorName) ? "Doctor" : appointmentNotification.DoctorName },
@@ -363,12 +338,10 @@ namespace DentalManagement.Services
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
                 
-                // Get the email content
                 string emailContent = await _templateService.GetEmailTemplateAsync("DoctorAppointment", replacements);
                 
                 if (!string.IsNullOrEmpty(emailContent))
                 {
-                    // Send the email
                     await SendEmailAsync(appointmentNotification.DoctorEmail, "New Appointment Notification - SmileCraft Dental", emailContent);
                     _logger.LogInformation($"Sent appointment notification email to Dr. {appointmentNotification.DoctorName} for appointment {appointmentNotification.AppointmentId}");
                 }

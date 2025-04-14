@@ -6,10 +6,8 @@
 }
 
 <head>
-    <!-- Link to custom CSS files -->
     <link href="~/css/appointment-details.css" rel="stylesheet" asp-append-version="true">
     <style>
-        /* Payment-related styles */
         .payment-status {
             display: inline-flex;
             align-items: center;
@@ -33,7 +31,6 @@
             color: #6f42c1;
         }
 
-        /* Add more space between cards */
         .details-card + .details-card {
             margin-top: 1.5rem;
         }
@@ -41,13 +38,11 @@
 </head>
 
 <div class="appointment-container">
-    <!-- Page Header -->
     <div class="page-header">
         <h2><i class="bi bi-calendar-check"></i> Appointment Details</h2>
         <p class="subtitle">View your appointment information</p>
     </div>
     
-    <!-- Appointment Status Banner -->
     <div class="status-banner @Model.StatusClass">
         <div class="status-icon">
             <i class="bi bi-circle-fill"></i>
@@ -79,7 +74,7 @@
         </div>
     </div>
     
-    <!-- Appointment Details Card -->
+    
     <div class="details-card">
         <div class="card-header">
             <h3>Appointment Information</h3>
@@ -162,13 +157,12 @@
         </div>
     </div>
     
-    <!-- Payment Details Card -->
+    
     <div class="details-card">
         <div class="card-header">
             <h3>Payment Information</h3>
         </div>
         <div class="details-content">
-            <!-- Deposit Payment Section -->
             <div class="detail-item">
                 <div class="detail-icon">
                     <i class="bi bi-credit-card-fill"></i>
@@ -196,7 +190,7 @@
                 </div>
             </div>
             
-            <!-- Remaining Payment Section -->
+            
             <div class="detail-item">
                 <div class="detail-icon">
                     <i class="bi bi-cash-coin"></i>
@@ -228,7 +222,7 @@
                 </div>
             </div>
             
-            <!-- Total Payment Section -->
+            
             <div class="detail-item">
                 <div class="detail-icon total-icon">
                     <i class="bi bi-receipt"></i>
@@ -247,7 +241,7 @@
         </div>
     </div>
     
-    <!-- Actions Section -->
+    
     <div class="actions-section">
         @if (Model.Status == "Pending-Payment")
         {
@@ -284,7 +278,7 @@
         </a>
     </div>
 
-    <!-- Slot Unavailable Modal -->
+    
     <div class="modal" id="slot-unavailable-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -306,7 +300,7 @@
         </div>
     </div>
     
-    <!-- Cancel Confirmation Modal -->
+    
     <div class="modal" id="cancel-confirmation-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -336,7 +330,7 @@
         </div>
     </div>
 
-    <!-- Doctor Remarks Modal -->
+    
     <div class="modal" id="doctor-remarks-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -351,7 +345,6 @@
                     <p class="mt-2">Loading doctor remarks...</p>
                 </div>
                 <div id="remarks-content" class="remarks-content" style="display: none;">
-                    <!-- Content will be loaded here dynamically -->
                 </div>
                 <div id="no-remarks-message" style="display: none;" class="text-center py-4">
                     <div class="empty-state">
@@ -374,28 +367,23 @@
 
 @section Scripts {
     <script>
-        // Modal functionality
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('cancel-confirmation-modal');
             const closeBtn = document.querySelector('.close-modal-btn');
             const keepBtn = document.getElementById('keep-appointment-btn');
             
-            // Function to open the modal
             window.confirmCancelAppointment = function(appointmentId) {
                 document.getElementById('appointmentIdInput').value = appointmentId;
                 modal.classList.add('show');
             };
             
-            // Function to close the modal
             function closeModal() {
                 modal.classList.remove('show');
             }
             
-            // Event listeners for closing the modal
             if(closeBtn) closeBtn.addEventListener('click', closeModal);
             if(keepBtn) keepBtn.addEventListener('click', closeModal);
             
-            // Close modal when clicking outside the content
             window.addEventListener('click', function(event) {
                 if (event.target === modal) {
                     closeModal();
@@ -403,7 +391,6 @@
             });
         });
 
-         // Slot availability check
         function checkAppointmentAvailability(appointmentId) {
             fetch(`/Patient/Appointments/CheckSlotAvailability/${appointmentId}`, {
                 method: 'GET',
@@ -414,14 +401,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.isAvailable) {
-                    // Redirect to payment
                     window.location.href = `/Patient/Appointments/ProceedToPayment/${appointmentId}`;
                 } else {
-                    // Show unavailable modal
                     const modal = document.getElementById('slot-unavailable-modal');
                     modal.classList.add('show');
 
-                    // Close modal functionality
                     const closeBtn = modal.querySelector('.close-modal-btn');
                     const closeBtnAlt = document.getElementById('close-unavailable-modal');
                     
@@ -432,7 +416,6 @@
                     if (closeBtn) closeBtn.addEventListener('click', closeModal);
                     if (closeBtnAlt) closeBtnAlt.addEventListener('click', closeModal);
 
-                    // Close modal when clicking outside
                     window.addEventListener('click', function(event) {
                         if (event.target === modal) {
                             closeModal();
@@ -446,19 +429,15 @@
             });
         }
         
-        // Function to process the remaining balance payment
         function processRemainingPayment(appointmentId) {
             window.location.href = `/Patient/Appointments/ProcessRemainingPayment/${appointmentId}`;
         }
 
-        // Add this to the existing Scripts section
 
         function showDoctorRemarks(appointmentId) {
-        // Show the modal
         const modal = document.getElementById('doctor-remarks-modal');
         modal.classList.add('show');
         
-        // Set up close buttons
         const closeBtn = document.getElementById('close-remarks-x');
         const closeBtnAlt = document.getElementById('close-remarks-modal');
         
@@ -469,19 +448,16 @@
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
         if (closeBtnAlt) closeBtnAlt.addEventListener('click', closeModal);
         
-        // Close modal when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target === modal) {
                 closeModal();
             }
         });
         
-        // Show loading, hide content
         document.getElementById('remarks-loading').style.display = 'block';
         document.getElementById('remarks-content').style.display = 'none';
         document.getElementById('no-remarks-message').style.display = 'none';
         
-        // Use simple query parameter instead of route parameter
         fetch(`/Patient/Appointments/GetTreatmentReport?id=${appointmentId}`, {
             method: 'GET',
             headers: {
@@ -495,16 +471,12 @@
             return response.json();
         })
         .then(data => {
-            // Hide loading
             document.getElementById('remarks-loading').style.display = 'none';
             
-            // Check if data exists and has non-empty notes
             if (data && data.exists && data.hasNotes) {
-                // Show content
                 const remarksContent = document.getElementById('remarks-content');
                 remarksContent.style.display = 'block';
                 
-                // Format date
                 const treatmentDate = new Date(data.treatmentDate);
                 const formattedDate = treatmentDate.toLocaleDateString('en-US', { 
                     weekday: 'long', 
@@ -513,7 +485,6 @@
                     day: 'numeric' 
                 });
                 
-                // Insert content
                 remarksContent.innerHTML = `
                     <div class="treatment-date">Treatment on ${formattedDate}</div>
                     <div class="doctor-name">
@@ -523,7 +494,6 @@
                     <div class="notes">${data.notes}</div>
                 `;
             } else {
-                // Show no remarks message
                 document.getElementById('no-remarks-message').style.display = 'block';
             }
         })

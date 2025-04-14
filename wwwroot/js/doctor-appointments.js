@@ -1,7 +1,4 @@
-// Doctor Appointments Page JavaScript
-
 $(document).ready(function() {
-    // Initialize DataTable with advanced options
     var appointmentsTable = $('#appointmentsTable').DataTable({
         responsive: true,
         language: {
@@ -18,22 +15,18 @@ $(document).ready(function() {
         order: [[0, 'desc'], [1, 'asc']],
         pageLength: 10,
         initComplete: function() {
-            // Apply custom styling to the search box
             $('.dataTables_filter input')
                 .addClass('form-control-sm shadow-sm')
                 .css('width', 'auto');
             
             $('.dataTables_length select').addClass('form-control-sm shadow-sm');
             
-            // Add search icon to the search box
             $('.dataTables_filter label').prepend('<i class="fas fa-search text-primary mr-2"></i>');
             
-            // Add animation to the table rows
             animateTableRows();
         }
     });
 
-    // Function to animate table rows on load
     function animateTableRows() {
         $('#appointmentsTable tbody tr').each(function(index) {
             $(this).css({
@@ -50,8 +43,6 @@ $(document).ready(function() {
             }, 100 * (index + 1));
         });
     }
-
-    // Add animation to stats cards
     $('.col-xl-3').each(function(index) {
         $(this).css({
             'opacity': 0,
@@ -67,10 +58,8 @@ $(document).ready(function() {
         }, 200 * (index + 1));
     });
 
-    // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();
 
-    // Add card transition effects
     $('.card').hover(
         function() {
             $(this).find('.card-body').css('background-color', '#f8f9fc');
@@ -80,7 +69,6 @@ $(document).ready(function() {
         }
     );
 
-    // Filter appointments by status
     $('#statusFilter li a').on('click', function() {
         var status = $(this).attr('data-status');
         $('#currentStatusFilter').text($(this).text());
@@ -92,7 +80,6 @@ $(document).ready(function() {
         }
     });
 
-    // Filter appointments by date range
     $('#dateFilter li a').on('click', function() {
         var range = $(this).attr('data-range');
         $('#currentDateFilter').text($(this).text());
@@ -103,7 +90,6 @@ $(document).ready(function() {
         
         switch(range) {
             case 'today':
-                // Already set to today
                 break;
             case 'week':
                 startDate.setDate(today.getDate() - today.getDay());
@@ -114,23 +100,19 @@ $(document).ready(function() {
                 endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                 break;
             case 'all':
-                // Reset custom filtering
                 appointmentsTable.draw();
                 return;
         }
         
-        // Format dates for comparison (YYYY-MM-DD)
         var formattedStartDate = formatDate(startDate);
         var formattedEndDate = formatDate(endDate);
         
-        // Custom filtering function for date range
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
-                var appointmentDate = data[0]; // The date is in the first column
+                var appointmentDate = data[0]; 
                 
-                // Extract the date value (format: "MMM dd, yyyy")
                 var dateParts = appointmentDate.replace(/<[^>]*>/g, '').trim().split(',');
-                if (dateParts.length < 2) return true; // If can't parse, include the row
+                if (dateParts.length < 2) return true; 
                 
                 var monthDay = dateParts[0].trim().split(' ');
                 var month = getMonthNumber(monthDay[0]);
@@ -139,7 +121,6 @@ $(document).ready(function() {
                 
                 var date = new Date(year, month, day);
                 
-                // Return whether the date is in range
                 return (
                     (formattedStartDate === '' || date >= startDate) && 
                     (formattedEndDate === '' || date <= endDate)
@@ -150,7 +131,6 @@ $(document).ready(function() {
         appointmentsTable.draw();
     });
 
-    // Helper function to get month number from string
     function getMonthNumber(monthStr) {
         var months = {
             'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3,
@@ -160,7 +140,6 @@ $(document).ready(function() {
         return months[monthStr];
     }
 
-    // Helper function to format date as YYYY-MM-DD
     function formatDate(date) {
         var d = new Date(date),
             month = '' + (d.getMonth() + 1),
@@ -175,13 +154,11 @@ $(document).ready(function() {
         return [year, month, day].join('-');
     }
 
-    // Add active class to sidebar item
     $(".nav-item a").each(function() {
         if ($(this).attr("href") === window.location.pathname) {
             $(this).addClass("active");
             $(this).closest(".nav-item").addClass("active");
             
-            // If inside a collapse, open it
             if ($(this).closest(".collapse").length) {
                 var collapseId = $(this).closest(".collapse").attr("id");
                 $(`[data-toggle="collapse"][data-target="#${collapseId}"]`).removeClass("collapsed");
@@ -190,14 +167,12 @@ $(document).ready(function() {
         }
     });
 
-    // Confirmation for appointment actions
     $('.confirm-action').on('click', function(e) {
         e.preventDefault();
         var actionUrl = $(this).attr('href');
         var actionType = $(this).data('action-type');
         var appointmentId = $(this).data('appointment-id');
         
-        // Set modal content based on action type
         var modalTitle, modalBody, confirmBtnClass, confirmBtnText;
         
         switch(actionType) {
@@ -226,7 +201,6 @@ $(document).ready(function() {
                 confirmBtnText = 'Confirm';
         }
         
-        // Populate modal
         $('#actionConfirmationModal .modal-title').text(modalTitle);
         $('#actionConfirmationModal .modal-body p').text(modalBody);
         $('#confirmActionBtn')
@@ -235,18 +209,15 @@ $(document).ready(function() {
             .text(confirmBtnText)
             .attr('data-url', actionUrl);
         
-        // Show modal
         $('#actionConfirmationModal').modal('show');
     });
     
-    // Handle confirm button click
     $('#confirmActionBtn').on('click', function() {
         var actionUrl = $(this).attr('data-url');
         window.location.href = actionUrl;
     });
 });
 
-// Time countdown function for upcoming appointments
 function updateCountdowns() {
     $('.countdown').each(function() {
         var appointmentTime = new Date($(this).data('appointment-time')).getTime();
@@ -271,10 +242,9 @@ function updateCountdowns() {
         countdownText += hours + 'h ' + minutes + 'm';
         $(this).text(countdownText);
         
-        // Add urgency classes
-        if (distance < (24 * 60 * 60 * 1000)) { // Less than 24 hours
+        if (distance < (24 * 60 * 60 * 1000)) { 
             $(this).removeClass('text-primary text-success text-danger').addClass('text-warning');
-        } else if (distance < (3 * 24 * 60 * 60 * 1000)) { // Less than 3 days
+        } else if (distance < (3 * 24 * 60 * 60 * 1000)) { 
             $(this).removeClass('text-primary text-danger text-warning').addClass('text-success');
         } else {
             $(this).removeClass('text-success text-danger text-warning').addClass('text-primary');
@@ -282,7 +252,6 @@ function updateCountdowns() {
     });
 }
 
-// Update countdowns on page load and every minute
 $(document).ready(function() {
     updateCountdowns();
     setInterval(updateCountdowns, 60000);

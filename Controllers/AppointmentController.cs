@@ -19,7 +19,6 @@ namespace DentalManagement.Controllers
             _context = context;
         }
 
-        // GET: Appointment
         public async Task<IActionResult> Index()
         {
             var appointments = await _context.Appointments
@@ -32,7 +31,6 @@ namespace DentalManagement.Controllers
             return View(appointments);
         }
 
-        // GET: Appointment/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -54,7 +52,6 @@ namespace DentalManagement.Controllers
             return View(appointment);
         }
 
-        // GET: Appointment/Calendar
         public async Task<IActionResult> Calendar(int? doctorId)
         {
             ViewBag.DoctorId = doctorId;
@@ -66,7 +63,6 @@ namespace DentalManagement.Controllers
                 
             ViewBag.Doctors = doctors;
             
-            // If no doctor selected, use the first active doctor by default
             if (!doctorId.HasValue && doctors.Any())
             {
                 ViewBag.DoctorId = doctors.First().Id;
@@ -75,7 +71,6 @@ namespace DentalManagement.Controllers
             return View();
         }
         
-        // Endpoint to get appointments for the scheduler
         [HttpGet]
         public async Task<IActionResult> GetAppointments(int doctorId, DateTime start, DateTime end)
         {
@@ -104,10 +99,8 @@ namespace DentalManagement.Controllers
             return Json(result);
         }
         
-        // Dashboard view
         public async Task<IActionResult> Dashboard()
         {
-            // Get counts for dashboard
             var appointmentCounts = await _context.Appointments
                 .GroupBy(a => a.Status)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
@@ -132,9 +125,7 @@ namespace DentalManagement.Controllers
             return View(dashboardViewModel);
         }
         
-        // CRUD operations for appointments
         
-        // GET: Appointment/Create
         public async Task<IActionResult> Create()
         {
             ViewBag.Doctors = await _context.Doctors
@@ -153,14 +144,12 @@ namespace DentalManagement.Controllers
             return View();
         }
         
-        // POST: Appointment/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PatientId,DoctorId,TreatmentTypeId,AppointmentDate,AppointmentTime,Notes")] Appointment appointment)
         {
             if (ModelState.IsValid)
             {
-                // Check if the slot is available
                 var appointmentEnd = appointment.AppointmentDateTime.AddMinutes(
                     _context.TreatmentTypes.First(t => t.Id == appointment.TreatmentTypeId).Duration);
                     

@@ -35,7 +35,6 @@
 </div>
 
 <div class="row">
-    <!-- Treatment Report Card -->
     <div class="col-md-8 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -128,7 +127,7 @@
         </div>
     </div>
 
-    <!-- Payment Information Card -->
+    
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white py-3">
@@ -206,12 +205,9 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Print Report functionality
             $("#printReportBtn").on("click", function() {
-                // Create a new window for printing
                 const printWindow = window.open("", "_blank", "width=800,height=600");
                 
-                // Get report information
                 const patientName = "@Model.Patient?.FirstName @Model.Patient?.LastName";
                 const doctorName = "Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName";
                 const treatmentDate = "@Model.TreatmentDate.ToString("MMMM d, yyyy")";
@@ -219,7 +215,6 @@
                 const notes = "@(string.IsNullOrEmpty(Model.Notes) ? "No treatment notes available." : Model.Notes.Replace("\n", " ").Replace("\r", " "))";
                 const hasDentalChart = @(string.IsNullOrEmpty(Model.DentalChart) ? "false" : "true").toString();
                 
-                // Generate report HTML
                 let reportHTML = `
                 <!DOCTYPE html>
                 <html lang="en">
@@ -382,7 +377,6 @@
                         </div>`;
                 }
 
-                // Check if payments exist and add them to the report
                 const hasPayments = @(payments != null && payments.Any() ? "true" : "false").toString();
                 
                 if (hasPayments === "true") {
@@ -437,14 +431,11 @@
                 </html>
                 `;
                 
-                // Write the HTML to the new window and trigger print
                 printWindow.document.open();
                 printWindow.document.write(reportHTML);
                 printWindow.document.close();
                 
-                // Wait for the content to load before printing
                 printWindow.onload = function() {
-                    // Auto-print when the page has loaded
                     setTimeout(() => {
                         printWindow.print();
                     }, 500);

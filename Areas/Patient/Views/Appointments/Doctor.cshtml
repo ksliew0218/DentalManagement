@@ -5,22 +5,22 @@
 }
 
 <head>
-    <!-- Link to custom CSS files -->
+    
     <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/doctor-selection.css" rel="stylesheet" asp-append-version="true">
 </head>
 
 <div class="appointment-container">
-    <!-- Add anti-forgery token for form submission -->
+    
     @Html.AntiForgeryToken()
     
-    <!-- Hidden field to store treatment data from TempData -->
+    
     @if (TempData["SelectedTreatment"] != null)
     {
         <input type="hidden" id="treatment-data" value="@TempData["SelectedTreatment"]" />
     }
 
-    <!-- Progress Steps Indicator -->
+    
     <div class="progress-steps">
         <div class="step completed">
             <div class="step-icon">
@@ -51,13 +51,13 @@
         </div>
     </div>
 
-    <!-- Page Header -->
+    
     <div class="page-header">
         <h2><i class="bi bi-person-badge"></i> Select a Doctor</h2>
         <p class="subtitle">Choose a specialist for your <span id="selected-treatment-name">@ViewData["TreatmentName"]</span></p>
     </div>
 
-    <!-- Treatment Summary -->
+    
     <div class="treatment-summary">
         <div class="summary-icon">
             <i class="bi bi-clipboard-check"></i>
@@ -73,7 +73,7 @@
         </div>
     </div>
 
-    <!-- Any Available Doctor Option -->
+    
     <div class="any-doctor-option">
         <div class="doctor-card any-available">
             <div class="doctor-avatar">
@@ -89,7 +89,7 @@
         </div>
     </div>
 
-    <!-- Doctor Selection Header -->
+    
     <div class="selection-header">
         <h3>Available Specialists</h3>
         <div class="filter-dropdown">
@@ -108,7 +108,7 @@
         </div>
     </div>
 
-    <!-- Doctors Grid -->
+    
     <div class="doctors-grid">
         @if (Model != null && Model.Any())
         {
@@ -163,7 +163,7 @@
         }
     </div>
 
-    <!-- Navigation Buttons -->
+    
     <div class="navigation-buttons">
         <a href="@Url.Action("Book", "Appointments", new { area = "Patient" })" class="back-btn">
             <i class="bi bi-arrow-left"></i> Back to Treatments

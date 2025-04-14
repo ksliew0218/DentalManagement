@@ -56,7 +56,6 @@ namespace DentalManagement.Controllers
                     _stripeSettings.WebhookSecret
                 );
                 
-                // Handle the event based on type
                 switch (stripeEvent.Type)
                 {
                     case "checkout.session.completed":
@@ -102,24 +101,20 @@ namespace DentalManagement.Controllers
         {
             _logger.LogInformation($"Checkout session {session.Id} completed");
             
-            // Get the appointment ID from the session metadata
             if (session.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) && 
                 int.TryParse(appointmentIdStr, out int appointmentId))
             {
                 try 
                 {
-                    // Check if we already have a payment record for this session
                     var existingPayment = await _context.Payments
                         .FirstOrDefaultAsync(p => p.CheckoutSessionId == session.Id);
                     
                     if (existingPayment != null)
                     {
-                        // Update the existing payment record instead of creating a new one
                         existingPayment.PaymentIntentId = session.PaymentIntentId;
                         existingPayment.Status = "succeeded";
                         existingPayment.UpdatedAt = DateTime.UtcNow;
                         
-                        // Get receipt URL from the charges
                         var chargeService = new ChargeService();
                         var charges = await chargeService.ListAsync(new ChargeListOptions 
                         { 
@@ -135,8 +130,7 @@ namespace DentalManagement.Controllers
                     }
                     else
                     {
-                        // Extract payment type from metadata
-                        PaymentType paymentType = PaymentType.Deposit; // Default
+                        PaymentType paymentType = PaymentType.Deposit; 
                         if (session.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
                         {
                             if (Enum.TryParse(paymentTypeStr, out PaymentType parsedType))
@@ -145,7 +139,6 @@ namespace DentalManagement.Controllers
                             }
                         }
                         
-                        // Record the payment
                         var payment = await _paymentService.RecordPaymentAsync(
                             appointmentId, 
                             session.PaymentIntentId, 
@@ -156,7 +149,6 @@ namespace DentalManagement.Controllers
                         );
                     }
                     
-                    // Find the appointment with all related entities
                     var appointment = await _context.Appointments
                         .Include(a => a.Doctor)
                         .Include(a => a.TreatmentType)
@@ -166,8 +158,7 @@ namespace DentalManagement.Controllers
                     
                     if (appointment != null)
                     {
-                        // Update appointment payment status based on the payment type
-                        PaymentType paymentType = PaymentType.Deposit; // Default
+                        PaymentType paymentType = PaymentType.Deposit;  
                         if (session.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
                         {
                             if (Enum.TryParse(paymentTypeStr, out PaymentType parsedType))
@@ -180,12 +171,10 @@ namespace DentalManagement.Controllers
                             ? PaymentStatus.Paid 
                             : PaymentStatus.PartiallyPaid;
                         
-                        // For deposit payments, update status to Confirmed and book slots
                         if (paymentType == PaymentType.Deposit && appointment.Status != "Confirmed")
                         {
                             appointment.Status = "Confirmed";
                             
-                            // Book time slots for appointments
                             var slotIds = await FindConsecutiveSlotIdsAsync(
                                 appointment.DoctorId,
                                 appointment.AppointmentDate,
@@ -195,7 +184,6 @@ namespace DentalManagement.Controllers
                             
                             await BookTimeSlotsAsync(appointmentId, slotIds);
                             
-                            // Create and send notifications
                             await CreateAppointmentNotification(appointment);
                         }
                         
@@ -224,7 +212,6 @@ namespace DentalManagement.Controllers
         {
             _logger.LogInformation($"Checkout session {session.Id} failed or expired");
             
-            // Get the appointment ID from the session metadata
             if (session.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) && 
                 int.TryParse(appointmentIdStr, out int appointmentId))
             {
@@ -237,7 +224,6 @@ namespace DentalManagement.Controllers
                         
                     if (appointment != null)
                     {
-                        // Update the payment record
                         var payment = await _context.Payments
                             .FirstOrDefaultAsync(p => p.CheckoutSessionId == session.Id);
                             
@@ -250,7 +236,6 @@ namespace DentalManagement.Controllers
                             await _context.SaveChangesAsync();
                         }
                         
-                        // Notify the user
                         var user = appointment.Patient.User;
                         if (user != null)
                         {
@@ -270,14 +255,11 @@ namespace DentalManagement.Controllers
                             _context.UserNotifications.Add(notification);
                             await _context.SaveChangesAsync();
                             
-                            // Optional: Send email notification
                             var preferences = await _context.UserNotificationPreferences
                                 .FirstOrDefaultAsync(p => p.UserId == user.Id);
                                 
                             if (preferences?.EmailAppointmentChanges == true)
                             {
-                                // You could implement a payment failure email here
-                                // await _emailService.SendPaymentFailedEmailAsync(...);
                             }
                         }
                     }
@@ -293,7 +275,6 @@ namespace DentalManagement.Controllers
         {
             try 
             {
-                // Ensure we have users for patient and doctor
                 var patientUser = appointment.Patient.User ?? 
                     await _userManager.FindByIdAsync(appointment.Patient.UserID);
                 
@@ -302,14 +283,12 @@ namespace DentalManagement.Controllers
                 var treatment = appointment.TreatmentType;
                 var doctor = appointment.Doctor;
 
-                // Format appointment date and time
                 string formattedDate = appointment.AppointmentDate.ToString("MMMM d, yyyy");
                 bool isPM = appointment.AppointmentTime.Hours >= 12;
                 int hour12 = appointment.AppointmentTime.Hours % 12;
                 if (hour12 == 0) hour12 = 12;
                 string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
 
-                // Create in-app notification for patient
                 var patientNotification = new UserNotification
                 {
                     UserId = patientUser.Id,
@@ -326,7 +305,6 @@ namespace DentalManagement.Controllers
                 _context.UserNotifications.Add(patientNotification);
                 await _context.SaveChangesAsync();
 
-                // Send email to patient if preferences allow
                 var patientPreferences = await _context.UserNotificationPreferences
                     .FirstOrDefaultAsync(p => p.UserId == patientUser.Id);
 
@@ -353,7 +331,6 @@ namespace DentalManagement.Controllers
                     );
                 }
 
-                // Send notification to doctor
                 var doctorAppointmentNotification = new DoctorAppointmentNotificationViewModel
                 {
                     AppointmentId = appointment.Id,
@@ -381,7 +358,6 @@ namespace DentalManagement.Controllers
         
         private async Task<List<int>> FindConsecutiveSlotIdsAsync(int doctorId, DateTime appointmentDate, TimeSpan appointmentTime, int durationMinutes)
         {
-            // Find the starting slot
             var startSlot = await _context.TimeSlots
                 .FirstOrDefaultAsync(ts => 
                     ts.DoctorId == doctorId && 
@@ -394,19 +370,14 @@ namespace DentalManagement.Controllers
                 throw new Exception("Starting time slot not available.");
             }
             
-            // How many consecutive slots we need
             int requiredSlots = (int)Math.Ceiling(durationMinutes / 60.0);
             
-            // All consecutive slots
             var slotIds = new List<int> { startSlot.Id };
             
-            // If we need more than one slot
             if (requiredSlots > 1)
             {
-                // Get the next slots after the start slot
                 var nextStartTime = startSlot.EndTime;
                 
-                // Find the following slots
                 for (int i = 1; i < requiredSlots; i++)
                 {
                     var nextSlot = await _context.TimeSlots
@@ -430,12 +401,10 @@ namespace DentalManagement.Controllers
 
         private async Task BookTimeSlotsAsync(int appointmentId, List<int> slotIds)
         {
-            // Get all the slots we need to book
             var slots = await _context.TimeSlots
                 .Where(ts => slotIds.Contains(ts.Id))
                 .ToListAsync();
             
-            // Update each slot
             foreach (var slot in slots)
             {
                 slot.IsBooked = true;
@@ -451,8 +420,7 @@ namespace DentalManagement.Controllers
             
             try
             {
-                // Get or determine the payment type from metadata
-                PaymentType paymentType = PaymentType.Deposit; // Default
+                PaymentType paymentType = PaymentType.Deposit; 
                 if (intent.Metadata.TryGetValue("PaymentType", out string paymentTypeStr))
                 {
                     if (Enum.TryParse(paymentTypeStr, out PaymentType parsedType))
@@ -461,13 +429,11 @@ namespace DentalManagement.Controllers
                     }
                 }
                 
-                // Check if a payment record already exists
                 var existingPayment = await _context.Payments
                     .FirstOrDefaultAsync(p => p.PaymentIntentId == intent.Id);
                 
                 if (existingPayment != null && string.IsNullOrEmpty(existingPayment.ReceiptUrl))
                 {
-                    // Update the existing payment with receipt URL
                     var chargeService = new ChargeService();
                     var charges = await chargeService.ListAsync(new ChargeListOptions 
                     { 
@@ -482,14 +448,12 @@ namespace DentalManagement.Controllers
                         
                         await _context.SaveChangesAsync();
                         
-                        // Update appointment payment status
                         await _paymentService.UpdateAppointmentPaymentStatusAsync(
                             existingPayment.AppointmentId, 
                             existingPayment.PaymentType == PaymentType.FullPayment ? 
                                 PaymentStatus.Paid : PaymentStatus.PartiallyPaid
                         );
                         
-                        // For deposit payments, also check if we need to update the appointment status
                         if (existingPayment.PaymentType == PaymentType.Deposit)
                         {
                             var appointment = await _context.Appointments
@@ -508,7 +472,6 @@ namespace DentalManagement.Controllers
                     }
                 }
                 
-                // Look for a pending payment with matching checkout session
                 if (intent.Metadata.TryGetValue("CheckoutSessionId", out string checkoutSessionId))
                 {
                     var pendingPayment = await _context.Payments
@@ -516,12 +479,10 @@ namespace DentalManagement.Controllers
                     
                     if (pendingPayment != null)
                     {
-                        // Update the pending payment
                         pendingPayment.PaymentIntentId = intent.Id;
                         pendingPayment.Status = "succeeded";
                         pendingPayment.UpdatedAt = DateTime.UtcNow;
                         
-                        // Get receipt URL
                         var chargeService = new ChargeService();
                         var charges = await chargeService.ListAsync(new ChargeListOptions 
                         { 
@@ -535,7 +496,6 @@ namespace DentalManagement.Controllers
                         
                         await _context.SaveChangesAsync();
                         
-                        // Update appointment payment status
                         await _paymentService.UpdateAppointmentPaymentStatusAsync(
                             pendingPayment.AppointmentId, 
                             pendingPayment.PaymentType == PaymentType.FullPayment ? 
@@ -547,13 +507,11 @@ namespace DentalManagement.Controllers
                     }
                 }
                 
-                // If we couldn't find an existing payment record, use the generic method
                 await _paymentService.UpdatePaymentStatusAsync(intent.Id, "succeeded");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error handling payment intent success for {intent.Id}");
-                // Fall back to the generic method
                 await _paymentService.UpdatePaymentStatusAsync(intent.Id, "succeeded");
             }
         }
@@ -566,13 +524,10 @@ namespace DentalManagement.Controllers
             {
                 string errorMessage = intent.LastPaymentError?.Message;
                 
-                // Update payment status
                 await _paymentService.UpdatePaymentStatusAsync(intent.Id, "failed", errorMessage);
                 
-                // Try to find the related appointment ID for notification purposes
                 int? appointmentId = null;
                 
-                // Check if appointment ID is in metadata
                 if (intent.Metadata.TryGetValue("AppointmentId", out string appointmentIdStr) && 
                     int.TryParse(appointmentIdStr, out int parsedId))
                 {
@@ -580,7 +535,6 @@ namespace DentalManagement.Controllers
                 }
                 else
                 {
-                    // Try to find payment record to get appointment ID
                     var payment = await _context.Payments
                         .FirstOrDefaultAsync(p => p.PaymentIntentId == intent.Id);
                     
@@ -590,7 +544,6 @@ namespace DentalManagement.Controllers
                     }
                     else if (intent.Metadata.TryGetValue("CheckoutSessionId", out string checkoutSessionId))
                     {
-                        // Try to find by checkout session ID
                         var sessionPayment = await _context.Payments
                             .FirstOrDefaultAsync(p => p.CheckoutSessionId == checkoutSessionId);
                         
@@ -601,7 +554,6 @@ namespace DentalManagement.Controllers
                     }
                 }
                 
-                // If we found the appointment, notify the user
                 if (appointmentId.HasValue)
                 {
                     var appointment = await _context.Appointments
@@ -613,7 +565,6 @@ namespace DentalManagement.Controllers
                     {
                         var user = appointment.Patient.User;
                         
-                        // Create notification
                         var notification = new UserNotification
                         {
                             UserId = user.Id,
@@ -630,12 +581,9 @@ namespace DentalManagement.Controllers
                         _context.UserNotifications.Add(notification);
                         await _context.SaveChangesAsync();
                         
-                        // Optional: Check if failure URL is in metadata and redirect
                         if (intent.Metadata.TryGetValue("FailureUrl", out string failureUrl))
                         {
                             _logger.LogInformation($"Failure URL found: {failureUrl}");
-                            // Note: We can't directly redirect from a webhook, but this info
-                            // could be used by a frontend polling mechanism
                         }
                     }
                 }
@@ -643,7 +591,6 @@ namespace DentalManagement.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error handling payment failure for intent {intent.Id}");
-                // Ensure basic status update happens even if notification fails
                 await _paymentService.UpdatePaymentStatusAsync(intent.Id, "failed", intent.LastPaymentError?.Message);
             }
         }
@@ -652,19 +599,16 @@ namespace DentalManagement.Controllers
         {
             _logger.LogInformation($"Charge {charge.Id} refunded");
             
-            // Get the payment intent ID
             var paymentIntentId = charge.PaymentIntentId;
             
             if (!string.IsNullOrEmpty(paymentIntentId))
             {
-                // Get the payment with this payment intent
                 var payment = await _context.Payments
                     .Include(p => p.Appointment)
                     .FirstOrDefaultAsync(p => p.PaymentIntentId == paymentIntentId);
                 
                 if (payment != null)
                 {
-                    // Update the appointment payment status
                     await _paymentService.UpdateAppointmentPaymentStatusAsync(
                         payment.AppointmentId, 
                         PaymentStatus.Refunded

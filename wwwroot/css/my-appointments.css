@@ -1,5 +1,3 @@
-/* My Appointments Page Styles - Updated to match Booking design */
-
 :root {
   --primary-color: #4769f7;
   --success-color: #48bb78;
@@ -20,7 +18,6 @@
   margin: 0 auto;
 }
 
-/* Page Header */
 .page-header {
   margin-bottom: 32px;
 }
@@ -44,7 +41,6 @@
   font-size: 1rem;
 }
 
-/* Appointment Actions Bar */
 .appointment-actions-bar {
   display: flex;
   justify-content: space-between;
@@ -88,7 +84,6 @@
   box-shadow: 0 0 0 2px rgba(71, 105, 247, 0.2);
 }
 
-/* Date Filter */
 .date-filter {
   position: relative;
 }
@@ -264,7 +259,6 @@
   background: #edf2f7;
 }
 
-/* Active Filters */
 .active-filters {
   display: flex;
   align-items: center;
@@ -342,7 +336,6 @@
   }
 }
 
-/* Filter Tabs - Matching Book Appointment style */
 .filter-tabs {
   display: flex;
   gap: 10px;
@@ -394,7 +387,6 @@
   color: white;
 }
 
-/* Tab Content */
 .tab-content {
   display: none;
 }
@@ -403,7 +395,6 @@
   display: block;
 }
 
-/* Grid Layout for Appointments - Matching the treatments grid */
 .appointments-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -411,7 +402,6 @@
   margin-bottom: 32px;
 }
 
-/* Appointment Card - styled like treatment cards */
 .appointment-card {
   display: flex;
   flex-direction: column;
@@ -454,7 +444,6 @@
   background: var(--danger-color);
 }
 
-/* Appointment Header */
 .appointment-header {
   display: flex;
   justify-content: space-between;
@@ -507,7 +496,6 @@
   color: var(--text-muted);
 }
 
-/* Treatment Name */
 .treatment-name {
   padding: 16px 16px 8px 16px;
   font-size: 1.2rem;
@@ -516,7 +504,6 @@
   margin: 0;
 }
 
-/* Doctor Info */
 .doctor-info {
   display: flex;
   align-items: center;
@@ -530,7 +517,6 @@
   color: var(--primary-color);
 }
 
-/* Appointment Status */
 .appointment-status {
   display: inline-flex;
   align-items: center;
@@ -576,7 +562,6 @@
   font-size: 0.5rem;
 }
 
-/* Appointment Footer */
 .appointment-footer {
   display: flex;
   justify-content: space-between;
@@ -587,7 +572,6 @@
   border-top: 1px solid var(--border-color);
 }
 
-/* Action Buttons */
 .action-btn,
 .view-details-btn,
 .cancel-appointment-btn,
@@ -659,7 +643,6 @@
   background: rgba(160, 174, 192, 0.2);
 }
 
-/* Empty State - Matching the booking page style */
 .empty-category-card {
   background: var(--card-background);
   border-radius: 16px;
@@ -702,7 +685,6 @@
   margin: 0 auto 24px;
 }
 
-/* Modal */
 .modal {
   display: none;
   position: fixed;
@@ -717,12 +699,10 @@
   align-items: center;
 }
 
-/* When modal is hidden, use display: none */
 .modal:not(.show) {
   display: none;
 }
 
-/* When modal is shown, use flex display for centering */
 .modal.show {
   display: flex;
 }
@@ -736,7 +716,7 @@
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   animation: modalFadeIn 0.3s ease;
-  margin: auto; /* Add this to help with centering */
+  margin: auto; 
 }
 
 @keyframes modalFadeIn {
@@ -830,7 +810,6 @@
   margin-top: 24px;
 }
 
-/* Add these styles to your my-appointments.css file */
 .payment-btn {
   display: inline-flex;
   align-items: center;
@@ -859,7 +838,6 @@
 
 
 
-/* Responsive design for mobile devices */
 @media (max-width: 768px) {
   .appointment-footer {
       flex-direction: column;

@@ -1,6 +1,3 @@
-/* Doctor Selection Styles */
-
-/* Treatment Summary Styles */
 .treatment-summary {
   display: flex;
   align-items: center;
@@ -57,7 +54,6 @@
   color: var(--text-muted);
 }
 
-/* Any Available Doctor Option */
 .any-doctor-option {
   margin-bottom: 28px;
 }
@@ -76,7 +72,6 @@
   color: var(--primary-color);
 }
 
-/* Doctor Selection Header */
 .selection-header {
   display: flex;
   justify-content: space-between;
@@ -118,7 +113,6 @@
   border-color: var(--primary-color);
 }
 
-/* Doctors Grid */
 .doctors-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -260,7 +254,6 @@
   margin-bottom: 16px;
 }
 
-/* Remove these sections */
 .doctor-stats,
 .stat-item,
 .stat-value,
@@ -269,7 +262,6 @@
   display: none;
 }
 
-/* Enhanced select button without depending on those elements */
 .select-doctor-btn {
   background: var(--hover-bg);
   color: var(--primary-color);
@@ -305,12 +297,10 @@
   color: white;
 }
 
-/* Optional: Fill the gap left by removed elements with better spacing */
 .doctor-credentials {
   margin-bottom: 8px;
 }
 
-/* Doctor availability indicator */
 .availability-indicator {
   position: absolute;
   top: 20px;
@@ -334,7 +324,6 @@
   font-size: 0.8rem;
 }
 
-/* Empty state styling improvements */
 .empty-doctors-state {
   text-align: center;
   padding: 40px;
@@ -378,7 +367,6 @@
   background: rgba(71, 105, 247, 0.1);
 }
 
-/* Responsive adjustments */
 @media (max-width: 992px) {
   .doctors-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

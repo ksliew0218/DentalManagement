@@ -15,7 +15,6 @@ namespace DentalManagement.Models
         [ForeignKey("UserId")]
         public User User { get; set; }
         
-        // Email notification preferences
         [Required]
         [Display(Name = "Email Appointment Reminders")]
         public bool EmailAppointmentReminders { get; set; } = true;

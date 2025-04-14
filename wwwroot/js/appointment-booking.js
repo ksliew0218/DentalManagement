@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-  // Initialize variables
   let selectedTreatment = null;
 
-  // Get essential DOM elements
   const filterTabs = document.querySelectorAll('.filter-tab');
   const treatmentCards = document.querySelectorAll('.treatment-card');
   const emptyCategoryCards = document.querySelectorAll('.empty-category-card');
@@ -11,34 +9,28 @@ document.addEventListener('DOMContentLoaded', function () {
     'input[name="__RequestVerificationToken"]'
   );
 
-  // Debugging function
   function logDebug(message) {
     console.log(`[Treatment Selection Debug] ${message}`);
   }
 
   filterTabs.forEach((tab) => {
     tab.addEventListener('click', function () {
-      // Update active tab
       filterTabs.forEach((t) => t.classList.remove('active'));
       this.classList.add('active');
 
       const category = this.getAttribute('data-category');
 
-      // For 'all' category, show all treatments and hide all empty messages
       if (category === 'all') {
         treatmentCards.forEach((card) => (card.style.display = 'flex'));
         emptyCategoryCards.forEach((card) => (card.style.display = 'none'));
         return;
       }
 
-      // For specific category, show only that category's treatments and its empty message if needed
       let hasTreatments = false;
 
-      // First hide all treatments and empty messages
       treatmentCards.forEach((card) => (card.style.display = 'none'));
       emptyCategoryCards.forEach((card) => (card.style.display = 'none'));
 
-      // Show treatments for selected category
       treatmentCards.forEach((card) => {
         if (card.getAttribute('data-category') === category) {
           card.style.display = 'flex';
@@ -46,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
 
-      // If no treatments found for this category, show its empty message
       if (!hasTreatments) {
         const emptyCard = document.querySelector(
           `.empty-category-card[data-category="${category}"]`
@@ -58,25 +49,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Handle treatment selection
   const selectButtons = document.querySelectorAll('.select-treatment-btn');
 
   selectButtons.forEach((button) => {
     button.addEventListener('click', function () {
-      // Get the parent treatment card
       const treatmentCard = this.closest('.treatment-card');
 
-      // Remove selection from all cards
       treatmentCards.forEach((card) => {
         card.classList.remove('selected');
         card.querySelector('.select-treatment-btn').textContent = 'Select';
       });
 
-      // Select this card
       treatmentCard.classList.add('selected');
       this.textContent = 'Selected';
 
-      // Store the selected treatment
       selectedTreatment = {
         id: treatmentCard.getAttribute('data-id'),
         name: treatmentCard.querySelector('h3').textContent,
@@ -85,31 +71,24 @@ document.addEventListener('DOMContentLoaded', function () {
         price: 'RM ' + treatmentCard.getAttribute('data-price'),
       };
 
-      // Enable the next button
       nextButton.disabled = false;
 
-      // Smooth scroll to the navigation buttons
       document.querySelector('.navigation-buttons').scrollIntoView({
         behavior: 'smooth',
       });
 
-      // Store in session storage for potential page refresh/back navigation
       sessionStorage.setItem(
         'selectedTreatment',
         JSON.stringify(selectedTreatment)
       );
     });
   });
-
-  // Handle next button click - use a form submission to post data to the server
-  // Modify the next button click handler
   nextButton.addEventListener('click', function (event) {
     event.preventDefault();
 
     console.log('Next button clicked');
     console.log('Selected Treatment:', selectedTreatment);
 
-    // Add more detailed logging
     console.group('Form Submission Details');
     console.log('Anti-Forgery Token:', antiForgeryToken);
     console.log(
@@ -125,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function () {
         form.action = '/Patient/Appointments/SaveTreatmentSelection';
         form.style.display = 'none';
 
-        // Enhanced logging for form creation
         console.group('Form Creation');
         console.log('Form Action:', form.action);
 
@@ -158,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.body.appendChild(form);
 
-        // Add a global error handler
         window.addEventListener('error', function (event) {
           console.error('Global error caught:', event.error);
         });
@@ -176,16 +153,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Check if there's a previously selected treatment (when navigating back)
   const storedTreatment = sessionStorage.getItem('selectedTreatment');
   if (storedTreatment) {
     try {
       const parsedTreatment = JSON.parse(storedTreatment);
 
-      // Find and select the matching treatment card
       treatmentCards.forEach((card) => {
         if (card.getAttribute('data-id') === parsedTreatment.id.toString()) {
-          // Trigger a click on the select button
           card.querySelector('.select-treatment-btn').click();
         }
       });
@@ -194,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Add animation to the progress steps
   function animateProgressSteps() {
     const steps = document.querySelectorAll('.step');
     steps.forEach((step, index) => {
@@ -206,6 +179,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Initialize animations
   animateProgressSteps();
 });

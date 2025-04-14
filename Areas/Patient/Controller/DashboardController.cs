@@ -27,10 +27,9 @@ namespace DentalManagement.Areas.Patient.Controllers
         var fullName = "Guest";
         var gender = "";
         var age = 0;
-        var patientType = "Regular Patient"; // Hardcoded for now
+        var patientType = "Regular Patient"; 
         int patientId = 0;
 
-        // Get patient data from database
         if (user != null)
         {
             var patient = await _context.Patients
@@ -42,9 +41,7 @@ namespace DentalManagement.Areas.Patient.Controllers
                 gender = patient.Gender;
                 patientId = patient.Id;
                 
-                // Calculate age from DateOfBirth
                 age = DateTime.Today.Year - patient.DateOfBirth.Year;
-                // Adjust age if birthday hasn't occurred yet this year
                 if (patient.DateOfBirth.Date > DateTime.Today.AddYears(-age))
                 {
                     age--;
@@ -52,7 +49,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
         }
 
-        // Get upcoming appointment from database
         var appointments = await _context.Appointments
             .Include(a => a.Doctor)
             .Include(a => a.TreatmentType)
@@ -61,7 +57,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                        a.Status != "Completed")
             .ToListAsync();
 
-        // Process in memory to avoid timestamp comparison issues
         var upcomingAppointment = appointments
             .Where(a => a.AppointmentDate > DateTime.Today || 
                        (a.AppointmentDate == DateTime.Today && a.AppointmentTime > DateTime.Now.TimeOfDay))
@@ -79,7 +74,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             })
             .FirstOrDefault();
 
-        // If no upcoming appointment is found, set to null or a default object
         if (upcomingAppointment == null)
         {
             upcomingAppointment = new
@@ -94,7 +88,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             };
         }
 
-        // Get the most recent completed appointment
         var lastCompletedAppointment = await _context.Appointments
             .Where(a => a.PatientId == patientId && a.Status == "Completed")
             .OrderByDescending(a => a.AppointmentDate)
@@ -105,7 +98,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             })
             .FirstOrDefaultAsync();
 
-        // Set default value if no completed appointments found
         ViewData["LastVisitDate"] = lastCompletedAppointment != null 
             ? lastCompletedAppointment.CompletedDate 
             : "No previous visits";
@@ -116,7 +108,6 @@ namespace DentalManagement.Areas.Patient.Controllers
         ViewData["PatientType"] = patientType;
         ViewData["UpcomingAppointment"] = upcomingAppointment;
         
-        // Define latestTreatments that was referenced earlier
         var latestTreatments = await _context.Appointments
             .Include(a => a.Doctor)
             .Include(a => a.TreatmentType)
@@ -132,7 +123,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             })
             .ToListAsync();
             
-        // Get available treatments from database
         var availableTreatments = await _context.TreatmentTypes
             .Where(t => t.IsActive && !t.IsDeleted)
             .OrderBy(t => t.Name)
@@ -146,7 +136,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             })
             .ToListAsync();
 
-        // For now, keep this as a hardcoded object until we implement treatment tracking
         var ongoingTreatment = new
         {
             TreatmentType = "Braces",
@@ -169,7 +158,6 @@ namespace DentalManagement.Areas.Patient.Controllers
     {
         try
         {
-            // Get the treatment details
             var treatmentDetails = await _context.TreatmentTypes
                 .Where(t => t.Name == treatmentName && t.IsActive && !t.IsDeleted)
                 .Select(t => new
@@ -179,17 +167,15 @@ namespace DentalManagement.Areas.Patient.Controllers
                     description = t.Description ?? "No description available.",
                     price = t.Price,
                     duration = t.Duration,
-                    imageUrl = t.ImageUrl, // Include treatment image URL
-                    // Get doctors through the DoctorTreatment join table
+                    imageUrl = t.ImageUrl, 
                     doctors = t.DoctorTreatments
                         .Where(dt => dt.IsActive && !dt.IsDeleted)
                         .Select(dt => new 
                         { 
                             id = dt.Doctor.Id,
-                            name = dt.Doctor.FirstName + " " + dt.Doctor.LastName, // We'll add "Dr." prefix in the frontend
+                            name = dt.Doctor.FirstName + " " + dt.Doctor.LastName, 
                             specialty = dt.Doctor.Specialty ?? "General Dentistry",
-                            profilePictureUrl = dt.Doctor.ProfilePictureUrl ?? ""// Include doctor profile picture
-                        })
+                            profilePictureUrl = dt.Doctor.ProfilePictureUrl ?? ""
                         .ToList()
                 })
                 .FirstOrDefaultAsync();

@@ -28,14 +28,12 @@ namespace DentalManagement.Areas.Doctor.Controllers
         {
             try
             {
-                // Get the current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
 
-                // Get the doctor profile
                 var doctor = await _context.Doctors
                     .FirstOrDefaultAsync(d => d.User.Id == user.Id);
 
@@ -44,11 +42,9 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return RedirectToAction("AccessDenied", "Home", new { area = "" });
                 }
 
-                // Set doctor name and profile picture in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
                 ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
-                // Get time slots for this doctor
                 var timeSlots = await _context.TimeSlots
                     .Where(ts => ts.DoctorId == doctor.Id)
                     .OrderBy(ts => ts.StartTime)
@@ -68,14 +64,12 @@ namespace DentalManagement.Areas.Doctor.Controllers
         {
             try
             {
-                // Get the current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
 
-                // Get the doctor profile
                 var doctor = await _context.Doctors
                     .FirstOrDefaultAsync(d => d.User.Id == user.Id);
 
@@ -84,11 +78,9 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return RedirectToAction("AccessDenied", "Home", new { area = "" });
                 }
 
-                // Set doctor name and profile picture in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
                 ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
-                // Get time slots for this doctor
                 var timeSlots = await _context.TimeSlots
                     .Where(ts => ts.DoctorId == doctor.Id)
                     .OrderBy(ts => ts.StartTime)

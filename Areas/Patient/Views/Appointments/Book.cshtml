@@ -9,7 +9,6 @@
 
 <div class="appointment-container">
     @Html.AntiForgeryToken()
-    <!-- Progress Steps Indicator -->
     <div class="progress-steps">
         <div class="step active">
             <div class="step-icon">
@@ -40,13 +39,13 @@
         </div>
     </div>
 
-    <!-- Page Header -->
+    
     <div class="page-header">
         <h2><i class="bi bi-calendar-plus" aria-hidden="true"></i> Book an Appointment</h2>
         <p class="subtitle">Select a treatment to begin</p>
     </div>
 
-    <!-- Treatment Categories Filter -->
+    
     <div class="filter-tabs">
         <button class="filter-tab active" data-category="all">All Treatments</button>
         @foreach (var category in Model.Categories)
@@ -55,7 +54,7 @@
         }
     </div>
 
-    <!-- Treatments Grid -->
+    
     <div class="treatments-grid">
         @{
             var categoryCounts = new Dictionary<string, int>();
@@ -120,7 +119,7 @@
             </div>
         }
 
-        <!-- Empty Category Placeholders -->
+        
         @foreach (var category in Model.Categories)
         {
             var categoryLower = category.ToLower();
@@ -141,7 +140,7 @@
         }
     </div>
 
-    <!-- Navigation Buttons -->
+    
     <div class="navigation-buttons">
         <a href="/Patient/Appointments" class="back-btn" aria-label="Go back to appointments">
             <i class="bi bi-arrow-left" aria-hidden="true"></i> Back

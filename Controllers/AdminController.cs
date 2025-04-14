@@ -35,30 +35,26 @@ namespace DentalManagement.Controllers
         {
             try
             {
-                // Create an AdminDashboardViewModel with proper data
                 var model = new AdminDashboardViewModel
                 {
                     DoctorCount = _context.Doctors.Count(),
                     PatientCount = _context.Patients.Count(),
                     TreatmentTypeCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count(),
-                    AppointmentCount = 0, // Update this if you implement appointments
-                    TotalRevenue = 0 // Update this if you implement revenue tracking
+                    AppointmentCount = 0,
+                    TotalRevenue = 0 
                 };
                 
                 return View(model);
             }
             catch (Exception ex)
             {
-                // Log the error
                 _logger.LogError(ex, "Error in Dashboard action");
                 
-                // Return a simple view with error information
                 ViewBag.ErrorMessage = "Error loading dashboard: " + ex.Message;
                 return View("Error");
             }
         }
         
-        // GET: Admin/Patients
         public async Task<IActionResult> Patients()
         {
             try
@@ -78,12 +74,10 @@ namespace DentalManagement.Controllers
             }
         }
         
-        // GET: Admin/PatientDetails/5
         public async Task<IActionResult> PatientDetails(int id)
         {
             try
             {
-                // Get the patient
                 var patient = await _context.Patients
                     .Include(p => p.User)
                     .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
@@ -93,7 +87,6 @@ namespace DentalManagement.Controllers
                     return NotFound();
                 }
 
-                // Get patient's appointments
                 var appointments = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Include(a => a.TreatmentType)
@@ -105,7 +98,6 @@ namespace DentalManagement.Controllers
 
                 ViewBag.Appointments = appointments;
                 
-                // Calculate age
                 int age = DateTime.Today.Year - patient.DateOfBirth.Year;
                 if (patient.DateOfBirth.Date > DateTime.Today.AddYears(-age))
                 {
@@ -123,12 +115,10 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // GET: Admin/PatientTreatmentReport/5
         public async Task<IActionResult> PatientTreatmentReport(int id)
         {
             try
             {
-                // Get the treatment report
                 var treatmentReport = await _context.TreatmentReports
                     .Include(tr => tr.Doctor)
                     .Include(tr => tr.Patient)
@@ -141,7 +131,6 @@ namespace DentalManagement.Controllers
                     return NotFound();
                 }
 
-                // Get payment information for this appointment
                 var payments = await _context.Payments
                     .Where(p => p.AppointmentId == treatmentReport.AppointmentId)
                     .OrderByDescending(p => p.CreatedAt)
@@ -158,13 +147,10 @@ namespace DentalManagement.Controllers
                 return RedirectToAction(nameof(Patients));
             }
         }
-
-        // GET: Admin/PatientAppointmentDetails/5
         public async Task<IActionResult> PatientAppointmentDetails(int id)
         {
             try
             {
-                // Get appointment details
                 var appointment = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Include(a => a.Patient)
@@ -178,7 +164,6 @@ namespace DentalManagement.Controllers
                     return NotFound();
                 }
 
-                // Calculate amount paid
                 decimal amountPaid = 0;
                 if (appointment.Payments != null && appointment.Payments.Any())
                 {
@@ -200,12 +185,10 @@ namespace DentalManagement.Controllers
             }
         }
         
-        // GET: Admin/Appointments
         public async Task<IActionResult> Appointments()
         {
             try
             {
-                // Get all appointments
                 var appointments = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Include(a => a.Patient)

@@ -6,7 +6,7 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
+    
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
@@ -15,7 +15,7 @@
         </ol>
     </nav>
     
-    <!-- Page Header -->
+    
     <div class="page-header">
         <div>
             <h1><i class="bi bi-person-badge me-2 text-primary"></i>Edit Doctor</h1>
@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- Display success message if available in TempData -->
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show mb-4 fade-in" role="alert">
@@ -40,7 +40,7 @@
             </h6>
         </div>
         <div class="card-body">
-            <!-- Add error message display section -->
+            
             @if (!ViewData.ModelState.IsValid)
             {
                 <div class="alert alert-danger mb-4 fade-in">
@@ -82,7 +82,7 @@
                                                 <span>Image Preview</span>
                                             </div>
                                             <div class="card-body p-2" id="previewContent">
-                                                <!-- Preview image will be inserted here -->
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -200,7 +200,6 @@
 
 @section Scripts {
 <script>
-    // Form validation
     (function () {
         'use strict'
         var forms = document.querySelectorAll('.needs-validation')
@@ -214,7 +213,6 @@
                         event.preventDefault()
                         event.stopPropagation()
                     } else {
-                        // Show loading state
                         submitBtn.disabled = true;
                         submitSpinner.classList.remove('d-none');
                         submitBtn.innerHTML = submitBtn.innerHTML.replace('Save Changes', 'Saving...');
@@ -224,37 +222,31 @@
             })
     })();
     
-    // Image preview functionality
     document.addEventListener('DOMContentLoaded', function() {
         const imageInput = document.getElementById('profileImage');
         const imagePreview = document.getElementById('imagePreview');
         const previewContent = document.getElementById('previewContent');
         
         imageInput.addEventListener('change', function() {
-            // Clear the preview
             previewContent.innerHTML = '';
             
-            // Check if a file was selected
             if (this.files && this.files[0]) {
                 const file = this.files[0];
                 
-                // Validate file type
                 if (!file.type.match('image.*')) {
                     alert('Please select an image file (JPG, PNG, etc.).');
-                    this.value = ''; // Clear the input
+                    this.value = ''; 
                     imagePreview.style.display = 'none';
                     return;
                 }
                 
-                // Validate file size (max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
                     alert('Image size exceeds 5MB. Please select a smaller image.');
-                    this.value = ''; // Clear the input
+                    this.value = ''; 
                     imagePreview.style.display = 'none';
                     return;
                 }
                 
-                // Create and display the preview image
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = document.createElement('img');
@@ -263,12 +255,10 @@
                     img.style.maxHeight = '200px';
                     previewContent.appendChild(img);
                     
-                    // Show the preview container
                     imagePreview.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             } else {
-                // No file selected, hide the preview
                 imagePreview.style.display = 'none';
             }
         });

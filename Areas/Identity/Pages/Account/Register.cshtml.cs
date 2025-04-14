@@ -156,7 +156,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 _context.Patients.Add(patient);
                 await _context.SaveChangesAsync();
 
-                // Generate email confirmation token
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page(
@@ -165,7 +164,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                     values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                     protocol: Request.Scheme);
 
-                // Use the template-based email instead of the simple one
                 await _emailService.SendConfirmationEmailAsync(
                     Input.Email,
                     Input.FirstName,

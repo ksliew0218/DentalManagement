@@ -5,7 +5,6 @@ using DentalManagement.Models;
 
 namespace DentalManagement.Areas.Patient.Models
 {
-    // Main view model for appointments list
     public class AppointmentsListViewModel
     {
         public List<AppointmentViewModel> UpcomingAppointments { get; set; } = new List<AppointmentViewModel>();
@@ -13,7 +12,6 @@ namespace DentalManagement.Areas.Patient.Models
         public List<AppointmentViewModel> CancelledAppointments { get; set; } = new List<AppointmentViewModel>();
     }
 
-    // Individual appointment view model
     public class AppointmentViewModel
     {
         public int Id { get; set; }
@@ -26,7 +24,6 @@ namespace DentalManagement.Areas.Patient.Models
         public PaymentStatus PaymentStatus { get; set; }
 
         
-        // Formatted date and time properties for display
         public string FormattedDate => AppointmentDate.ToString("MMM d, yyyy");
         public string FormattedTime 
         { 
@@ -41,13 +38,11 @@ namespace DentalManagement.Areas.Patient.Models
                 }
                 catch (Exception)
                 {
-                    // Return a default or placeholder if there's an issue
                     return "Time not available";
                 }
             }
         }
         
-        // CSS class based on status
         public string StatusClass
         {
             get
@@ -72,7 +67,6 @@ namespace DentalManagement.Areas.Patient.Models
         }
     }
 
-    // View model for booking an appointment
     public class AppointmentBookingViewModel
     {
         [Required]
@@ -97,7 +91,6 @@ namespace DentalManagement.Areas.Patient.Models
         public string Notes { get; set; }
     }
     
-    // Detailed appointment view
     public class AppointmentDetailViewModel
     {
         public int Id { get; set; }
@@ -110,12 +103,10 @@ namespace DentalManagement.Areas.Patient.Models
         public string Notes { get; set; }
         public bool CanCancel { get; set; }
         
-        // Base properties
         public DateTime CreatedOn { get; set; }
         public decimal TreatmentCost { get; set; }
         public int TreatmentDuration { get; set; }
         
-        // Payment related properties
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
         public decimal DepositAmount { get; set; }
         public decimal AmountPaid { get; set; }
@@ -137,13 +128,11 @@ namespace DentalManagement.Areas.Patient.Models
                 }
                 catch (Exception)
                 {
-                    // Return a default or placeholder if there's an issue
                     return "Time not available";
                 }
             }
         }
         
-        // CSS class based on status
         public string StatusClass
         {
             get
@@ -178,10 +167,8 @@ namespace DentalManagement.Areas.Patient.Models
         public int Duration { get; set; }
         public string ImageUrl { get; set; }
         
-        // We'll determine this based on the name since your model doesn't have a Category field
         public string Category => DetermineCategory(Name);
         
-        // Formatted price and duration for display
         public string FormattedPrice => $"RM {Price:F2}";
         public string FormattedDuration => $"{Duration} min";
         
@@ -215,7 +202,6 @@ namespace DentalManagement.Areas.Patient.Models
         public List<TreatmentViewModel> Treatments { get; set; }
     }
     
-    // View model for doctor selection
     public class DoctorViewModel
     {
         public int Id { get; set; }
@@ -225,7 +211,6 @@ namespace DentalManagement.Areas.Patient.Models
         public string ProfileImageUrl { get; set; }
         public string Qualifications { get; set; }
         
-        // Formatted experience for display
         public string FormattedExperience => $"{YearsOfExperience} years experience";
     }
 
@@ -237,11 +222,9 @@ namespace DentalManagement.Areas.Patient.Models
         public string FormattedStartTime { get; set; }
         public string Period { get; set; }
         
-        // New properties for multi-hour appointments
         public int RequiredSlots { get; set; } = 1;
         public List<int> ConsecutiveSlotIds { get; set; } = new List<int>();
 
-        // Display duration
         public string FormattedDuration => RequiredSlots == 1 
             ? "1 hour" 
             : $"{RequiredSlots} hours";

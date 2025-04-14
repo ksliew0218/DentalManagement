@@ -5,7 +5,6 @@
 }
 
 <style>
-    /* Registration Page Custom Styles */
     .register-container {
         padding: 40px 20px;
     }
@@ -85,7 +84,6 @@
         color: #dc3545;
     }
     
-    /* Responsive adjustments */
     @@media (max-width: 768px) {
         .register-card {
             padding: 25px;
@@ -109,7 +107,7 @@
                         <h3><i class="bi bi-person-badge"></i> Account Information</h3>
                     </div>
                     
-                    <!-- Email -->
+                    
                     <div class="form-group">
                         <label asp-for="Input.Email" class="required-field">Email</label>
                         <div class="input-group">
@@ -119,7 +117,7 @@
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
-                    <!-- Password -->
+                    
                     <div class="form-group">
                         <label asp-for="Input.Password" class="required-field">Password</label>
                         <div class="input-group">
@@ -132,7 +130,7 @@
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
-                    <!-- Confirm Password -->
+                    
                     <div class="form-group">
                         <label asp-for="Input.ConfirmPassword" class="required-field">Confirm Password</label>
                         <div class="input-group">
@@ -150,7 +148,7 @@
                     </div>
 
                     <div class="row">
-                        <!-- First Name -->
+                        
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Input.FirstName" class="required-field">First Name</label>
@@ -159,7 +157,7 @@
                             </div>
                         </div>
 
-                        <!-- Last Name -->
+                        
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Input.LastName" class="required-field">Last Name</label>
@@ -170,7 +168,7 @@
                     </div>
 
                     <div class="row">
-                        <!-- Gender -->
+                        
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Input.Gender" class="required-field">Gender</label>
@@ -184,7 +182,7 @@
                             </div>
                         </div>
 
-                        <!-- Date of Birth -->
+                        
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Input.DateOfBirth" class="required-field">Date of Birth</label>
@@ -194,14 +192,14 @@
                         </div>
                     </div>
 
-                    <!-- Address -->
+                    
                     <div class="form-group">
                         <label asp-for="Input.Address" class="required-field">Address</label>
                         <textarea asp-for="Input.Address" class="form-control" placeholder="Address" rows="2"></textarea>
                         <span asp-validation-for="Input.Address" class="text-danger"></span>
                     </div>
 
-                    <!-- Phone Number -->
+                    
                     <div class="form-group">
                         <label asp-for="Input.PhoneNumber" class="required-field">Phone Number</label>
                         <div class="input-group">
@@ -216,7 +214,7 @@
                     </div>
 
                     <div class="row">
-                        <!-- Emergency Contact Name -->
+                        
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Input.EmergencyContactName" class="required-field">Emergency Contact Name</label>
@@ -225,7 +223,7 @@
                             </div>
                         </div>
 
-                        <!-- Emergency Contact Phone -->
+                        
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="Input.EmergencyContactPhone" class="required-field">Emergency Contact Phone</label>
@@ -257,7 +255,6 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(function() {
-            // Password visibility toggle
             $('.password-toggle').on('click', function() {
                 var targetId = $(this).data('target');
                 var passwordInput = $('#' + targetId);

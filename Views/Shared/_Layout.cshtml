@@ -104,7 +104,6 @@
             margin-top: auto !important;
         }
         
-        /* Card styles for content */
         .card {
             border: none;
             border-radius: 12px;
@@ -121,7 +120,6 @@
             padding: 1rem 1.25rem;
         }
         
-        /* Button styling */
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
@@ -136,13 +134,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         
-        /* Page title styling */
         h1, h2, h3, h4, h5, h6 {
             color: var(--primary-dark);
             font-weight: 600;
         }
         
-        /* Custom navbar toggler */
         .navbar-toggler {
             border: none;
             padding: 0.5rem;
@@ -152,7 +148,6 @@
             box-shadow: none;
         }
         
-        /* Responsive adjustments */
         @@media (max-width: 992px) {
             .navbar-collapse {
                 padding: 1rem;
@@ -183,7 +178,7 @@
 
                         @if (User.Identity.IsAuthenticated)
                         {
-                            @if (isAdmin) // Admin navigation
+                            @if (isAdmin) 
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
@@ -234,7 +229,7 @@
                                     </ul>
                                 </li>
                             }
-                            else if (isPatient) // Patient navigation
+                            else if (isPatient) 
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-area="Patient" asp-controller="Dashboard" asp-action="Index">
@@ -247,7 +242,7 @@
                                     </a>
                                 </li>
                             }
-                            else if (currentUser?.Role == UserRole.Doctor) // Doctor navigation
+                            else if (currentUser?.Role == UserRole.Doctor) 
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-area="Doctor" asp-controller="Dashboard" asp-action="Index">

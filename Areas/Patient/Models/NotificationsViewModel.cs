@@ -11,13 +11,11 @@ namespace DentalManagement.Areas.Patient.Models
         public UserNotificationPreferences NotificationPreferences { get; set; }
         public int UnreadCount { get; set; }
 
-        // Helper method to get the total count of all notification types
         public int TotalNotificationCount => 
             AppointmentReminders.Count + 
             AppointmentChanges.Count +
             Notifications.Count;
             
-        // Check if there are any notifications
         public bool HasNotifications => 
             Notifications.Count > 0 || 
             AppointmentReminders.Count > 0 || 

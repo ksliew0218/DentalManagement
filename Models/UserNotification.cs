@@ -37,14 +37,10 @@ public class UserNotification
     
     public DateTime? ReadAt { get; set; }
     
-    // Email tracking - keep these
     public bool EmailSent { get; set; } = false;
     
     public DateTime? EmailSentAt { get; set; }
     
-    // Remove SMS tracking properties
-    // public bool SmsSent { get; set; } = false;
-    // public DateTime? SmsSentAt { get; set; }
     
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

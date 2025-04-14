@@ -38,7 +38,7 @@ namespace DentalManagement.Models
         [StringLength(500)]
         public string Reason { get; set; }
         
-        public string? DocumentPath { get; set; } // Path to attached document if any
+        public string? DocumentPath { get; set; } 
         
         [Required]
         public LeaveRequestStatus Status { get; set; } = LeaveRequestStatus.Pending;
@@ -51,6 +51,6 @@ namespace DentalManagement.Models
         
         public DateTime? ApprovalDate { get; set; }
         
-        public string? Comments { get; set; } // Comments from admin
+        public string? Comments { get; set; } 
     }
 } 

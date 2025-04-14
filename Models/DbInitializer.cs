@@ -20,21 +20,17 @@ namespace DentalManagement.Models
                     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
                     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-                    // Create database if it doesn't exist
                     await dbContext.Database.EnsureCreatedAsync();
                     
-                    // Ensure all roles exist
                     await EnsureRoleExistsAsync(roleManager, UserRole.Admin.ToString());
                     await EnsureRoleExistsAsync(roleManager, UserRole.Doctor.ToString());
                     await EnsureRoleExistsAsync(roleManager, UserRole.Patient.ToString());
                     
-                    // Ensure admin account exists
                     const string adminEmail = "admin@dentalclinic.com";
                     var adminUser = await userManager.FindByEmailAsync(adminEmail);
                     
                     if (adminUser == null)
                     {
-                        // Create default admin account
                         adminUser = new User
                         {
                             UserName = adminEmail,
@@ -58,7 +54,6 @@ namespace DentalManagement.Models
                     }
                     else
                     {
-                        // Ensure the existing admin user is in the Admin role
                         if (!await userManager.IsInRoleAsync(adminUser, UserRole.Admin.ToString()))
                         {
                             await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
@@ -66,7 +61,6 @@ namespace DentalManagement.Models
                         }
                     }
 
-                    // Seed leave types
                     if (!dbContext.LeaveTypes.Any())
                     {
                         var leaveTypes = new List<LeaveType>
@@ -96,7 +90,7 @@ namespace DentalManagement.Models
                             {
                                 Name = "Unpaid Leave",
                                 IsPaid = false,
-                                DefaultDays = 0, // Unlimited, no balance needed
+                                DefaultDays = 0, 
                                 Description = "Leave without pay for extended absence"
                             }
                         };

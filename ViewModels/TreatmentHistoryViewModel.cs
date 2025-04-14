@@ -11,7 +11,6 @@ namespace DentalManagement.ViewModels
         public TimeSpan AppointmentTime { get; set; }
         public string? Notes { get; set; }
         
-        // Formatted properties for display
         public string FormattedDate => AppointmentDate.ToString("MMM dd, yyyy");
         public string FormattedTime
         {
@@ -24,6 +23,6 @@ namespace DentalManagement.ViewModels
             }
         }
         
-        public string Status => "Completed"; // Since we're only fetching completed appointments
+        public string Status => "Completed"; 
     }
 } 

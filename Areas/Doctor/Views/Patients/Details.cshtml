@@ -7,7 +7,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
@@ -27,7 +26,6 @@
 
     <div class="row">
         <div class="col-md-4">
-            <!-- Patient Profile Card -->
             <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
                 <div class="card-header bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -114,7 +112,7 @@
                 </div>
             </div>
 
-            <!-- Additional Info Card -->
+            
             <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
                 <div class="card-header bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -153,7 +151,7 @@
                 </div>
             </div>
             
-            <!-- Medical Info Card -->
+            
             <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
                 <div class="card-header bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -199,7 +197,6 @@
         </div>
 
         <div class="col-md-8">
-            <!-- Tabs Card -->
             <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
                 <div class="card-header bg-white py-3">
                     <ul class="nav nav-pills card-header-pills" id="patientTabs" role="tablist">
@@ -222,7 +219,6 @@
                 </div>
                 <div class="card-body">
                     <div class="tab-content" id="patientTabsContent">
-                        <!-- Appointments Tab -->
                         <div class="tab-pane fade show active" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="card-title mb-0 fw-bold">
@@ -300,7 +296,7 @@
                             }
                         </div>
                         
-                        <!-- Treatment History Tab -->
+                        
                         <div class="tab-pane fade" id="treatmentHistory" role="tabpanel" aria-labelledby="treatment-tab">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="card-title mb-0 fw-bold">
@@ -370,7 +366,7 @@
                             }
                         </div>
                         
-                        <!-- Dental Records Tab -->
+                        
                         <div class="tab-pane fade" id="dentalRecords" role="tabpanel" aria-labelledby="dental-tab">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="card-title mb-0 fw-bold">
@@ -450,7 +446,7 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Dental Chart History -->
+                                
                                 <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
                                     <div class="card-header bg-white py-3">
                                         <h6 class="m-0 font-weight-bold text-primary">
@@ -506,7 +502,7 @@
                 </div>
             </div>
             
-            <!-- Payment History Card -->
+            
             <div class="card shadow-sm mb-4 border-0 rounded-lg overflow-hidden">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -579,7 +575,7 @@
     </div>
 </div>
 
-<!-- Dental Chart View Modal -->
+
 <div class="modal fade" id="viewDentalChartModal" tabindex="-1" aria-labelledby="viewDentalChartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
@@ -609,12 +605,10 @@
                 <div class="dental-chart-container bg-light p-4 rounded-lg shadow-sm">
                     <h5 class="text-center mb-4 border-bottom pb-2 fw-bold">Upper Teeth</h5>
                     <div class="teeth-row" id="upperTeeth">
-                        <!-- This will be populated dynamically by JavaScript -->
                     </div>
                     
                     <h5 class="text-center my-4 border-bottom pb-2 fw-bold">Lower Teeth</h5>
                     <div class="teeth-row mb-4" id="lowerTeeth">
-                        <!-- This will be populated dynamically by JavaScript -->
                     </div>
                     
                     <div class="dental-chart-legend mt-4 p-3 border-top">
@@ -647,7 +641,6 @@
 
 @section Styles {
     <style>
-        /* General Styles */
         .card {
             border-radius: 0.75rem;
             transition: all 0.2s ease;
@@ -683,7 +676,6 @@
             border-radius: 50rem !important;
         }
         
-        /* Background Gradients */
         .bg-gradient-primary {
             background: linear-gradient(45deg, #4e73df, #2e59d9);
         }
@@ -704,7 +696,6 @@
             background: linear-gradient(45deg, #e74a3b, #be2617);
         }
         
-        /* Patient Profile */
         .profile-img-container {
             width: 120px;
             height: 120px;
@@ -727,7 +718,6 @@
             font-weight: 700;
         }
         
-        /* Patient Stats */
         .patient-stats {
             margin: 0 10px;
         }
@@ -764,7 +754,6 @@
             color: #6c757d;
         }
         
-        /* Patient Info Lists */
         .list-group-item {
             display: flex;
             justify-content: space-between;
@@ -794,7 +783,6 @@
             font-weight: 500;
         }
         
-        /* Additional Info Items */
         .additional-info-item {
             padding: 10px 0;
         }
@@ -809,7 +797,6 @@
             font-size: 16px;
         }
         
-        /* Tab Styling */
         .nav-pills .nav-link {
             border-radius: 50rem;
             padding: 8px 16px;
@@ -832,7 +819,6 @@
             padding: 20px 0;
         }
         
-        /* Appointment Row */
         .appointment-row {
             transition: all 0.2s ease;
         }
@@ -845,7 +831,6 @@
             color: #5a5c69;
         }
         
-        /* Status Badge */
         .status-badge {
             padding: 6px 12px;
             border-radius: 20px;
@@ -854,7 +839,6 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        /* Action Button */
         .action-btn {
             width: 32px;
             height: 32px;
@@ -872,7 +856,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         
-        /* Timeline Styling */
         .timeline-modern {
             position: relative;
             padding-left: 2rem;
@@ -945,7 +928,6 @@
             margin-top: 0.5rem;
         }
         
-        /* Dental Chart Styling */
         .teeth-row {
             display: flex;
             flex-wrap: wrap;
@@ -1038,7 +1020,6 @@
             border: 1px solid #90caf9;
         }
         
-        /* Tooth Tooltip */
         .tooth-tooltip {
             position: absolute;
             z-index: 1100;
@@ -1083,7 +1064,6 @@
             background-color: #4e73df;
         }
         
-        /* Button Styles */
         .btn-circle {
             width: 36px;
             height: 36px;
@@ -1100,7 +1080,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        /* Treatment Report Header */
         .treatment-report-header {
             background-color: rgba(28, 200, 138, 0.1);
             border-radius: 0.5rem;
@@ -1108,7 +1087,6 @@
             margin-bottom: 15px;
         }
         
-        /* Media Queries for Responsiveness */
         @@media (max-width: 767.98px) {
             .profile-img-container,
             .profile-initial {
@@ -1160,7 +1138,6 @@
             }
         }
         
-        /* Dental Chart Button Styling */
         .btn-primary.rounded-3 {
             background-color: #2563EB;
             border-color: #2563EB;
@@ -1189,7 +1166,6 @@
         $(document).ready(function() {
             console.log("Document ready - initializing patient details page");
             
-            // Initialize DataTables if exists
             if ($('#appointmentsTable').length) {
                 $('#appointmentsTable').DataTable({
                     responsive: true,
@@ -1198,40 +1174,30 @@
                 });
             }
             
-            // Add hover effect for appointment rows
             $('.appointment-row').hover(
                 function() { $(this).addClass('hover-active'); },
                 function() { $(this).removeClass('hover-active'); }
             );
             
-            // Add animation for timeline items
             $('.timeline-item').each(function(index) {
                 $(this).css('animation-delay', (index * 0.1) + 's');
             });
             
-            // FDI World Dental Federation notation
             const upperTeethNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
             const lowerTeethNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
             
-            // Mapping between traditional (1-32) and FDI numbering systems
             const traditionalToFDI = {
-                // Upper right (traditional 1-8 to FDI 18-11)
                 "1": 18, "2": 17, "3": 16, "4": 15, "5": 14, "6": 13, "7": 12, "8": 11,
-                // Upper left (traditional 9-16 to FDI 21-28)
                 "9": 21, "10": 22, "11": 23, "12": 24, "13": 25, "14": 26, "15": 27, "16": 28,
-                // Lower left (traditional 17-24 to FDI 38-31)
                 "17": 38, "18": 37, "19": 36, "20": 35, "21": 34, "22": 33, "23": 32, "24": 31,
-                // Lower right (traditional 25-32 to FDI 41-48)
                 "25": 41, "26": 42, "27": 43, "28": 44, "29": 45, "30": 46, "31": 47, "32": 48
             };
             
-            // Create reverse mapping FDI to traditional
             const FDIToTraditional = {};
             Object.keys(traditionalToFDI).forEach(key => {
                 FDIToTraditional[traditionalToFDI[key]] = parseInt(key);
             });
             
-            // Initialize dental chart for viewing modal
             function generateTeethHtml(teethNumbers, rowId) {
                 let html = '';
                 for (let i = 0; i < teethNumbers.length; i++) {
@@ -1246,24 +1212,18 @@
                 $(`#${rowId}`).html(html);
             }
             
-            // Update teeth UI based on data
             function updateTeethUI(teethData, containerPrefix) {
                 console.log(`Updating teeth UI for container: ${containerPrefix}`);
                 console.log(`Teeth data keys: ${Object.keys(teethData).join(', ')}`);
                 
-                // Count how many teeth we update
                 let updatedCount = 0;
                 
-                // First create a promise to ensure DOM is ready
                 setTimeout(() => {
-                    // For debugging, log all teeth in teethData
                     console.log("All teeth data available:", teethData);
                     
-                    // Get all teeth elements
                     const allTeethElements = $(`#${containerPrefix} .tooth`);
                     console.log(`Found ${allTeethElements.length} teeth elements in ${containerPrefix}`);
                     
-                    // Loop through all elements and update them
                     allTeethElements.each(function() {
                         const $tooth = $(this);
                         const fdiNumber = $tooth.data('tooth-number');
@@ -1272,15 +1232,12 @@
                             updatedCount++;
                             const status = teethData[fdiNumber];
                             
-                            // Remove any existing status classes
                             $tooth.removeClass('healthy-tooth decayed-tooth filled-tooth');
                             
-                            // Update the tooth status text (capitalize first letter)
                             const displayStatus = typeof status === 'string' ? 
                                 status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : 'Unknown';
                             $tooth.find('.tooth-status').text(displayStatus);
                             
-                            // Add the appropriate status class
                             const statusLower = typeof status === 'string' ? status.toLowerCase() : '';
                             if (statusLower === 'healthy') {
                                 $tooth.addClass('healthy-tooth');
@@ -1290,12 +1247,11 @@
                                 $tooth.addClass('filled-tooth');
                             } else {
                                 console.warn(`Unknown tooth status: "${status}" for tooth #${fdiNumber}`);
-                                $tooth.addClass('healthy-tooth'); // Default to healthy if unknown
+                                $tooth.addClass('healthy-tooth'); 
                             }
                             
                             console.log(`Updated tooth #${fdiNumber} with status "${status}"`);
                         } else {
-                            // Default to healthy if no data
                             $tooth.removeClass('healthy-tooth decayed-tooth filled-tooth').addClass('healthy-tooth');
                             $tooth.find('.tooth-status').text('Healthy');
                             console.log(`No data for tooth #${fdiNumber}, setting to Healthy`);
@@ -1303,10 +1259,9 @@
                     });
                     
                     console.log(`Updated ${updatedCount} teeth with data for container ${containerPrefix}`);
-                }, 200); // Increased delay to ensure DOM elements are ready
+                }, 200); 
             }
             
-            // Convert traditional dental chart data to FDI format for UI
             function convertTraditionalToFDI(traditionalData) {
                 if (!traditionalData) return {};
                 
@@ -1314,21 +1269,17 @@
                 console.log("Data stringified:", JSON.stringify(traditionalData, null, 2));
                 console.log("All keys in traditionalData:", Object.keys(traditionalData));
                 
-                // Create a new object for the FDI-formatted data
                 const fdiData = {};
                 
-                // Process each key in the traditional data
                 Object.keys(traditionalData).forEach(traditionalKey => {
-                    // Convert string status to lowercase for consistent handling
                     let status = traditionalData[traditionalKey];
                     if (typeof status === 'string') {
                         status = status.toLowerCase();
                     } else {
                         console.warn(`Unexpected status type for tooth #${traditionalKey}:`, status);
-                        status = 'healthy'; // Default if unexpected type
+                        status = 'healthy'; 
                     }
                     
-                    // Get the FDI number using the traditional key
                     const fdiNum = traditionalToFDI[traditionalKey];
                     
                     console.log(`Converting tooth #${traditionalKey} (traditional) to FDI #${fdiNum}, status: ${status}`);
@@ -1342,7 +1293,6 @@
                 
                 console.log("Final converted FDI data:", fdiData);
                 
-                // If no valid data was converted, return null
                 if (Object.keys(fdiData).length === 0) {
                     return null;
                 }
@@ -1350,18 +1300,14 @@
                 return fdiData;
             }
             
-            // Viewing Dental Chart Modal setup
             $('#viewDentalChartModal').on('show.bs.modal', function () {
                 console.log("Dental chart modal showing");
                 
-                // Generate teeth structure
                 generateTeethHtml(upperTeethNumbers, 'upperTeeth');
                 generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
                 
-                // The dental chart data will be populated by the view-dental-chart-btn click handler
             });
 
-            // Make sure we reset the modal when it's hidden
             $('#viewDentalChartModal').on('hidden.bs.modal', function () {
                 console.log("Dental chart modal hidden, clearing data");
                 $('#upperTeeth').empty();
@@ -1370,9 +1316,7 @@
                 $('#treatmentDateDisplay').text('N/A');
             });
             
-            // Show tooth details in a nice tooltip/popover
             function showToothDetails(fdiNumber, traditionalNumber, status) {
-                // Create tooltip content
                 let tooltipContent = `
                 <div class="tooth-details p-3">
                     <h5 class="fw-bold mb-2">Tooth #${fdiNumber}</h5>
@@ -1384,7 +1328,6 @@
                     <p class="mt-2 mb-0 text-muted small">Click outside to close</p>
                 </div>`;
                 
-                // Create the tooltip element (or use existing one)
                 let $tooltip = $('#toothTooltip');
                 if (!$tooltip.length) {
                     $tooltip = $('<div>')
@@ -1395,7 +1338,6 @@
                 
                 $tooltip.html(tooltipContent);
                 
-                // Position the tooltip near the tooth
                 const $tooth = $(`#tooth-${fdiNumber}-upperTeeth, #tooth-${fdiNumber}-lowerTeeth`);
                 const toothPosition = $tooth.offset();
                 
@@ -1404,7 +1346,6 @@
                     left: toothPosition.left + ($tooth.outerWidth() / 2) - ($tooltip.outerWidth() / 2)
                 }).addClass('show');
                 
-                // Close tooltip when clicking outside
                 $(document).on('click.tooth-tooltip', function(e) {
                     if (!$(e.target).closest('.tooth-tooltip, .tooth').length) {
                         $tooltip.removeClass('show');
@@ -1413,7 +1354,6 @@
                 });
             }
             
-            // Setup tooth click listeners
             function setupToothClickListeners() {
                 $(document).off('click', '#viewDentalChartModal .tooth');
                 $(document).on('click', '#viewDentalChartModal .tooth', function() {
@@ -1423,12 +1363,10 @@
                     
                     console.log(`Tooth clicked: FDI #${fdiNumber}, Traditional #${traditionalNumber}, Status: ${status}`);
                     
-                    // Show tooth details
                     showToothDetails(fdiNumber, traditionalNumber, status);
                 });
             }
             
-            // Helper function to determine quadrant name
             function getQuadrantName(fdiNumber) {
                 const quadrant = Math.floor(fdiNumber / 10);
                 switch(quadrant) {
@@ -1440,7 +1378,6 @@
                 }
             }
             
-            // Helper function to determine tooth type
             function getToothType(fdiNumber) {
                 const toothNumber = fdiNumber % 10;
                 if (toothNumber === 1 || toothNumber === 2) return "Incisor";
@@ -1450,7 +1387,6 @@
                 return "Unknown";
             }
             
-            // Directly attach click handlers to each dental chart button
             document.querySelectorAll('.view-dental-chart-btn').forEach((button, index) => {
                 button.setAttribute('data-debug-id', index);
                 
@@ -1465,38 +1401,29 @@
                     console.log(`Button #${btnIndex} Chart - Treatment: "${treatmentName}", Date: "${treatmentDate}"`);
                     console.log(`Button #${btnIndex} Chart - Raw data:`, chartDataStr);
                     
-                    // Show the modal first so elements can be properly rendered
                     var myModal = new bootstrap.Modal(document.getElementById('viewDentalChartModal'));
                     myModal.show();
                     
-                    // First clear any existing data
                     $('#upperTeeth').empty();
                     $('#lowerTeeth').empty();
                     
-                    // Generate teeth structure first
                     generateTeethHtml(upperTeethNumbers, 'upperTeeth');
                     generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
                     
-                    // Setup tooth click listeners
                     setupToothClickListeners();
                     
-                    // Update modal content with treatment information
                     document.getElementById('treatmentNameDisplay').textContent = treatmentName || 'Dental Chart Record';
                     document.getElementById('treatmentDateDisplay').textContent = treatmentDate || 'N/A';
                     
-                    // Allow a brief moment for DOM to render before processing data
                     setTimeout(() => {
                         try {
-                            // Parse the dental chart data
                             let dentalChart = null;
                             
                             if (chartDataStr) {
                                 try {
-                                    // First, try to parse it as a JSON object directly
                                     dentalChart = JSON.parse(chartDataStr);
                                     console.log(`Button #${btnIndex} - Successfully parsed dental chart data:`, dentalChart);
                                     
-                                    // Additional check - make sure it's not a string that needs further parsing
                                     if (typeof dentalChart === 'string') {
                                         console.log(`Button #${btnIndex} - Result is a string, trying to parse again:`, dentalChart);
                                         dentalChart = JSON.parse(dentalChart);
@@ -1506,16 +1433,14 @@
                                     console.log(`Button #${btnIndex} - Attempting cleanup on data:`, chartDataStr);
                                     
                                     try {
-                                        // Try to clean up the string and parse again
                                         const cleanedStr = chartDataStr
-                                            .replace(/\\"/g, '"')  // Replace escaped quotes
-                                            .replace(/^"|"$/g, ''); // Remove wrapping quotes
+                                            .replace(/\\"/g, '"')  
+                                            .replace(/^"|"$/g, ''); 
                                             
                                         console.log(`Button #${btnIndex} - Cleaned chart string:`, cleanedStr);
                                         dentalChart = JSON.parse(cleanedStr);
                                         console.log(`Button #${btnIndex} - Successfully parsed after cleanup:`, dentalChart);
                                         
-                                        // Additional check - make sure it's not a string that needs further parsing
                                         if (typeof dentalChart === 'string') {
                                             console.log(`Button #${btnIndex} - Result after cleanup is still a string, trying to parse again:`, dentalChart);
                                             dentalChart = JSON.parse(dentalChart);
@@ -1536,31 +1461,25 @@
                                 return;
                             }
                             
-                            // Validate that we have a proper object with teeth data
                             console.log(`Button #${btnIndex} - Dental chart data type:`, typeof dentalChart);
                             console.log(`Button #${btnIndex} - Dental chart keys:`, Object.keys(dentalChart));
                             
-                            // Check if we have tooth statuses (1-32)
                             const hasTradKeys = ["1", "16", "17", "32"].some(key => key in dentalChart);
                             
                             if (!hasTradKeys) {
                                 console.warn(`Button #${btnIndex} - Data doesn't appear to have traditional tooth numbers. Keys found:`, Object.keys(dentalChart));
                             }
                             
-                            // Convert traditional numbering to FDI
                             const fdiData = convertTraditionalToFDI(dentalChart);
                             
-                            // Debug and validate the conversion
                             console.log(`Button #${btnIndex} - Conversion result:`, fdiData);
                             
-                            // If we have data in FDI format, use it directly
                             if (fdiData && Object.keys(fdiData).length > 0) {
                                 console.log(`Button #${btnIndex} - Using converted FDI data to update UI`);
                                 updateTeethUI(fdiData, 'upperTeeth');
                                 updateTeethUI(fdiData, 'lowerTeeth');
                             } else {
                                 console.log(`Button #${btnIndex} - No valid data found, using default healthy status`);
-                                // Fallback to default statuses
                                 const defaultData = {};
                                 upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
                                     defaultData[toothNumber] = 'healthy';
@@ -1572,17 +1491,15 @@
                             console.error('Error displaying dental chart:', error);
                             alert('Error displaying dental chart: ' + error.message);
                         }
-                    }, 200); // Small delay to ensure DOM is fully rendered
+                    }, 200); 
                 };
             });
             
-            // View Full Dental Chart button with direct onclick handler
             const viewLatestDentalChartBtn = document.getElementById('viewLatestDentalChart');
             if (viewLatestDentalChartBtn) {
                 viewLatestDentalChartBtn.onclick = function() {
                     console.log("View latest dental chart button clicked");
                     
-                    // Get latest chart data from hidden fields
                     const chartDataStr = document.getElementById('latestChartData').value;
                     const treatmentName = document.getElementById('latestTreatmentName').value;
                     const treatmentDate = document.getElementById('latestTreatmentDate').value;
@@ -1591,38 +1508,29 @@
                     console.log("Latest Chart - Date:", treatmentDate);
                     console.log("Latest Chart - Raw data:", chartDataStr);
                     
-                    // Show the modal first so elements can be properly rendered
                     var myModal = new bootstrap.Modal(document.getElementById('viewDentalChartModal'));
                     myModal.show();
                     
-                    // First clear any existing data
                     $('#upperTeeth').empty();
                     $('#lowerTeeth').empty();
                     
-                    // Generate teeth structure first
                     generateTeethHtml(upperTeethNumbers, 'upperTeeth');
                     generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
                     
-                    // Setup tooth click listeners
                     setupToothClickListeners();
                     
-                    // Update modal content with treatment information
                     document.getElementById('treatmentNameDisplay').textContent = treatmentName || 'Latest Dental Chart';
                     document.getElementById('treatmentDateDisplay').textContent = treatmentDate || 'N/A';
                     
-                    // Allow a brief moment for DOM to render before processing data
                     setTimeout(() => {
                         try {
-                            // Parse the dental chart data
                             let dentalChart = null;
                             
                             if (chartDataStr) {
                                 try {
-                                    // First, try to parse it as a JSON object directly
                                     dentalChart = JSON.parse(chartDataStr);
                                     console.log("Latest Chart - Successfully parsed dental chart data:", dentalChart);
                                     
-                                    // Additional check - make sure it's not a string that needs further parsing
                                     if (typeof dentalChart === 'string') {
                                         console.log("Latest Chart - Result is a string, trying to parse again:", dentalChart);
                                         dentalChart = JSON.parse(dentalChart);
@@ -1632,10 +1540,9 @@
                                     console.log("Latest Chart - Attempting cleanup on data:", chartDataStr);
                                     
                                     try {
-                                        // Try to clean up the string and parse again
                                         const cleanedStr = chartDataStr
-                                            .replace(/\\"/g, '"')  // Replace escaped quotes
-                                            .replace(/^"|"$/g, ''); // Remove wrapping quotes
+                                            .replace(/\\"/g, '"')  
+                                            .replace(/^"|"$/g, ''); 
                                             
                                         console.log("Latest Chart - Cleaned chart string:", cleanedStr);
                                         dentalChart = JSON.parse(cleanedStr);
@@ -1654,28 +1561,23 @@
                                 return;
                             }
                             
-                            // Validate that we have a proper object with teeth data
                             console.log("Latest Chart - Dental chart data type:", typeof dentalChart);
                             console.log("Latest Chart - Dental chart keys:", Object.keys(dentalChart));
                             
-                            // Check if we have tooth statuses (1-32)
                             const hasTradKeys = ["1", "16", "17", "32"].some(key => key in dentalChart);
                             
                             if (!hasTradKeys) {
                                 console.warn("Latest Chart - Data doesn't appear to have traditional tooth numbers. Keys found:", Object.keys(dentalChart));
                             }
                             
-                            // Convert traditional numbering to FDI
                             const fdiData = convertTraditionalToFDI(dentalChart);
                             
-                            // Update the UI with the data
                             if (fdiData && Object.keys(fdiData).length > 0) {
                                 console.log("Using converted FDI data to update UI for latest chart");
                                 updateTeethUI(fdiData, 'upperTeeth');
                                 updateTeethUI(fdiData, 'lowerTeeth');
                             } else {
                                 console.log("No valid data found for latest chart, using default healthy status");
-                                // Fallback to default statuses
                                 const defaultData = {};
                                 upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
                                     defaultData[toothNumber] = 'healthy';
@@ -1687,13 +1589,12 @@
                             console.error('Error displaying latest dental chart:', error);
                             alert('Error displaying dental chart: ' + error.message);
                         }
-                    }, 200); // Small delay to ensure DOM is fully rendered
+                    }, 200); 
                 };
             } else {
                 console.log("Latest dental chart button not found");
             }
             
-            // Create tooltip element if needed
             if (!document.getElementById('toothTooltip')) {
                 const tooltipDiv = document.createElement('div');
                 tooltipDiv.className = 'tooth-tooltip';
@@ -1701,7 +1602,6 @@
                 document.body.appendChild(tooltipDiv);
             }
             
-            // Close tooltip when clicking outside
             document.addEventListener('click', function(e) {
                 const tooltip = document.getElementById('toothTooltip');
                 if (tooltip && !e.target.closest('.tooth, .tooth-tooltip')) {
@@ -1709,14 +1609,8 @@
                 }
             });
 
-            // Add test button for debugging
-            // Comment this out in production
             if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-                // REMOVE this auto-running test that overrides the real chart data
-                // $('#viewDentalChartModal').on('shown.bs.modal', function() {
-                //     console.log("Running test after modal is shown");
-                //     setTimeout(testDentalChart, 500);
-                // });
+                
             }
         });
     </script>

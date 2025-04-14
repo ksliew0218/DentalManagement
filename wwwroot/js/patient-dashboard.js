@@ -1,4 +1,3 @@
-// Initialize content container margins
 function initializeLayout() {
   const contentContainer = document.getElementById('contentContainer');
   
@@ -8,7 +7,6 @@ function initializeLayout() {
   }
 }
 
-// Set responsive layout for mobile devices
 function handleResponsiveLayout() {
   const contentContainer = document.getElementById('contentContainer');
   
@@ -25,21 +23,16 @@ function handleResponsiveLayout() {
   }
 }
 
-// Initialize the layout on page load
 document.addEventListener('DOMContentLoaded', function() {
   initializeLayout();
   handleResponsiveLayout();
-  
-  // Add window resize listener for responsive layout
   window.addEventListener('resize', handleResponsiveLayout);
 });
 
-// Re-initialize after AJAX content loads
 document.addEventListener('contentLoaded', function() {
   initializeLayout();
   handleResponsiveLayout();
 });
 
-// Make functions available globally
 window.initializeLayout = initializeLayout;
 window.handleResponsiveLayout = handleResponsiveLayout;

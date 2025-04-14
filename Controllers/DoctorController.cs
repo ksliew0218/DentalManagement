@@ -34,24 +34,21 @@ namespace DentalManagement.Controllers
             _leaveService = leaveService;
         }
 
-        // GET: Doctor/Index
         public async Task<IActionResult> Index()
         {
             var doctors = await _context.Doctors
                 .Include(d => d.User)
-                .Where(d => !d.IsDeleted) // Only show doctors that are NOT deleted
+                .Where(d => !d.IsDeleted) 
                 .ToListAsync();
 
             return View(doctors);
         }
 
-        // GET: Doctor/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Doctor/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
@@ -95,7 +92,6 @@ namespace DentalManagement.Controllers
                 doctor.UserID = user.Id;
                 doctor.User = user;
 
-                // Handle Image Upload
                 if (ProfileImage != null && ProfileImage.Length > 0)
                 {
                     var uploadsFolder = Path.Combine("/app", "wwwroot", "images", "profiles");
@@ -126,7 +122,6 @@ namespace DentalManagement.Controllers
                 _context.Doctors.Add(doctor);
                 await _context.SaveChangesAsync();
                 
-                // Initialize leave balances for the new doctor
                 await _leaveService.InitializeDoctorLeaveBalancesAsync(doctor.Id);
 
                 await transaction.CommitAsync();
@@ -142,7 +137,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // POST: Doctor/ToggleStatus
         [HttpPost]
         public async Task<IActionResult> ToggleStatus(int id)
         {
@@ -160,14 +154,14 @@ namespace DentalManagement.Controllers
                 doctor.Status = StatusType.Inactive;
                 if (doctor.User != null) doctor.User.IsActive = false;
                 TempData["SuccessMessage"] = "Doctor Deactivated successfully.";
-                TempData["AlertType"] = "danger"; // Red for deactivation
+                TempData["AlertType"] = "danger"; 
             }
             else
             {
                 doctor.Status = StatusType.Active;
                 if (doctor.User != null) doctor.User.IsActive = true;
                 TempData["SuccessMessage"] = "Doctor Activated successfully.";
-                TempData["AlertType"] = "success"; // Green for activation
+                TempData["AlertType"] = "success"; 
             }
 
             await _context.SaveChangesAsync();
@@ -183,7 +177,6 @@ namespace DentalManagement.Controllers
                 return NotFound();
             }
 
-            // Soft delete (hide doctor)
             doctor.IsDeleted = true;
             await _context.SaveChangesAsync();
 
@@ -191,7 +184,6 @@ namespace DentalManagement.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: Doctor/Delete/{id}
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -213,7 +205,6 @@ namespace DentalManagement.Controllers
             return View(doctor);
         }
 
-        // GET: Doctor/Details/{id}
         public async Task<IActionResult> Details(int id)
         {
             var doctor = await _context.Doctors
@@ -227,7 +218,6 @@ namespace DentalManagement.Controllers
                 return NotFound();
             }
 
-            // Get upcoming appointments for this doctor
             var upcomingAppointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.TreatmentType)
@@ -237,7 +227,7 @@ namespace DentalManagement.Controllers
                            a.Status != "Completed")
                 .OrderBy(a => a.AppointmentDate)
                 .ThenBy(a => a.AppointmentTime)
-                .Take(5) // Limit to 5 upcoming appointments
+                .Take(5) 
                 .ToListAsync();
 
             ViewBag.UpcomingAppointments = upcomingAppointments;
@@ -245,7 +235,6 @@ namespace DentalManagement.Controllers
             return View(doctor);
         }
 
-        // GET: Doctor/Edit/{id}
         public async Task<IActionResult> Edit(int id)
         {
             var doctor = await _context.Doctors
@@ -260,7 +249,6 @@ namespace DentalManagement.Controllers
             return View(doctor);
         }
 
-        // POST: Doctor/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, 
@@ -284,11 +272,9 @@ namespace DentalManagement.Controllers
 
             try
             {
-                // Update doctor details
                 existingDoctor.FirstName = doctor.FirstName;
                 existingDoctor.LastName = doctor.LastName;
                 existingDoctor.Gender = doctor.Gender;
-                // ✅ Ensure DateOfBirth is UTC
                 if (doctor.DateOfBirth != null)
                 {
                     existingDoctor.DateOfBirth = DateTime.SpecifyKind(doctor.DateOfBirth, DateTimeKind.Utc);
@@ -299,7 +285,6 @@ namespace DentalManagement.Controllers
                 existingDoctor.ExperienceYears = doctor.ExperienceYears;
                 existingDoctor.Status = doctor.Status;
 
-                // Preserve existing image if no new image is uploaded
                 if (ProfileImage != null && ProfileImage.Length > 0)
                 {
                     var uploadsFolder = Path.Combine("/app", "wwwroot", "images", "profiles");
@@ -319,7 +304,6 @@ namespace DentalManagement.Controllers
                     existingDoctor.ProfilePictureUrl = $"/images/profiles/{uniqueFileName}";
                 }
 
-                // Debugging logs to check values
                 Console.WriteLine($"Updating Doctor ID: {existingDoctor.Id}, UserID: {existingDoctor.UserID}");
                 Console.WriteLine($"New Name: {existingDoctor.FirstName} {existingDoctor.LastName}");
 

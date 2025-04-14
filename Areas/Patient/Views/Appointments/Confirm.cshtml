@@ -5,13 +5,13 @@
 }
 
 <head>
-    <!-- Link to custom CSS files -->
+    
     <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/appointment-confirmation.css" rel="stylesheet" asp-append-version="true">
 </head>
 
 <div class="appointment-container">
-    <!-- Progress Steps Indicator -->
+    
     <div class="progress-steps">
         <div class="step completed">
             <div class="step-icon">
@@ -42,13 +42,13 @@
         </div>
     </div>
 
-    <!-- Page Header -->
+    
     <div class="page-header">
         <h2><i class="bi bi-check2-circle"></i> Review and Confirm</h2>
         <p class="subtitle">Please review your appointment details before confirming</p>
     </div>
 
-    <!-- Display validation errors -->
+    
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="alert alert-danger">
@@ -64,17 +64,17 @@
         </div>
     }
 
-    <!-- Create the form for submission -->
+    
     <form id="confirmBookingForm" asp-controller="Appointments" asp-action="SubmitBooking" asp-area="Patient" method="post">
         @Html.AntiForgeryToken()
         
-        <!-- Hidden form fields for the appointment data - CRITICAL fields -->
+        
         <input type="hidden" name="TreatmentId" id="treatmentId" value="@Model.TreatmentId" />
         <input type="hidden" name="DoctorId" id="doctorId" value="@Model.DoctorId" />
         <input type="hidden" name="AppointmentDate" id="appointmentDate" value="@Model.AppointmentDate.ToString("yyyy-MM-dd")" />
         <input type="hidden" name="AppointmentTime" id="appointmentTime" value="@Model.AppointmentTime" />
         
-        <!-- Appointment Summary -->
+        
         <div class="appointment-summary">
             <div class="summary-card">
                 <div class="card-header">
@@ -134,7 +134,7 @@
                 </div>
             </div>
 
-            <!-- Special Requests and Notes -->
+            
             <div class="notes-section">
                 <div class="section-header">
                     <h3>Special Requests</h3>
@@ -143,7 +143,7 @@
                 <textarea id="appointment-notes" name="Notes" placeholder="E.g., I have dental anxiety, please explain procedures before starting. Or any other special needs or concerns.">@Model.Notes</textarea>
             </div>
             
-            <!-- Payment Information -->
+            
             <div class="payment-section">
                 <div class="section-header">
                     <h3>Payment Information</h3>
@@ -180,7 +180,7 @@
                 </div>
             </div>
             
-            <!-- Cancellation Policy -->
+            
             <div class="policy-section">
                 <div class="policy-header">
                     <i class="bi bi-exclamation-circle"></i>
@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <!-- Navigation Buttons -->
+        
         <div class="navigation-buttons">
             <a href="@Url.Action("SelectDateTime", "Appointments", new { area = "Patient" })" class="back-btn">
                 <i class="bi bi-arrow-left"></i> Back to Date & Time

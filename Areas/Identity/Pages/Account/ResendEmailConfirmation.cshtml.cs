@@ -59,7 +59,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            // Get the patient's first name
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             string firstName = patient?.FirstName ?? "";
 
@@ -72,7 +71,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
                 
-            // Use the template-based email
             await _emailService.SendConfirmationEmailAsync(
                 Input.Email,
                 firstName,

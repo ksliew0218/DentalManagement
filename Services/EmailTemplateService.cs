@@ -68,10 +68,8 @@ namespace DentalManagement.Services
 
                 string styles = await GetStylesAsync(templateName);
                 
-                // Replace the style placeholder with actual styles
                 template = template.Replace("{{styles}}", styles);
                 
-                // Replace all placeholders with actual values
                 foreach (var replacement in replacements)
                 {
                     template = template.Replace($"{{{{{replacement.Key}}}}}", replacement.Value);

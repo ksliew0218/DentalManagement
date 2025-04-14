@@ -4,14 +4,14 @@
 }
 
 <head>
-    <!-- Link to custom CSS files -->
+    
     <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/booking-success.css" rel="stylesheet" asp-append-version="true">
 </head>
 
 <div class="booking-success-container">
     <div class="success-card">
-        <!-- Success Header -->
+        
         <div class="success-header">
             <div class="success-icon">
                 <i class="bi bi-check-circle"></i>
@@ -20,7 +20,7 @@
             <p class="success-message">Your appointment has been successfully scheduled.</p>
         </div>
         
-        <!-- Appointment Details -->
+        
         <div class="appointment-details">
             <div class="detail-item">
                 <div class="detail-icon">
@@ -73,13 +73,13 @@
             </div>
         </div>
         
-        <!-- Email Confirmation Message -->
+        
         <div class="email-confirmation">
             <i class="bi bi-envelope-check"></i>
             <p>We've sent a confirmation email with these details to your registered email address.</p>
         </div>
         
-        <!-- Action Buttons -->
+        
         <div class="action-buttons">
             <a href="/Patient/Appointments" class="btn-view">
                 <i class="bi bi-calendar-check"></i> View My Appointments
@@ -89,7 +89,7 @@
             </a>
         </div>
         
-        <!-- Appointment Reminders -->
+        
         <div class="reminder-section">
             <div class="reminder-header">
                 <i class="bi bi-bell"></i>
@@ -106,12 +106,10 @@
 </div>
 
 <script>
-    // Add subtle animation to the success card
     document.addEventListener('DOMContentLoaded', function() {
         const successCard = document.querySelector('.success-card');
         const detailItems = document.querySelectorAll('.detail-item');
         
-        // Animate the card appearance
         successCard.style.opacity = '0';
         successCard.style.transform = 'translateY(20px)';
         
@@ -121,7 +119,6 @@
             successCard.style.transform = 'translateY(0)';
         }, 100);
         
-        // Animate detail items sequentially
         detailItems.forEach((item, index) => {
             item.style.opacity = '0';
             item.style.transform = 'translateY(10px)';
@@ -133,7 +130,6 @@
             }, 300 + (index * 100));
         });
         
-        // Clear session storage
         sessionStorage.removeItem('selectedTreatment');
         sessionStorage.removeItem('selectedDoctor');
         sessionStorage.removeItem('selectedDateTime');

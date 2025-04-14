@@ -1,5 +1,4 @@
 function updateActiveMenu(url = window.location.pathname) {
-  // Store the current path in localStorage for persistence across page refreshes
   localStorage.setItem('currentActivePath', url);
   
   document.querySelectorAll('.nav-menu .nav-link').forEach((link) => {
@@ -8,8 +7,6 @@ function updateActiveMenu(url = window.location.pathname) {
       window.location.origin
     ).pathname;
 
-    // Check if the current URL starts with the menu item URL (for subpages)
-    // Or if it matches exactly
     if (url === linkUrl || url.startsWith(linkUrl + '/')) {
       link.classList.add('active');
       link.parentElement.classList.add('active'); 
@@ -39,7 +36,6 @@ function loadContent(event, element, pushState = true) {
         window.history.pushState({ url }, '', url);
       }
 
-      // Initialize layout after content is loaded
       if (typeof initializeLayout === 'function') {
         initializeLayout();
       }
@@ -48,7 +44,6 @@ function loadContent(event, element, pushState = true) {
         handleResponsiveLayout();
       }
 
-      // Trigger content loaded event
       const contentLoadedEvent = new Event('contentLoaded');
       document.dispatchEvent(contentLoadedEvent);
     },
@@ -66,37 +61,30 @@ function loadContent(event, element, pushState = true) {
 
 function initializeNavigation() {
   document.querySelectorAll('.nav-menu .nav-link').forEach((link) => {
-    // Remove existing click handlers first
     link.removeEventListener('click', handleNavClick);
     
-    // Add new click handler
     link.addEventListener('click', handleNavClick);
   });
 }
 
 function handleNavClick(e) {
-  // Skip AJAX loading for links with 'no-ajax' class
   if (this.classList.contains('no-ajax')) {
     return true;
   }
   loadContent(e, this);
 }
 
-// Restore active menu highlighting from localStorage
 function restoreActiveMenuHighlight() {
   const currentPath = window.location.pathname;
   const savedActivePath = localStorage.getItem('currentActivePath');
   
-  // First check if current URL matches any menu item directly
   let matchFound = highlightMatchingMenuItem(currentPath);
   
-  // If no match with current path, try with saved path
   if (!matchFound && savedActivePath && savedActivePath !== currentPath) {
     highlightMatchingMenuItem(savedActivePath);
   }
 }
 
-// Helper function to find and highlight the matching menu item
 function highlightMatchingMenuItem(path) {
   let matchFound = false;
   
@@ -106,7 +94,6 @@ function highlightMatchingMenuItem(path) {
       window.location.origin
     ).pathname;
     
-    // Check if the path matches the menu item URL or if it's a subpage
     if (path === linkUrl || path.startsWith(linkUrl + '/')) {
       link.classList.add('active');
       link.parentElement.classList.add('active');
@@ -120,11 +107,9 @@ function highlightMatchingMenuItem(path) {
   return matchFound;
 }
 
-// Handle browser back/forward navigation
 window.addEventListener('popstate', function(event) {
   const currentPath = window.location.pathname;
   
-  // Update the active menu based on the current path
   updateActiveMenu(currentPath);
   
   if (event.state && event.state.url) {
@@ -132,18 +117,15 @@ window.addEventListener('popstate', function(event) {
   }
 });
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
   initializeNavigation();
   restoreActiveMenuHighlight();
 });
 
-// Re-initialize after AJAX content loads
 document.addEventListener('contentLoaded', function() {
   initializeNavigation();
 });
 
-// Make functions available globally
 window.loadContent = loadContent;
 window.updateActiveMenu = updateActiveMenu;
 window.initializeNavigation = initializeNavigation;

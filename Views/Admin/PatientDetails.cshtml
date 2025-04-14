@@ -49,7 +49,7 @@
     </div>
 }
 
-<!-- Patient Info Card -->
+
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="card shadow-sm border-0">
@@ -132,7 +132,7 @@
     </div>
 </div>
 
-<!-- Treatment & Appointment History Card -->
+
 <div class="row">
     <div class="col-12">
         <div class="card shadow-sm border-0 mb-4">
@@ -280,23 +280,18 @@
                 }
             });
             
-            // Add classes to DataTables elements for styling
             $('.dataTables_filter input').addClass('form-control form-control-sm');
             $('.dataTables_length select').addClass('form-select form-select-sm');
             
-            // Print History functionality
             $("#printHistoryBtn").on("click", function() {
-                // Create a new window for printing
                 const printWindow = window.open("", "_blank", "width=800,height=600");
                 
-                // Get patient information
                 const patientName = "@Model.FirstName @Model.LastName";
                 const patientEmail = "@Model.User?.Email";
                 const patientPhone = "@(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)";
                 const memberSince = "@Model.User?.CreatedAt.ToString("MMMM yyyy")";
                 const patientAge = "@age";
                 
-                // Generate HTML for the history report
                 let historyHTML = `
                 <!DOCTYPE html>
                 <html lang="en">
@@ -485,7 +480,6 @@
                         
                         <h3 class="section-title">Appointment History</h3>`;
                 
-                // Check if there are appointments
                 const appointmentsExist = @(appointments != null && appointments.Any() ? "true" : "false");
                 
                 if (appointmentsExist) {
@@ -574,14 +568,11 @@
                 </html>
                 `;
                 
-                // Write the HTML to the new window and trigger print
                 printWindow.document.open();
                 printWindow.document.write(historyHTML);
                 printWindow.document.close();
                 
-                // Wait for the content to load before printing
                 printWindow.onload = function() {
-                    // Auto-print when the page has loaded
                     setTimeout(() => {
                         printWindow.print();
                     }, 500);

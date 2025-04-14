@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="~/css/status-styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
     <style>
-        /* Footer positioning */
         html, body {
             height: 100%;
             margin: 0;
@@ -32,7 +31,7 @@
         
         .content-container {
             flex: 1 0 auto;
-            margin-bottom: 60px; /* Equal to footer height */
+            margin-bottom: 60px; 
         }
         
         .footer {
@@ -46,9 +45,9 @@
 </head>
 <body>
     <div class="d-flex" id="wrapper">
-        <!-- Sidebar -->
+        
         <div class="modern-sidebar shadow-sm" id="sidebar-wrapper">
-            <!-- User Profile Section -->
+            
             <div class="user-profile text-center p-4 border-bottom">
                 <div class="doctor-avatar mb-2">
                     <div class="doctor-initials">
@@ -62,7 +61,7 @@
                 </div>
             </div>
 
-            <!-- Navigation Links -->
+            
             <div class="sidebar-menu py-3">
                 <a class="sidebar-item d-flex align-items-center px-4 py-3 @(ViewContext.RouteData.Values["Controller"].ToString() == "Dashboard" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")" 
                    asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
@@ -124,7 +123,7 @@
             </div>
         </div>
         
-        <!-- Page Content -->
+        
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
                 <div class="container-fluid">
@@ -169,7 +168,7 @@
                 </div>
             </div>
             
-            <!-- Footer -->
+            
             <footer class="footer border-top text-muted bg-white">
                 <div class="container-fluid py-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -193,9 +192,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     
     <script>
-        // Toggle sidebar
         window.addEventListener('DOMContentLoaded', event => {
-            // Check if sidebar state is saved in localStorage
             const sidebarToggled = localStorage.getItem('sb|sidebar-toggle') === 'true';
             if (sidebarToggled) {
                 document.body.classList.add('sb-sidenav-toggled');
@@ -209,7 +206,6 @@
                     event.preventDefault();
                     document.body.classList.toggle('sb-sidenav-toggled');
                     
-                    // Toggle the chevron icon
                     const icon = sidebarToggle.querySelector('i');
                     if (document.body.classList.contains('sb-sidenav-toggled')) {
                         icon.classList.remove('bi-chevron-left');

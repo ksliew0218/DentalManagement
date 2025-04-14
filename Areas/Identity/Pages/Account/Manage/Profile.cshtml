@@ -6,7 +6,6 @@
 }
 
 <style>
-    /* Profile page specific styles */
     .profile-image-container {
         width: 150px;
         height: 150px;
@@ -45,7 +44,7 @@
         <form id="profile-form" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="All" class="text-danger"></div>
 
-            <!-- Profile Picture -->
+            
             <div class="mb-3 text-center">
                 @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
                 {
@@ -79,21 +78,21 @@
                 <span asp-validation-for="Input.ProfilePicture" class="text-danger"></span>
             </div>
 
-            <!-- First Name -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.FirstName" class="form-control" />
                 <label asp-for="Input.FirstName" class="form-label"></label>
                 <span asp-validation-for="Input.FirstName" class="text-danger"></span>
             </div>
 
-            <!-- Last Name -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.LastName" class="form-control" />
                 <label asp-for="Input.LastName" class="form-label"></label>
                 <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
 
-            <!-- Gender -->
+            
             <div class="form-floating mb-3">
                 <select asp-for="Input.Gender" class="form-control">
                     <option value="Male">Male</option>
@@ -104,35 +103,35 @@
                 <span asp-validation-for="Input.Gender" class="text-danger"></span>
             </div>
 
-            <!-- Date of Birth -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.DateOfBirth" type="date" class="form-control" />
                 <label asp-for="Input.DateOfBirth" class="form-label"></label>
                 <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
             </div>
 
-            <!-- Address -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.Address" class="form-control" />
                 <label asp-for="Input.Address" class="form-label"></label>
                 <span asp-validation-for="Input.Address" class="text-danger"></span>
             </div>
 
-            <!-- Phone Number -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.PhoneNumber" class="form-control" />
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
 
-            <!-- Emergency Contact Name -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.EmergencyContactName" class="form-control" />
                 <label asp-for="Input.EmergencyContactName" class="form-label"></label>
                 <span asp-validation-for="Input.EmergencyContactName" class="text-danger"></span>
             </div>
 
-            <!-- Emergency Contact Phone -->
+            
             <div class="form-floating mb-3">
                 <input asp-for="Input.EmergencyContactPhone" class="form-control" />
                 <label asp-for="Input.EmergencyContactPhone" class="form-label"></label>

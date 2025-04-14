@@ -4,14 +4,14 @@
 }
 
 <head>
-    <!-- Link to custom CSS files -->
+    
     <link href="~/css/appointment-booking.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/booking-success.css" rel="stylesheet" asp-append-version="true">
 </head>
 
 <div class="booking-success-container">
     <div class="success-card">
-        <!-- Failure Header -->
+        
         <div class="success-header">
             <div class="success-icon" style="color: #e53e3e;">
                 <i class="bi bi-x-circle"></i>
@@ -20,7 +20,7 @@
             <p class="success-message">We couldn't process your payment at this time.</p>
         </div>
         
-        <!-- Appointment Details -->
+        
         <div class="appointment-details">
             <div class="detail-item">
                 <div class="detail-icon">
@@ -73,13 +73,13 @@
             </div>
         </div>
         
-        <!-- Error Message -->
+        
         <div class="email-confirmation" style="border-color: #fed7d7; background-color: #fff5f5; padding: 15px; border-radius: 5px;">
             <i class="bi bi-info-circle" style="color: #e53e3e;"></i>
             <p>@ViewData["ErrorMessage"] Please try again or contact our support team if you continue to experience issues.</p>
         </div>
         
-        <!-- Action Buttons -->
+        
         <div class="action-buttons">
             <a href="/Patient/Appointments/ProceedToPayment/@ViewData["AppointmentId"]" class="btn-view" style="background-color: #48bb78;">
                 <i class="bi bi-credit-card"></i> Try Payment Again
@@ -89,7 +89,7 @@
             </a>
         </div>
         
-        <!-- Support Information -->
+        
         <div class="reminder-section">
             <div class="reminder-header">
                 <i class="bi bi-headset" style="color: #4299e1;"></i>
@@ -106,12 +106,10 @@
 </div>
 
 <script>
-    // Add subtle animation to the failure card
     document.addEventListener('DOMContentLoaded', function() {
         const failureCard = document.querySelector('.success-card');
         const detailItems = document.querySelectorAll('.detail-item');
         
-        // Animate the card appearance
         failureCard.style.opacity = '0';
         failureCard.style.transform = 'translateY(20px)';
         
@@ -121,7 +119,6 @@
             failureCard.style.transform = 'translateY(0)';
         }, 100);
         
-        // Animate detail items sequentially
         detailItems.forEach((item, index) => {
             item.style.opacity = '0';
             item.style.transform = 'translateY(10px)';

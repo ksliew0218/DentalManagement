@@ -30,47 +30,38 @@ body {
   text-align: start;
 }
 
-/* Enhanced Color Scheme */
 :root {
-    /* Primary Colors */
     --primary-color: #3b7ddd;
     --primary-dark: #2d62ae;
     --primary-light: #5a95e5;
     
-    /* Secondary Colors */
     --secondary-color: #6c757d;
     --secondary-dark: #565e64;
     --secondary-light: #868e96;
     
-    /* Accent Colors */
     --accent-success: #28a745;
     --accent-info: #17a2b8;
     --accent-warning: #ffc107;
     --accent-danger: #dc3545;
     
-    /* Neutral Colors */
     --neutral-dark: #343a40;
     --neutral-medium: #6c757d;
     --neutral-light: #f8f9fa;
     
-    /* Background Colors */
     --bg-light: #f8f9fa;
     --bg-white: #ffffff;
     --bg-sidebar: #2c3e50;
     --bg-sidebar-active: #1e2b37;
     
-    /* Text Colors */
     --text-dark: #212529;
     --text-medium: #495057;
     --text-light: #adb5bd;
     --text-white: #ffffff;
     
-    /* Border Colors */
     --border-color: #dee2e6;
     --border-light: #e9ecef;
 }
 
-/* Sidebar Styles */
 .sidebar {
     background-color: var(--bg-sidebar);
     min-width: 250px;
@@ -113,14 +104,12 @@ body {
     margin-right: 10px;
 }
 
-/* Content Styles */
 .content {
     width: 100%;
     min-height: 100vh;
     transition: all 0.3s;
 }
 
-/* Card Styles */
 .custom-card {
     border: none;
     border-radius: 0.5rem;
@@ -150,7 +139,6 @@ body {
     border-top: 1px solid var(--border-light);
 }
 
-/* Button Styles */
 .btn-custom-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
@@ -174,7 +162,6 @@ body {
     color: var(--text-white);
 }
 
-/* Badge Styles */
 .badge-custom-success {
     background-color: rgba(40, 167, 69, 0.15);
     color: var(--accent-success);
@@ -195,7 +182,6 @@ body {
     color: var(--accent-danger);
 }
 
-/* Table Styles */
 .table-custom thead th {
     background-color: var(--bg-light);
     color: var(--text-medium);
@@ -213,7 +199,6 @@ body {
     background-color: rgba(59, 125, 221, 0.05);
 }
 
-/* Form Styles */
 .form-control-custom {
     border: 1px solid var(--border-color);
     border-radius: 0.25rem;
@@ -225,7 +210,6 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(59, 125, 221, 0.25);
 }
 
-/* Helper Classes */
 .text-custom-primary {
     color: var(--primary-color) !important;
 }
@@ -242,7 +226,6 @@ body {
     background-color: var(--bg-light) !important;
 }
 
-/* Responsive Sidebar */
 @media (max-width: 768px) {
     .sidebar {
         margin-left: -250px;
@@ -258,7 +241,6 @@ body {
     }
 }
 
-/* Animation */
 .fade-in {
     animation: fadeIn 0.5s ease-in-out;
 }
@@ -274,7 +256,6 @@ body {
     }
 }
 
-/* Standardized Page Header */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -296,7 +277,6 @@ body {
     gap: 0.5rem;
 }
 
-/* Standardized Back Button */
 .btn-back {
     display: inline-flex;
     align-items: center;
@@ -315,7 +295,6 @@ body {
     text-decoration: none;
 }
 
-/* Breadcrumb Styling */
 .breadcrumb-custom {
     background-color: transparent;
     padding: 0.5rem 0;
@@ -340,7 +319,6 @@ body {
     text-decoration: underline;
 }
 
-/* Improved Table Styles */
 .table-responsive {
     border-radius: 0.5rem;
     overflow: hidden;
@@ -377,7 +355,6 @@ body {
     border-radius: 0.25rem;
 }
 
-/* Standard Alert Styles */
 .alert-dismissible {
     position: relative;
     padding-right: 4rem;

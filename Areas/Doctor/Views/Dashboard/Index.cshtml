@@ -5,7 +5,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
@@ -31,9 +30,8 @@
         </div>
     }
 
-    <!-- Stats Cards Row -->
+    
     <div class="row mb-4">
-        <!-- Time Slots Card -->
         <div class="col-xl-3 col-md-6 mb-4">
             <a asp-area="Doctor" asp-controller="TimeSlots" asp-action="Index" class="text-decoration-none">
                 <div class="card stats-card border-left-primary shadow h-100 py-2 rounded-lg">
@@ -53,7 +51,7 @@
             </a>
         </div>
 
-        <!-- Treatments Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <a asp-area="Doctor" asp-controller="Treatments" asp-action="Index" class="text-decoration-none">
                 <div class="card stats-card border-left-success shadow h-100 py-2 rounded-lg">
@@ -73,7 +71,7 @@
             </a>
         </div>
                 
-        <!-- Appointments Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <a asp-area="Doctor" asp-controller="Appointments" asp-action="Index" class="text-decoration-none">
                 <div class="card stats-card border-left-info shadow h-100 py-2 rounded-lg">
@@ -93,7 +91,7 @@
             </a>
         </div>
 
-        <!-- Patients Card -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <a asp-area="Doctor" asp-controller="Patients" asp-action="Index" class="text-decoration-none">
                 <div class="card stats-card border-left-warning shadow h-100 py-2 rounded-lg">
@@ -114,10 +112,9 @@
         </div>
     </div>
 
-    <!-- Profile and Calendar Row -->
+    
     <div class="row mb-4">
         <div class="col-xl-4 col-lg-5 col-md-12 mb-4">
-            <!-- Doctor Profile Card -->
             <div class="card shadow border-0 rounded-lg h-100">
                 <div class="card-header py-3 d-flex align-items-center">
                     <i class="bi bi-person-circle me-2"></i>
@@ -165,7 +162,6 @@
             </div>
         </div>
         <div class="col-xl-8 col-lg-7 col-md-12">
-            <!-- Leave Summary -->
             <div class="card shadow border-0 rounded-lg mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -226,7 +222,7 @@
                 </div>
             </div>
             
-            <!-- Calendar Widget -->
+            
             <div class="card shadow border-0 rounded-lg">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -268,13 +264,11 @@
                                 var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
                                 var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
                                 
-                                // Previous month days
                                 for (int i = 0; i < startDayOfWeek; i++)
                                 {
                                     <div class="calendar-day inactive"></div>
                                 }
                                 
-                                // Current month days
                                 for (int day = 1; day <= lastDayOfMonth.Day; day++)
                                 {
                                     var currentDate = new DateTime(today.Year, today.Month, day);
@@ -300,7 +294,6 @@
                                     </div>
                                 }
                                 
-                                // Next month days to fill the grid
                                 var remainingDays = 42 - (startDayOfWeek + lastDayOfMonth.Day);
                                 for (int i = 0; i < remainingDays; i++)
                                 {
@@ -314,9 +307,8 @@
         </div>
     </div>
     
-    <!-- Today's Appointments and Time Slots Row -->
+    
     <div class="row">
-        <!-- Today's Appointments Card -->
         <div class="col-xl-7 col-lg-6 mb-4">
             <div class="card shadow border-0 rounded-lg h-100">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -376,7 +368,7 @@
             </div>
         </div>
         
-        <!-- Today's Time Slots -->
+        
         <div class="col-xl-5 col-lg-6 mb-4">
             <div class="card shadow border-0 rounded-lg h-100">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">

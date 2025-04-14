@@ -37,7 +37,7 @@
 </div>
 
 <div class="row">
-    <!-- Appointment Details Card -->
+    
     <div class="col-lg-7 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -163,7 +163,7 @@
         </div>
     </div>
 
-    <!-- Payment Details Card -->
+    
     <div class="col-lg-5 mb-4">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -279,12 +279,9 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Print Receipt functionality
             $("#printReceiptBtn").on("click", function() {
-                // Create a new window for printing
                 const printWindow = window.open("", "_blank", "width=800,height=600");
                 
-                // Get receipt information
                 const patientName = "@Model.Patient?.FirstName @Model.Patient?.LastName";
                 const appointmentDate = "@Model.AppointmentDate.ToString("MMMM d, yyyy")";
                 const treatment = "@Model.TreatmentType?.Name";
@@ -294,7 +291,6 @@
                 const remainingAmount = "@remainingAmount.ToString("F2")";
                 const paymentStatus = "@Model.PaymentStatus";
                 
-                // Generate receipt HTML
                 let receiptHTML = `
                 <!DOCTYPE html>
                 <html lang="en">
@@ -495,14 +491,11 @@
                 </html>
                 `;
                 
-                // Write the HTML to the new window and trigger print
                 printWindow.document.open();
                 printWindow.document.write(receiptHTML);
                 printWindow.document.close();
                 
-                // Wait for the content to load before printing
                 printWindow.onload = function() {
-                    // Auto-print when the page has loaded
                     setTimeout(() => {
                         printWindow.print();
                     }, 500);

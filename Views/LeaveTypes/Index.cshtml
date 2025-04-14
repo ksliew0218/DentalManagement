@@ -79,14 +79,12 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
             
             $('#leaveTypesTable').DataTable({
-                "order": [[0, "asc"]], // Order by name
                 "pageLength": 10,
                 "language": {
                     "search": "<i class='bi bi-search'></i> Search:",
@@ -99,7 +97,6 @@
                 }
             });
             
-            // Apply style to DataTables search box
             $('.dataTables_filter input').addClass('form-control form-control-sm ms-2');
             $('.dataTables_filter input').attr('placeholder', 'Search...');
         });

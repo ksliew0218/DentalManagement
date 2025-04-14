@@ -6,7 +6,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Page Heading with Navigation -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-primary fw-bold mb-0">
             <i class="bi bi-calendar3 me-2"></i>My Schedule Calendar
@@ -36,7 +35,6 @@
 
     <div class="row">
         <div class="col-md-3">
-            <!-- Calendar Controls Card -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center bg-white">
                     <i class="bi bi-sliders me-2 text-primary"></i>
@@ -71,7 +69,7 @@
                         </div>
                     </div>
 
-                    <!-- Schedule Legend -->
+                    
                     <div class="mt-4">
                         <label class="form-label text-muted mb-2">
                             <i class="bi bi-info-circle me-1"></i> Legend
@@ -101,7 +99,6 @@
         </div>
         
         <div class="col-md-9">
-            <!-- Calendar Widget -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -122,7 +119,6 @@
 @section Styles {
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
     <style>
-        /* Calendar styles */
         #calendar {
             height: 700px;
             width: 100%;
@@ -130,7 +126,6 @@
             font-family: 'Inter', sans-serif;
         }
         
-        /* Header toolbar styles */
         .fc-header-toolbar {
             padding: 1rem 1.5rem;
             background-color: #f9fbfd;
@@ -144,7 +139,6 @@
             color: #12263f;
         }
         
-        /* Button styling */
         .fc-button {
             box-shadow: 0 2px 5px rgba(18, 38, 63, 0.1) !important;
             border-radius: 6px !important;
@@ -170,7 +164,6 @@
             border-color: #1a68d1 !important;
         }
         
-        /* Event styling */
         .fc-event {
             cursor: pointer;
             border-radius: 6px !important;
@@ -199,7 +192,6 @@
             color: #12263f !important;
         }
         
-        /* Day cell styling */
         .fc-day {
             background-color: white !important;
             border-color: #e3ebf6 !important;
@@ -218,7 +210,6 @@
             opacity: 0.7;
         }
         
-        /* Header cells */
         .fc-col-header-cell {
             background-color: #f9fbfd !important;
             border-color: #e3ebf6 !important;
@@ -235,7 +226,6 @@
             padding: 10px 5px !important;
         }
         
-        /* Day number styling */
         .fc-daygrid-day-top {
             justify-content: center !important;
             padding-top: 8px !important;
@@ -261,9 +251,8 @@
             color: white !important;
         }
         
-        /* Time grid styling */
         .fc-timegrid-slot {
-            height: 60px !important; /* 1-hour slots */
+            height: 60px !important; 
             border-color: #e3ebf6 !important;
         }
         
@@ -287,7 +276,6 @@
             color: #e63757 !important;
         }
         
-        /* Month view specific styles */
         .fc-daygrid-event {
             margin-bottom: 3px !important;
             white-space: normal !important;
@@ -302,7 +290,6 @@
             min-height: 100px !important;
         }
         
-        /* Status badges */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -322,7 +309,6 @@
             color: #12263f;
         }
         
-        /* Modal icon styling */
         .icon-circle {
             width: 40px;
             height: 40px;
@@ -351,11 +337,11 @@
                 slotMinTime: '08:00:00',
                 slotMaxTime: '20:00:00',
                 expandRows: true,
-                slotDuration: '01:00:00', // Change to 1-hour slots
+                slotDuration: '01:00:00', 
                 slotLabelFormat: { 
                     hour: 'numeric',
                     minute: '2-digit',
-                    omitZeroMinute: true, // Hide :00 for clean display
+                    omitZeroMinute: true, 
                     meridiem: 'short'
                 },
                 dayMaxEvents: true,
@@ -364,7 +350,7 @@
                 eventTimeFormat: {
                     hour: 'numeric',
                     minute: '2-digit',
-                    omitZeroMinute: true, // Hide :00 for clean display
+                    omitZeroMinute: true, 
                     meridiem: 'short'
                 },
                 views: {
@@ -393,13 +379,11 @@
                     }
                 ],
                 eventDidMount: function(info) {
-                    // Add icons to events based on status
                     if (info.event.extendedProps.status === 'available') {
                         var titleEl = info.el.querySelector('.fc-event-title');
                         if (titleEl) {
                             titleEl.innerHTML = '<i class="bi bi-calendar-plus me-1"></i> Available';
                             
-                            // Add tooltip
                             info.el.setAttribute('data-bs-toggle', 'tooltip');
                             info.el.setAttribute('data-bs-placement', 'top');
                             info.el.setAttribute('title', 'Available for booking');
@@ -409,24 +393,20 @@
                         if (titleEl) {
                             titleEl.innerHTML = '<i class="bi bi-calendar-check me-1"></i> Booked';
                             
-                            // Add tooltip
                             info.el.setAttribute('data-bs-toggle', 'tooltip');
                             info.el.setAttribute('data-bs-placement', 'top');
                             info.el.setAttribute('title', 'This slot has been booked');
                         }
                     }
                     
-                    // Initialize tooltips
                     var tooltip = new bootstrap.Tooltip(info.el);
                 },
                 eventClick: function(info) {
-                    // Show modal with more details
                     var startTime = info.event.start.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
                     var endTime = info.event.end.toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
                     var date = info.event.start.toLocaleDateString([], {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
                     var status = info.event.extendedProps.status;
                     
-                    // Create a modal HTML
                     var modalContent = `
                         <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
@@ -479,7 +459,6 @@
                         </div>
                     `;
                     
-                    // Add modal to body
                     var existingModal = document.getElementById('eventDetailsModal');
                     if (existingModal) {
                         existingModal.remove();
@@ -487,7 +466,6 @@
                     
                     document.body.insertAdjacentHTML('beforeend', modalContent);
                     
-                    // Show modal
                     var modal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
                     modal.show();
                 }
@@ -495,7 +473,6 @@
             
             calendar.render();
             
-            // Handle view buttons
             document.getElementById('dayView').addEventListener('click', function() {
                 calendar.changeView('timeGridDay');
                 setActiveViewButton(this);
@@ -524,7 +501,6 @@
                 button.classList.add('btn-primary');
             }
             
-            // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
                 var alertElement = document.querySelector('.alert');
                 if (alertElement) {

@@ -80,8 +80,7 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
                 
-                // In a real application, you would send an email with the confirmation link
-                // For now, we'll just update the email directly
+
                 var result = await _userManager.ChangeEmailAsync(user, Input.NewEmail, code);
                 if (!result.Succeeded)
                 {
@@ -89,7 +88,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
 
-                // Update the username to match the new email
                 await _userManager.SetUserNameAsync(user, Input.NewEmail);
                 await _signInManager.RefreshSignInAsync(user);
                 StatusMessage = "Your email has been changed.";

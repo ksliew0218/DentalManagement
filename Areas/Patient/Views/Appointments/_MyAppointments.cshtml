@@ -8,13 +8,12 @@
 <link href="~/css/my-appointments.css" rel="stylesheet" asp-append-version="true">
 
 <div class="dashboard-container">
-    <!-- Page Header -->
     <div class="page-header">
         <h2><i class="bi bi-calendar-check"></i> My Appointments</h2>
         <p class="subtitle">Manage your dental appointments</p>
     </div>
     
-    <!-- Appointments Actions -->
+    
     <div class="appointment-actions-bar">
         <div class="filters-container">
             <div class="search-container">
@@ -63,11 +62,10 @@
         </a>
     </div>
     
-    <!-- Active Filters Display -->
+    
     <div class="active-filters" id="activeFilters" style="display: none;">
         <div class="active-filter-label">Active Filters:</div>
         <div class="active-filter-tags" id="activeFilterTags">
-            <!-- Filter tags will be added here dynamically -->
         </div>
         <button class="clear-all-filters" id="clearAllFilters">
             <i class="bi bi-x-circle"></i>
@@ -75,7 +73,7 @@
         </button>
     </div>
 
-    <!-- Appointments Tabs -->
+    
     <div class="filter-tabs">
         <button class="filter-tab active" data-tab="upcoming">
             <i class="bi bi-calendar-event"></i> Upcoming
@@ -88,7 +86,7 @@
         </button>
     </div>
 
-    <!-- Upcoming Appointments Tab -->
+    
     <div class="tab-content active" id="upcoming-tab">
         @if (Model?.UpcomingAppointments != null && Model.UpcomingAppointments.Any())
         {
@@ -162,7 +160,7 @@
         }
     </div>
 
-    <!-- Past Appointments Tab -->
+    
     <div class="tab-content" id="past-tab">
         @if (Model?.PastAppointments != null && Model.PastAppointments.Any())
         {
@@ -232,7 +230,7 @@
         }
     </div>
 
-    <!-- Cancelled Appointments Tab -->
+    
     <div class="tab-content" id="cancelled-tab">
         @if (Model?.CancelledAppointments != null && Model.CancelledAppointments.Any())
         {
@@ -299,7 +297,7 @@
         }
     </div>
 
-    <!-- Cancel Confirmation Modal -->
+    
     <div class="modal" id="cancel-confirmation-modal">
         <div class="modal-content">
             <div class="modal-header">

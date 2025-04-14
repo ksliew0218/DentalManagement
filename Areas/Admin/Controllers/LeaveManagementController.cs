@@ -29,7 +29,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             _leaveService = leaveService;
         }
 
-        // GET: Admin/LeaveManagement
         public async Task<IActionResult> Index(string status = "Pending")
         {
             var user = await _userManager.GetUserAsync(User);
@@ -38,7 +37,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return RedirectToAction("AccessDenied", "Home", new { area = "" });
             }
             
-            // Parse the status
             if (!Enum.TryParse<LeaveRequestStatus>(status, true, out var leaveStatus))
             {
                 leaveStatus = LeaveRequestStatus.Pending;
@@ -46,7 +44,6 @@ namespace DentalManagement.Areas.Admin.Controllers
 
             var viewModel = new AdminLeaveManagementViewModel();
             
-            // Get all leave requests by status
             var allRequests = await _context.DoctorLeaveRequests
                 .Include(l => l.Doctor)
                     .ThenInclude(d => d.User)
@@ -63,7 +60,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return View(viewModel);
         }
 
-        // GET: Admin/LeaveManagement/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -84,7 +80,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Get time slots during the leave period
             var timeSlots = await _context.TimeSlots
                 .Where(ts => ts.DoctorId == leaveRequest.DoctorId &&
                            ts.StartTime.Date >= leaveRequest.StartDate.Date &&
@@ -100,7 +95,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return View(leaveRequest);
         }
 
-        // GET: Admin/LeaveManagement/Approve/5
         public async Task<IActionResult> Approve(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -130,7 +124,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return View("ApproveReject", viewModel);
         }
 
-        // GET: Admin/LeaveManagement/Reject/5
         public async Task<IActionResult> Reject(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -160,7 +153,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return View("ApproveReject", viewModel);
         }
 
-        // POST: Admin/LeaveManagement/ApproveReject
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveReject(LeaveApprovalViewModel model)
@@ -183,7 +175,7 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return View(model);
             }
 
-            // If approving, check for existing booked time slots during leave period
+            
             if (model.Status == LeaveRequestStatus.Approved)
             {
                 var leaveRequest = await _context.DoctorLeaveRequests
@@ -191,7 +183,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                 
                 if (leaveRequest != null)
                 {
-                    // Check for existing time slots that are already booked
                     var bookedTimeSlots = await _context.TimeSlots
                         .Where(ts => ts.DoctorId == leaveRequest.DoctorId &&
                                    ts.StartTime.Date >= leaveRequest.StartDate.Date &&
@@ -201,14 +192,12 @@ namespace DentalManagement.Areas.Admin.Controllers
                     
                     if (bookedTimeSlots.Any())
                     {
-                        // We're still proceeding with approval, but we'll warn the admin
                         TempData["WarningMessage"] = $"Warning: There are {bookedTimeSlots.Count} booked time slots during this leave period. " +
                                                     "You may need to reschedule affected appointments.";
                     }
                 }
             }
 
-            // Process the approval/rejection
             var result = await _leaveService.UpdateLeaveRequestStatusAsync(
                 model.LeaveRequestId, 
                 model.Status, 
@@ -219,7 +208,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             {
                 if (model.Status == LeaveRequestStatus.Approved)
                 {
-                    // Check how many time slots were affected
                     var leaveRequest = await _context.DoctorLeaveRequests
                         .Include(l => l.Doctor)
                         .FirstOrDefaultAsync(l => l.Id == model.LeaveRequestId);
@@ -248,7 +236,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Admin/LeaveManagement/ManageBalances
         public async Task<IActionResult> ManageBalances(int? doctorId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -268,7 +255,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                     return NotFound();
                 }
                 
-                // Get the current year leave balances
                 var currentYear = DateTime.UtcNow.Year;
                 var leaveBalances = await _leaveService.GetDoctorLeaveBalancesAsync(doctor.Id, currentYear);
                 
@@ -287,7 +273,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             }
         }
 
-        // POST: Admin/LeaveManagement/UpdateBalance
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateBalance(int id, decimal remainingDays)
@@ -315,7 +300,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return RedirectToAction(nameof(ManageBalances), new { doctorId = leaveBalance.DoctorId });
         }
 
-        // GET: Admin/LeaveManagement/Initialize/5 (doctor ID)
         public async Task<IActionResult> Initialize(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -333,7 +317,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return NotFound();
             }
             
-            // Check if balances already exist
             var currentYear = DateTime.UtcNow.Year;
             var existingBalances = await _context.DoctorLeaveBalances
                 .AnyAsync(lb => lb.DoctorId == id && lb.Year == currentYear);
@@ -344,7 +327,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                 return RedirectToAction(nameof(ManageBalances), new { doctorId = id });
             }
             
-            // Initialize balances
             await _leaveService.InitializeDoctorLeaveBalancesAsync(id);
             
             TempData["SuccessMessage"] = "Leave balances initialized successfully.";

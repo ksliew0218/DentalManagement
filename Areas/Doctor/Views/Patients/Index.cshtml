@@ -7,7 +7,6 @@
 
 @section Styles {
     <style>
-        /* Card Styles */
         .card {
             border-radius: 0.75rem;
             border: none;
@@ -26,7 +25,6 @@
             padding-bottom: 1rem;
         }
         
-        /* Page Header Styling */
         .page-header {
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
@@ -48,7 +46,6 @@
             align-items: center;
         }
         
-        /* Table Styles */
         .table-hover tbody tr {
             transition: all 0.2s ease;
             border-radius: 0.5rem;
@@ -72,7 +69,6 @@
             padding: 0.75rem 1rem;
         }
         
-        /* Stats Card */
         .stats-card {
             border-left-width: 0.25rem;
             transition: transform 0.2s ease-in-out;
@@ -109,7 +105,6 @@
             border-left-color: #f6c23e !important;
         }
         
-        /* Badge Styles */
         .badge {
             font-weight: 600;
             letter-spacing: 0.3px;
@@ -121,7 +116,6 @@
             border-radius: 30px;
         }
         
-        /* Avatar Styles */
         .avatar {
             width: 42px;
             height: 42px;
@@ -142,13 +136,11 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         }
         
-        /* DataTable Customization */
         .dataTables_wrapper .row {
             margin: 0;
             align-items: center;
         }
         
-        /* Custom search box styling */
         .search-wrapper {
             position: relative;
             margin-right: 1rem;
@@ -179,7 +171,6 @@
             z-index: 10;
         }
         
-        /* Pagination styling */
         .pagination-container {
             background-color: #f8f9fc;
             border-radius: 0.5rem;
@@ -221,7 +212,6 @@
             font-size: 0.875rem;
         }
         
-        /* Page length selection */
         .page-length-selector {
             display: flex;
             align-items: center;
@@ -243,7 +233,6 @@
             font-size: 0.875rem;
         }
         
-        /* Action Button Styles */
         .actions-cell {
             display: flex;
             justify-content: flex-end;
@@ -276,7 +265,6 @@
             font-size: 1rem;
         }
         
-        /* Button Styles */
         .btn-primary {
             background-color: #4e73df;
             border-color: #4e73df;
@@ -301,7 +289,6 @@
             border-radius: 50rem !important;
         }
         
-        /* Filter Dropdown */
         .dropdown-menu {
             border: none;
             border-radius: 0.5rem;
@@ -324,7 +311,6 @@
             font-weight: 600;
         }
         
-        /* Hide DataTable's default UI elements */
         div.dataTables_wrapper div.dataTables_filter,
         div.dataTables_wrapper div.dataTables_length,
         div.dataTables_wrapper div.dataTables_info,
@@ -332,7 +318,6 @@
             display: none !important;
         }
         
-        /* Empty State Styling */
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
@@ -358,7 +343,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Page Header -->
     <div class="page-header">
         <div>
             <h1><i class="bi bi-person-vcard me-2 text-primary"></i>My Patients</h1>
@@ -374,9 +358,8 @@
         </div>
     </div>
 
-    <!-- Stats Cards -->
+    
     <div class="row mb-4">
-        <!-- Total Patients -->
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stats-card border-left-primary shadow h-100 py-2 rounded-lg">
                 <div class="card-body">
@@ -394,7 +377,7 @@
             </div>
         </div>
 
-        <!-- Male Patients -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stats-card border-left-success shadow h-100 py-2 rounded-lg">
                 <div class="card-body">
@@ -414,7 +397,7 @@
             </div>
         </div>
 
-        <!-- Female Patients -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stats-card border-left-info shadow h-100 py-2 rounded-lg">
                 <div class="card-body">
@@ -434,7 +417,7 @@
             </div>
         </div>
 
-        <!-- Average Age -->
+        
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card stats-card border-left-warning shadow h-100 py-2 rounded-lg">
                 <div class="card-body">
@@ -460,7 +443,7 @@
         </div>
     </div>
 
-    <!-- Patient List Card -->
+    
     <div class="card shadow mb-4 rounded-lg">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
@@ -572,7 +555,7 @@
                     </table>
                 </div>
                 
-                <!-- Custom Pagination -->
+                
                 <div class="pagination-container">
                     <div class="pagination-info" id="tableInfo">
                         Showing <span id="startRecord">1</span> to <span id="endRecord">10</span> of <span id="totalRecords">@Model.Count()</span> patients
@@ -615,7 +598,6 @@
     
     <script>
         $(document).ready(function () {
-            // Initialize DataTable with custom DOM
             var table = $('#patientsTable').DataTable({
                 "responsive": true,
                 "lengthChange": true,
@@ -624,7 +606,7 @@
                 "info": true,
                 "autoWidth": false,
                 "searching": true,
-                "dom": 't',  // Only show the table, hide everything else
+                "dom": 't',  
                 "language": {
                     "emptyTable": "<div class='text-center my-5'><i class='bi bi-people fs-1 text-muted mb-3'></i><p>No patients available</p></div>",
                     "zeroRecords": "<div class='text-center my-5'><i class='bi bi-search fs-1 text-muted mb-3'></i><p>No matching patients found</p></div>"
@@ -635,21 +617,17 @@
                 }
             });
             
-            // Function to update the pagination information
             function updatePaginationInfo(api) {
                 var info = api.page.info();
                 var totalPages = info.pages;
                 
-                // Update info text
                 $('#startRecord').text(info.start + 1);
                 $('#endRecord').text(info.end);
                 $('#totalRecords').text(info.recordsTotal);
                 
-                // Update pagination buttons
                 var $pagination = $('#customPagination');
                 $pagination.empty();
                 
-                // Previous button
                 var $prevBtn = $('<li class="page-item' + (info.page === 0 ? ' disabled' : '') + '">' +
                                 '<a class="page-link" href="#" aria-label="Previous">' +
                                 '<span aria-hidden="true">«</span></a></li>');
@@ -661,11 +639,9 @@
                 });
                 $pagination.append($prevBtn);
                 
-                // Page numbers
                 var startPage = Math.max(0, info.page - 2);
                 var endPage = Math.min(info.pages - 1, info.page + 2);
                 
-                // Add first page button if not in range
                 if (startPage > 0) {
                     $pagination.append(
                         '<li class="page-item"><a class="page-link" data-page="0" href="#">1</a></li>'
@@ -675,7 +651,6 @@
                     }
                 }
                 
-                // Add page numbers
                 for (var i = startPage; i <= endPage; i++) {
                     var $pageBtn = $('<li class="page-item' + (i === info.page ? ' active' : '') + '">' +
                                     '<a class="page-link" data-page="' + i + '" href="#">' + (i + 1) + '</a></li>');
@@ -686,7 +661,6 @@
                     $pagination.append($pageBtn);
                 }
                 
-                // Add last page button if not in range
                 if (endPage < info.pages - 1) {
                     if (endPage < info.pages - 2) {
                         $pagination.append('<li class="page-item disabled"><span class="page-link">...</span></li>');
@@ -699,7 +673,6 @@
                     $pagination.append($lastPageBtn);
                 }
                 
-                // Next button
                 var $nextBtn = $('<li class="page-item' + (info.page === info.pages - 1 ? ' disabled' : '') + '">' +
                                 '<a class="page-link" href="#" aria-label="Next">' +
                                 '<span aria-hidden="true">»</span></a></li>');
@@ -712,17 +685,14 @@
                 $pagination.append($nextBtn);
             }
             
-            // Custom search box
             $('#customSearch').on('keyup', function() {
                 table.search($(this).val()).draw();
             });
             
-            // Page length change
             $('#pageLengthSelect').on('change', function() {
                 table.page.len($(this).val()).draw();
             });
             
-            // Filter by gender
             $('.filter-gender').on('click', function(e) {
                 e.preventDefault();
                 var gender = $(this).data('gender');
@@ -734,7 +704,6 @@
                 }
             });
             
-            // Animate stats cards on hover
             $('.stats-card').hover(
                 function() {
                     $(this).find('.icon').css('transform', 'scale(1.2) rotate(10deg)');
@@ -744,7 +713,6 @@
                 }
             );
             
-            // Initialize pagination
             updatePaginationInfo(table.api());
         });
     </script>

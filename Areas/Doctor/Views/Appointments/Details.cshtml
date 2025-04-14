@@ -6,7 +6,7 @@
 }
 
 <div class="container-fluid">
-    <!-- Page Heading -->
+    
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
@@ -25,11 +25,11 @@
     </div>
 
     <div class="row">
-        <!-- Left Column - Main Details -->
+        
         <div class="col-lg-8">
-            <!-- Status Cards Row -->
+            
             <div class="row mb-4">
-                <!-- Appointment Status Card -->
+                
                 <div class="col-md-6 mb-4 mb-md-0">
                     <div class="card h-100 shadow-sm border-0 rounded-lg overflow-hidden">
                         <div class="card-header bg-white py-3 border-0">
@@ -84,7 +84,7 @@
                     </div>
     </div>
 
-                <!-- Payment Status Card -->
+                
                 <div class="col-md-6">
                     <div class="card h-100 shadow-sm border-0 rounded-lg overflow-hidden">
                         <div class="card-header bg-white py-3 border-0">
@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            <!-- Patient Info Card -->
+            
             <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -218,7 +218,7 @@
                         </div>
                     </div>
 
-            <!-- Doctor Info Card -->
+            
             <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -264,7 +264,7 @@
                 </div>
             </div>
             
-            <!-- Treatment Report Card -->
+            
             @if (Model.TreatmentReports != null && Model.TreatmentReports.Any())
             {
                 var latestReport = Model.TreatmentReports.OrderByDescending(tr => tr.CreatedAt).FirstOrDefault();
@@ -329,7 +329,7 @@
                 </div>
             }
             
-            <!-- Appointment Details Card -->
+            
             <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -410,7 +410,7 @@
                 </div>
             </div>
 
-            <!-- Payment Details Card -->
+            
             <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -502,9 +502,8 @@
             </div>
         </div>
 
-        <!-- Right Column - Treatment & Timeline -->
+        
         <div class="col-lg-4">
-            <!-- Appointment Timeline Card -->
             <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-0">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -603,7 +602,7 @@
                 </div>
             </div>
 
-            <!-- Time Slots Card (if any) -->
+            
             @if (Model.TimeSlots.Any())
             {
                 <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
@@ -656,7 +655,7 @@
     </div>
         </div>
 
-<!-- Treatment Report Modal -->
+
 <div class="modal fade" id="treatmentReportModal" tabindex="-1" aria-labelledby="treatmentReportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
@@ -692,12 +691,10 @@
                     <div class="dental-chart-container bg-light p-4 rounded-lg">
                         <h5 class="text-center mb-4 border-bottom pb-2">Upper Teeth</h5>
                         <div class="teeth-row" id="upperTeethEdit">
-                            <!-- Will be populated on modal show -->
                         </div>
                         
                         <h5 class="text-center my-4 border-bottom pb-2">Lower Teeth</h5>
                         <div class="teeth-row" id="lowerTeethEdit">
-                            <!-- Will be populated on modal show -->
                     </div>
 
                         <div class="dental-chart-legend mt-4 p-3 border-top">
@@ -729,7 +726,7 @@
     </div>
                         </div>
 
-<!-- View Dental Chart Modal -->
+
 <div class="modal fade" id="viewDentalChartModal" tabindex="-1" aria-labelledby="viewDentalChartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
@@ -761,12 +758,10 @@
                 <div class="dental-chart-container bg-light p-4 rounded-lg shadow-sm">
                     <h5 class="text-center mb-4 border-bottom pb-2 fw-bold">Upper Teeth</h5>
                     <div class="teeth-row" id="upperTeeth">
-                        <!-- This will be populated dynamically by JavaScript -->
                             </div>
                     
                     <h5 class="text-center my-4 border-bottom pb-2 fw-bold">Lower Teeth</h5>
                     <div class="teeth-row mb-4" id="lowerTeeth">
-                        <!-- This will be populated dynamically by JavaScript -->
                     </div>
                     
                     <div class="dental-chart-legend mt-4 p-3 border-top">
@@ -797,7 +792,7 @@
                         </div>
                     </div>
 
-<!-- Edit Treatment Report Modal -->
+
 <div class="modal fade" id="editTreatmentReportModal" tabindex="-1" aria-labelledby="editTreatmentReportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
@@ -834,12 +829,10 @@
                     <div class="dental-chart-container bg-light p-4 rounded-lg">
                         <h5 class="text-center mb-4 border-bottom pb-2">Upper Teeth</h5>
                         <div class="teeth-row" id="editUpperTeeth">
-                            <!-- Will be populated on modal show -->
                             </div>
                         
                         <h5 class="text-center my-4 border-bottom pb-2">Lower Teeth</h5>
                         <div class="teeth-row" id="editLowerTeeth">
-                            <!-- Will be populated on modal show -->
                             </div>
                         
                         <div class="dental-chart-legend mt-4 p-3 border-top">
@@ -871,7 +864,7 @@
     </div>
 </div>
 
-<!-- Update Status Modal -->
+
 <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
@@ -944,7 +937,7 @@
     </div>
 </div>
 
-<!-- Status Confirmation Modal -->
+
 <div class="modal fade" id="statusConfirmationModal" tabindex="-1" aria-labelledby="statusConfirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
@@ -985,9 +978,7 @@
 
 @section Scripts {
     <script>
-        // Handle TempData notifications and modal triggers
         $(document).ready(function() {
-            // Check for TempData messages
             @if (TempData["SuccessMessage"] != null)
             {
                 <text>
@@ -1009,22 +1000,19 @@
                 </text>
             }
             
-            // If appointment just marked as completed, show the treatment report modal
             @if (TempData["ShowTreatmentReportModal"] != null && (bool)TempData["ShowTreatmentReportModal"] == true)
             {
                 <text>
                 setTimeout(function() {
                     $('#treatmentReportModal').modal('show');
-                }, 1000); // Slight delay to allow page to fully load
+                }, 1000); 
                 </text>
             }
         });
         
-        // Function to update appointment status
         function updateStatus(appointmentId, status) {
             console.log('Update status function called with ID:', appointmentId, 'status:', status);
             
-            // Set the confirmation modal content based on the selected status
             const statusIconMap = {
                 'Confirmed': '<i class="bi bi-calendar-check-fill fs-1 text-info"></i>',
                 'Completed': '<i class="bi bi-check-circle-fill fs-1 text-success"></i>',
@@ -1046,19 +1034,16 @@
                 'No-Show': 'bg-warning'
             };
             
-            // Update the form action URL
             const actionUrl = '@Url.Action("UpdateStatus", "Appointments", new { area = "Doctor" })/' + appointmentId;
             $('#statusUpdateForm').attr('action', actionUrl);
             $('#statusUpdateAppointmentId').val(appointmentId);
             $('#statusUpdateNewStatus').val(status);
             
-            // Update the modal content
             $('#statusIcon').html(statusIconMap[status] || '<i class="bi bi-question-circle-fill fs-1"></i>');
             $('#statusIcon').removeClass('bg-info bg-success bg-danger bg-warning').addClass(statusBgColorMap[status] || 'bg-secondary');
             $('#statusConfirmationText').text(`Are you sure you want to change this appointment's status to "${status}"?`);
             $('#statusInfoText').text(statusInfoMap[status] || 'This action will update the appointment status and cannot be easily reversed.');
             
-            // Show the modal
             $('#statusConfirmationModal').modal('show');
         }
         
@@ -1066,28 +1051,21 @@
             $('#statusUpdateForm').on('submit', function(e) {
                 e.preventDefault();
                 
-                // Show loading state
                 $('#confirmStatusUpdateBtn').prop('disabled', true).html('<i class="spinner-border spinner-border-sm me-2"></i>Processing...');
                 
-                // Get the form data
                 const appointmentId = $('#statusUpdateAppointmentId').val();
                 const status = $('#statusUpdateNewStatus').val();
                 
-                // Show notification
                 showNotification('info', `Updating appointment status to ${status}...`);
                 
-                // Get the form action and submit it
                 const actionUrl = $(this).attr('action');
                 window.location.href = actionUrl + '?status=' + status;
             });
         });
         
-        // Function to display notifications
         function showNotification(type, message) {
-            // Create notification element
             const notification = $('<div>').addClass('notification');
             
-            // Set notification type
             if (type === 'success') {
                 notification.addClass('notification-success');
                 notification.html(`<i class="bi bi-check-circle me-2"></i>${message}`);
@@ -1099,15 +1077,12 @@
                 notification.html(`<i class="bi bi-info-circle me-2"></i>${message}`);
             }
             
-            // Add notification to the page
             $('body').append(notification);
             
-            // Animate notification
             setTimeout(function() {
                 notification.addClass('show');
             }, 100);
             
-            // Remove notification after delay
             setTimeout(function() {
                 notification.removeClass('show');
                 setTimeout(function() {
@@ -1116,7 +1091,6 @@
             }, 4000);
         }
         
-        // Function to save treatment notes
         function saveTreatmentNotes() {
             const appointmentId = '@Model.Id';
             const notes = $('#treatmentNotes').val();
@@ -1148,31 +1122,22 @@
             });
         }
         
-        // Dental Chart functionality
         $(document).ready(function() {
-            // FDI World Dental Federation notation
             const upperTeethNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
             const lowerTeethNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
             
-            // Mapping between traditional (1-32) and FDI numbering systems
             const traditionalToFDI = {
-                // Upper right (traditional 1-8 to FDI 18-11)
                 1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
-                // Upper left (traditional 9-16 to FDI 21-28)
                 9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
-                // Lower left (traditional 17-24 to FDI 38-31)
                 17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
-                // Lower right (traditional 25-32 to FDI 41-48)
                 25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
             };
             
-            // Create reverse mapping FDI to traditional
             const FDIToTraditional = {};
             Object.keys(traditionalToFDI).forEach(key => {
                 FDIToTraditional[traditionalToFDI[key]] = parseInt(key);
             });
             
-            // Initialize dental chart for viewing modal
             function generateTeethHtml(teethNumbers, rowId) {
                 let html = '';
                 for (let i = 0; i < teethNumbers.length; i++) {
@@ -1187,13 +1152,11 @@
                 $(`#${rowId}`).html(html);
             }
             
-            // Get saved dental chart data (traditional numbering format)
             function getSavedDentalChartData() {
                 @if (Model.TreatmentReports != null && Model.TreatmentReports.Any() && !string.IsNullOrEmpty(Model.TreatmentReports.OrderByDescending(tr => tr.CreatedAt).FirstOrDefault()?.DentalChart))
                 {
                     <text>
                     try {
-                        // Get the saved dental chart data (traditional numbering)
                         const savedChartData = @Html.Raw(Json.Serialize(Model.TreatmentReports.OrderByDescending(tr => tr.CreatedAt).FirstOrDefault()?.DentalChart));
                         if (savedChartData) {
                             return JSON.parse(savedChartData);
@@ -1206,7 +1169,6 @@
                 return null;
             }
             
-            // Convert traditional dental chart data to FDI format for UI
             function convertTraditionalToFDI(traditionalData) {
                 if (!traditionalData) return null;
                 
@@ -1220,48 +1182,37 @@
                 return fdiData;
             }
             
-            // Viewing Dental Chart Modal
             $('#viewDentalChartModal').on('show.bs.modal', function () {
-                // Generate teeth structure
                 generateTeethHtml(upperTeethNumbers, 'upperTeeth');
                 generateTeethHtml(lowerTeethNumbers, 'lowerTeeth');
                 
-                // Load saved dental chart data if available
                 const traditionalData = getSavedDentalChartData();
                 const fdiData = convertTraditionalToFDI(traditionalData);
                 
                 if (fdiData) {
-                    // Update the UI with saved data for both upper and lower teeth
                     updateTeethUI(fdiData, 'upperTeeth');
                     updateTeethUI(fdiData, 'lowerTeeth');
                 } else {
-                    // Fallback to sample data if no saved data
                     const sampleData = generateSampleTeethData();
                     updateTeethUI(sampleData, 'upperTeeth');
                     updateTeethUI(sampleData, 'lowerTeeth');
                 }
             });
             
-            // Creating Treatment Report Modal
             $('#treatmentReportModal').on('show.bs.modal', function () {
-                // Generate teeth structure for editing
                 generateTeethHtml(upperTeethNumbers, 'upperTeethEdit');
                 generateTeethHtml(lowerTeethNumbers, 'lowerTeethEdit');
                 
-                // Set all teeth as healthy by default
                 setTimeout(function() {
                     const teethData = {};
                     
-                    // Set all teeth as healthy by default
                     upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
                         teethData[toothNumber] = 'healthy';
                     });
                     
-                    // Update teeth UI for both upper and lower
                     updateTeethUI(teethData, 'upperTeethEdit');
                     updateTeethUI(teethData, 'lowerTeethEdit');
                     
-                    // Initialize dental chart data for form submission (using traditional numbering)
                     const traditionalData = {};
                     Object.keys(teethData).forEach(fdiNum => {
                         const traditionalNum = FDIToTraditional[fdiNum];
@@ -1272,35 +1223,27 @@
                 }, 300);
             });
             
-            // Editing Treatment Report Modal
             $('#editTreatmentReportModal').on('show.bs.modal', function() {
-                // Generate teeth structure for editing
                 generateTeethHtml(upperTeethNumbers, 'editUpperTeeth');
                 generateTeethHtml(lowerTeethNumbers, 'editLowerTeeth');
                 
-                // Load existing chart data for editing
                 const traditionalData = getSavedDentalChartData();
                 if (traditionalData) {
                     const fdiData = convertTraditionalToFDI(traditionalData);
                     
-                    // Update the UI with saved data for both upper and lower teeth
                     updateTeethUI(fdiData, 'editUpperTeeth');
                     updateTeethUI(fdiData, 'editLowerTeeth');
                     
-                    // Set the form data with the existing chart data
                     $('#editDentalChartData').val(JSON.stringify(traditionalData));
                 } else {
-                    // If no saved data, initialize with healthy teeth
                     const teethData = {};
                     upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
                         teethData[toothNumber] = 'healthy';
                     });
                     
-                    // Update UI for both upper and lower teeth
                     updateTeethUI(teethData, 'editUpperTeeth');
                     updateTeethUI(teethData, 'editLowerTeeth');
                     
-                    // Initialize the form data
                     const traditionalData = {};
                     Object.keys(teethData).forEach(fdiNum => {
                         const traditionalNum = FDIToTraditional[fdiNum];
@@ -1311,11 +1254,9 @@
                 }
             });
             
-            // Generate sample teeth data for demonstration
             function generateSampleTeethData() {
                 const teethData = {};
                 
-                // Generate random statuses for all teeth
                 upperTeethNumbers.concat(lowerTeethNumbers).forEach(function(toothNumber) {
                     teethData[toothNumber] = Math.random() > 0.7 ? 'decayed' : (Math.random() > 0.5 ? 'filled' : 'healthy');
                 });
@@ -1323,7 +1264,6 @@
                 return teethData;
             }
             
-            // Update teeth UI based on data
             function updateTeethUI(teethData, containerPrefix) {
                 Object.keys(teethData).forEach(function(toothNumber) {
                     const status = teethData[toothNumber];
@@ -1333,24 +1273,20 @@
                     
                     const $tooth = $(selector);
                     if ($tooth.length) {
-                        // Remove any existing status classes
                         $tooth.removeClass('healthy-tooth decayed-tooth filled-tooth');
                         
-                        // Add appropriate class and update text
                         $tooth.addClass(`${status}-tooth`);
                         $tooth.find('.tooth-status').text(status.charAt(0).toUpperCase() + status.slice(1));
                     }
                 });
             }
             
-            // Add click handler for teeth in the create/edit modals
             function setupToothClickHandlers(modalSelector, hiddenInputId) {
                 $(document).on('click', `${modalSelector} .tooth`, function() {
                     const fdiNumber = $(this).data('tooth-number');
                     const traditionalNumber = $(this).data('traditional-number');
                     const currentStatus = $(this).find('.tooth-status').text().toLowerCase();
                     
-                    // Cycle through statuses: Healthy -> Decayed -> Filled -> Healthy
                     let newStatus;
                     if (currentStatus === 'healthy') {
                         newStatus = 'decayed';
@@ -1360,35 +1296,28 @@
                         newStatus = 'healthy';
                     }
                     
-                    // Update the tooth UI
                     $(this).removeClass('healthy-tooth decayed-tooth filled-tooth')
                            .addClass(`${newStatus}-tooth`)
                            .find('.tooth-status').text(newStatus.charAt(0).toUpperCase() + newStatus.slice(1));
                     
-                    // Update the form data (using traditional numbering for storage)
                     const dentalChartData = JSON.parse($(`#${hiddenInputId}`).val() || '{}');
                     dentalChartData[traditionalNumber] = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
                     $(`#${hiddenInputId}`).val(JSON.stringify(dentalChartData));
                 });
             }
             
-            // Setup click handlers for both modals
             setupToothClickHandlers('#treatmentReportModal', 'dentalChartData');
             setupToothClickHandlers('#editTreatmentReportModal', 'editDentalChartData');
             
-            // Add click handler for teeth in the view modal (read-only info)
             $(document).on('click', '#viewDentalChartModal .tooth', function() {
                 const fdiNumber = $(this).data('tooth-number');
                 const traditionalNumber = $(this).data('traditional-number');
                 const status = $(this).find('.tooth-status').text().toLowerCase();
                 
-                // Show tooth details
                 showToothDetails(fdiNumber, traditionalNumber, status);
             });
             
-            // Show tooth details in a nice tooltip/popover
             function showToothDetails(fdiNumber, traditionalNumber, status) {
-                // Create tooltip content
                 let tooltipContent = `
                 <div class="tooth-details p-3">
                     <h5 class="fw-bold mb-2">Tooth #${fdiNumber}</h5>
@@ -1400,13 +1329,11 @@
                     <p class="mt-2 mb-0 text-muted small">Click outside to close</p>
                 </div>`;
                 
-                // Create the tooltip element
                 const $tooltip = $('<div>')
                     .addClass('tooth-tooltip')
                     .html(tooltipContent)
                     .appendTo('body');
                 
-                // Position the tooltip near the tooth
                 const $tooth = $(`#tooth-${fdiNumber}-upperTeeth, #tooth-${fdiNumber}-lowerTeeth`);
                 const toothPosition = $tooth.offset();
                 
@@ -1415,7 +1342,6 @@
                     left: toothPosition.left + ($tooth.outerWidth() / 2) - ($tooltip.outerWidth() / 2)
                 }).addClass('show');
                 
-                // Close tooltip when clicking outside
                 $(document).on('click.tooth-tooltip', function(e) {
                     if (!$(e.target).closest('.tooth-tooltip').length) {
                         $tooltip.remove();
@@ -1437,7 +1363,6 @@
 
 @section Styles {
 <style>
-        /* General Styles */
         .card {
             border-radius: 0.75rem;
             transition: all 0.2s ease;
@@ -1489,7 +1414,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        /* Background Gradients */
         .bg-gradient-primary {
             background: linear-gradient(45deg, #4e73df, #2e59d9);
         }
@@ -1510,7 +1434,6 @@
             background: linear-gradient(45deg, #e74a3b, #be2617);
         }
         
-        /* Status and Payment Cards */
         .status-banner {
             background-color: #4e73df;
             color: white;
@@ -1526,7 +1449,6 @@
             background-color: rgba(255, 255, 255, 0.2);
         }
         
-        /* Timeline styling */
         .timeline-modern {
     position: relative;
             padding-left: 2rem;
@@ -1556,7 +1478,6 @@
             font-size: 0.85rem;
         }
         
-        /* Patient and Doctor Avatar */
         .patient-avatar,
         .doctor-avatar {
             width: 100px;
@@ -1577,7 +1498,6 @@
             font-size: 2rem;
         }
         
-        /* Detail Cards */
         .detail-card,
         .patient-detail-card,
         .payment-summary-card {
@@ -1591,7 +1511,6 @@
             box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.05);
         }
         
-        /* Payment Status */
         .payment-status-detail {
             transition: all 0.2s ease;
         }
@@ -1604,7 +1523,6 @@
             justify-content: center;
         }
         
-        /* Dental Chart Styles */
         .dental-chart-container {
             background-color: #ffffff;
             border-radius: 0.75rem;
@@ -1667,7 +1585,6 @@
             color: #1565c0;
         }
         
-        /* Dental Chart Legend */
         .legend-item {
             display: flex;
             align-items: center;
@@ -1681,7 +1598,6 @@
             margin-right: 8px;
         }
         
-        /* Tooth tooltip */
         .tooth-tooltip {
             position: absolute;
             background-color: white;
@@ -1718,7 +1634,6 @@
             background-color: #1565c0;
         }
         
-        /* Notification styles */
         .notification {
             position: fixed;
             top: 20px;
@@ -1753,7 +1668,6 @@
             border-left: 4px solid #4e73df;
         }
         
-        /* Status Option Radio Buttons */
         .status-option {
             cursor: pointer;
             transition: all 0.2s;
@@ -1773,7 +1687,6 @@
             margin-bottom: 0;
         }
         
-        /* For payment type icons */
         .payment-type-icon {
             width: 30px;
             height: 30px;
@@ -1784,7 +1697,6 @@
             background-color: #f8f9fa;
         }
         
-        /* Media Queries for Responsive Design */
         @@media (max-width: 767.98px) {
             .patient-avatar,
             .doctor-avatar {
@@ -1821,7 +1733,6 @@
                 font-size: 10px;
             }
             
-            /* Status and Payment Cards Responsive */
             .status-icon, .payment-icon {
                 width: 40px;
                 height: 40px;

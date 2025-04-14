@@ -43,12 +43,10 @@ namespace DentalManagement.Areas.Patient.Controllers
             _emailService = emailService;
             _paymentService = paymentService;
             
-            // Get the application URL from environment variable or use default
             string applicationUrl = Environment.GetEnvironmentVariable("APPLICATION_URL") ?? "http://localhost:5001";
             _applicationUrl = applicationUrl.TrimEnd('/');
         }
 
-        // GET: Patient/Appointments
         public async Task<IActionResult> Index()
         {
             var viewModel = new AppointmentsListViewModel
@@ -60,19 +58,15 @@ namespace DentalManagement.Areas.Patient.Controllers
 
             try
             {
-                // Get current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user != null)
                 {
-                    // Get patient
                     var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
                     if (patient != null)
                     {
-                        // Get the current date and time
                         var now = DateTime.UtcNow;
                         var today = now.Date;
 
-                        // Get all appointments for this patient
                         var allAppointments = await _context.Appointments
                             .Include(a => a.Doctor)
                             .Include(a => a.TreatmentType)
@@ -81,7 +75,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                             .ThenBy(a => a.AppointmentTime)
                             .ToListAsync();
 
-                        // Process each appointment and categorize it
                         foreach (var appointment in allAppointments)
                         {
                             var appointmentViewModel = new AppointmentViewModel
@@ -93,7 +86,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                                 AppointmentTime = appointment.AppointmentTime,
                                 Status = appointment.Status,
                                 PaymentStatus = appointment.PaymentStatus,
-                                // Can cancel if not already cancelled or completed, and appointment is in the future
                                 CanCancel = appointment.Status != "Cancelled" && 
                                         appointment.Status != "Completed" && 
                                         (appointment.AppointmentDate > today || 
@@ -101,20 +93,16 @@ namespace DentalManagement.Areas.Patient.Controllers
                                             appointment.AppointmentTime > now.TimeOfDay))
                             };
 
-                            // Categorize appointments
                             if (appointment.Status == "Cancelled")
                             {
-                                // All cancelled appointments go to the cancelled tab
                                 viewModel.CancelledAppointments.Add(appointmentViewModel);
                             }
                             else if (appointment.Status == "Completed")
                             {
-                                // All completed appointments go to the past tab
                                 viewModel.PastAppointments.Add(appointmentViewModel);
                             }
                             else
                             {
-                                // Check if appointment is in the past based on date and time
                                 bool isPastAppointment = appointment.AppointmentDate < today || 
                                                     (appointment.AppointmentDate == today && 
                                                         appointment.AppointmentTime < now.TimeOfDay);
@@ -130,7 +118,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                             }
                         }
 
-                        // Sort the appointment collections
                         viewModel.UpcomingAppointments = viewModel.UpcomingAppointments
                             .OrderBy(a => a.AppointmentDate)
                             .ThenBy(a => a.AppointmentTime)
@@ -150,17 +137,14 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
             catch (Exception ex)
             {
-                // Log the error using proper logging
                 _logger.LogError(ex, "Error fetching appointments");
             }
             
             return View("_MyAppointments", viewModel);
         }
         
-        // GET: Patient/Appointments/Book
         public async Task<IActionResult> Book()
         {
-            // Get active treatment types from database
             var treatments = await _context.TreatmentTypes
                 .Where(t => t.IsActive && !t.IsDeleted)
                 .Select(t => new TreatmentViewModel
@@ -174,7 +158,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 })
                 .ToListAsync();
             
-            // Use these fixed categories or dynamically determine them
             var categories = new List<string> { "Cleaning", "Cosmetic", "Restorative", "Surgical", "Orthodontic" };
             
             var viewModel = new TreatmentSelectionViewModel
@@ -186,12 +169,10 @@ namespace DentalManagement.Areas.Patient.Controllers
             return View(viewModel);
         }
         
-        // POST: Patient/Appointments/SaveTreatmentSelection
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SaveTreatmentSelection(int treatmentId, string redirectUrl)
         {
-            // Extensive logging
             _logger.LogInformation($"SaveTreatmentSelection START");
             _logger.LogInformation($"Treatment ID: {treatmentId}");
             _logger.LogInformation($"Redirect URL: {redirectUrl}");
@@ -229,15 +210,12 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
         }
         
-        // GET: Patient/Appointments/Book/Doctor
         public async Task<IActionResult> Doctor()
         {
-            // Get the selected treatment ID from session
             var selectedTreatmentId = HttpContext.Session.GetInt32("SelectedTreatmentId");
             
             if (selectedTreatmentId == null)
             {
-                // Try to get from query string (for direct navigation)
                 if (int.TryParse(Request.Query["treatmentId"], out int queryTreatmentId))
                 {
                     selectedTreatmentId = queryTreatmentId;
@@ -245,12 +223,10 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
                 else
                 {
-                    // If no treatment is selected, redirect back to treatment selection
                     return RedirectToAction("Book");
                 }
             }
             
-            // Get doctors who are associated with the selected treatment
             var doctorQuery = from dt in _context.DoctorTreatments
                              where dt.TreatmentTypeId == selectedTreatmentId && dt.IsActive && !dt.IsDeleted
                              join d in _context.Doctors on dt.DoctorId equals d.Id
@@ -267,7 +243,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             var doctors = await doctorQuery.ToListAsync();
             
-            // If no doctors are found for this treatment, get all active doctors as fallback
             if (!doctors.Any())
             {
                 doctors = await _context.Doctors
@@ -283,7 +258,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     .ToListAsync();
             }
             
-            // Get the treatment details to display in the view
             var treatment = await _context.TreatmentTypes
                 .Where(t => t.Id == selectedTreatmentId)
                 .FirstOrDefaultAsync();
@@ -294,7 +268,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ViewData["TreatmentDuration"] = $"{treatment.Duration} min";
                 ViewData["TreatmentPrice"] = $"RM {treatment.Price}";
                 
-                // Store treatment details in TempData
                 TempData["SelectedTreatment"] = JsonConvert.SerializeObject(new TreatmentViewModel
                 {
                     Id = treatment.Id,
@@ -308,12 +281,10 @@ namespace DentalManagement.Areas.Patient.Controllers
             return View(doctors);
         }
         
-        // POST: Patient/Appointments/SaveDoctorSelection
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SaveDoctorSelection(int doctorId, string redirectUrl)
         {
-            // Validate that the doctor exists and is active
             var doctorExists = _context.Doctors
                 .Any(d => d.Id == doctorId && d.Status == StatusType.Active && !d.IsDeleted);
             
@@ -323,23 +294,18 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return RedirectToAction("Doctor");
             }
 
-            // Store in session
             HttpContext.Session.SetInt32("SelectedDoctorId", doctorId);
             
-            // Redirect to next page
             return Redirect(redirectUrl ?? "/Patient/Appointments/Book/DateTime");
         }
     
-        // GET: Patient/Appointments/Book/DateTime
         public async Task<IActionResult> SelectDateTime()
         {
-            // Get the selected treatment and doctor IDs from session
             var selectedTreatmentId = HttpContext.Session.GetInt32("SelectedTreatmentId");
             var selectedDoctorId = HttpContext.Session.GetInt32("SelectedDoctorId");
             
             if (selectedTreatmentId == null || selectedDoctorId == null)
             {
-                // If missing required selections, redirect appropriately
                 if (selectedTreatmentId == null)
                 {
                     return RedirectToAction("Book");
@@ -351,7 +317,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
             }
             
-            // Get treatment details
             var treatment = await _context.TreatmentTypes
                 .Where(t => t.Id == selectedTreatmentId)
                 .FirstOrDefaultAsync();
@@ -360,10 +325,9 @@ namespace DentalManagement.Areas.Patient.Controllers
             {
                 ViewData["TreatmentName"] = treatment.Name;
                 ViewData["TreatmentDuration"] = $"{treatment.Duration} min";
-                ViewData["TreatmentDurationMinutes"] = treatment.Duration; // For slot calculations
+                ViewData["TreatmentDurationMinutes"] = treatment.Duration; 
             }
             
-            // Get doctor details
             var doctor = await _context.Doctors
                 .Where(d => d.Id == selectedDoctorId)
                 .FirstOrDefaultAsync();
@@ -374,15 +338,11 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ViewData["DoctorSpecialization"] = doctor.Specialty;
             }
             
-            // Get available time slots for the selected doctor
-            // For the next 30 days - Use UTC dates
             var today = DateTime.UtcNow.Date;
             var endDate = today.AddDays(30);
             
-            // Calculate how many consecutive time slots we need based on treatment duration
-            var treatmentDuration = treatment?.Duration ?? 60; // Default to 60 minutes if not found
+            var treatmentDuration = treatment?.Duration ?? 60; 
             
-            // Get available slots with consecutive slot check
             var availableSlots = await GetAvailableSlotsAsync(
                 selectedDoctorId.Value, 
                 treatmentDuration, 
@@ -390,7 +350,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 endDate
             );
             
-            // Convert to JSON for JavaScript
             ViewData["TimeSlotData"] = System.Text.Json.JsonSerializer.Serialize(availableSlots);
             
             return View("SelectDateTime");
@@ -398,14 +357,12 @@ namespace DentalManagement.Areas.Patient.Controllers
 
         public async Task<Dictionary<string, List<TimeSlotViewModel>>> GetAvailableSlotsAsync(int doctorId, int treatmentDurationMinutes, DateTime startDate, DateTime endDate)
         {
-            // Get current time for filtering today's slots
             var currentTime = DateTime.UtcNow;
             var oneHourFromNow = currentTime.AddHours(1);
             
             _logger.LogInformation($"Current time: {currentTime}");
             _logger.LogInformation($"One hour from now: {oneHourFromNow}");
             
-            // Get all available slots for the doctor
             var allSlots = await _context.TimeSlots
                 .Where(ts => ts.DoctorId == doctorId && 
                         ts.StartTime >= startDate && 
@@ -416,21 +373,17 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             _logger.LogInformation($"Total available slots before filtering: {allSlots.Count}");
             
-            // Filter out slots for today that are less than 1 hour from now
             var filteredSlots = allSlots.Where(slot => 
-                slot.StartTime.Date != currentTime.Date || // Not today
-                slot.StartTime >= oneHourFromNow)         // Or at least 1 hour from now
+                slot.StartTime.Date != currentTime.Date || 
+                slot.StartTime >= oneHourFromNow)         
                 .ToList();
             
             _logger.LogInformation($"Slots after time filtering: {filteredSlots.Count}");
             
-            // Calculate how many consecutive slots we need
             int requiredSlots = (int)Math.Ceiling(treatmentDurationMinutes / 60.0);
             
-            // Group slots by date
             var slotsByDate = filteredSlots.GroupBy(s => s.StartTime.Date);
             
-            // Dictionary to hold our results, grouped by date
             var availableTimeSlots = new Dictionary<string, List<TimeSlotViewModel>>();
             
             foreach (var dateGroup in slotsByDate)
@@ -439,24 +392,19 @@ namespace DentalManagement.Areas.Patient.Controllers
                 var dateString = date.ToString("yyyy-MM-dd");
                 var slotsForDate = new List<TimeSlotViewModel>();
                 
-                // Get all slots for this date
                 var daySlots = dateGroup.OrderBy(s => s.StartTime).ToList();
                 
-                // Loop through slots to find consecutive available slots
                 for (int i = 0; i <= daySlots.Count - requiredSlots; i++)
                 {
                     bool consecutiveSlotsAvailable = true;
                     
-                    // Check if we have enough consecutive slots
                     for (int j = 0; j < requiredSlots; j++)
                     {
-                        // If this isn't the first slot, check if it's consecutive with the previous
                         if (j > 0)
                         {
                             var previousSlot = daySlots[i + j - 1];
                             var currentSlot = daySlots[i + j];
                             
-                            // Check if slots are consecutive (end time of previous equals start time of current)
                             if (previousSlot.EndTime != currentSlot.StartTime)
                             {
                                 consecutiveSlotsAvailable = false;
@@ -464,7 +412,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                             }
                         }
                         
-                        // Also check that the slot isn't already booked
                         if (daySlots[i + j].IsBooked)
                         {
                             consecutiveSlotsAvailable = false;
@@ -472,7 +419,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                         }
                     }
                     
-                    // If we found enough consecutive slots, add the first one to our results
                     if (consecutiveSlotsAvailable)
                     {
                         var firstSlot = daySlots[i];
@@ -480,11 +426,10 @@ namespace DentalManagement.Areas.Patient.Controllers
                         {
                             Id = firstSlot.Id,
                             StartTime = firstSlot.StartTime,
-                            EndTime = daySlots[i + requiredSlots - 1].EndTime, // End time of the last slot
+                            EndTime = daySlots[i + requiredSlots - 1].EndTime, 
                             FormattedStartTime = firstSlot.StartTime.ToString("h:mm tt"),
                             Period = GetTimePeriod(firstSlot.StartTime),
                             RequiredSlots = requiredSlots,
-                            // Store IDs of all slots needed for this appointment
                             ConsecutiveSlotIds = Enumerable.Range(i, requiredSlots)
                                                 .Select(idx => daySlots[idx].Id)
                                                 .ToList()
@@ -494,7 +439,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
-                // Add slots for this date to our dictionary
                 if (slotsForDate.Any())
                 {
                     availableTimeSlots[dateString] = slotsForDate;
@@ -522,16 +466,13 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
         }
 
-        // Add this method to your AppointmentsController
         private async Task EnsureTimeSlots(int doctorId)
         {
-            // Check if there are existing time slots for this doctor
             var hasTimeSlots = await _context.TimeSlots
                 .AnyAsync(ts => ts.DoctorId == doctorId);
             
             if (!hasTimeSlots)
             {
-                // Generate time slots for the next 30 days
                 var today = DateTime.UtcNow.Date;
                 var timeSlots = new List<TimeSlot>();
                 
@@ -539,18 +480,14 @@ namespace DentalManagement.Areas.Patient.Controllers
                 {
                     var date = today.AddDays(day);
                     
-                    // Skip weekends (Saturday and Sunday)
                     if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
                         continue;
                         
-                    // Morning slots: 9:00 AM to 12:00 PM
                     for (int hour = 9; hour < 12; hour++)
                     {
-                        // Every 30 minutes
                         for (int minute = 0; minute < 60; minute += 30)
                         {
-                            // Randomly skip some slots to simulate a realistic schedule
-                            if (new Random().Next(100) < 60) // 60% chance of having a slot
+                            if (new Random().Next(100) < 60) 
                             {
                                 var startTime = new DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
                                 var endTime = startTime.AddMinutes(30);
@@ -566,7 +503,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                         }
                     }
                     
-                    // Afternoon slots: 1:00 PM to 5:00 PM
                     for (int hour = 13; hour < 17; hour++)
                     {
                         for (int minute = 0; minute < 60; minute += 30)
@@ -587,7 +523,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                         }
                     }
                     
-                    // Evening slots: 5:00 PM to 8:00 PM
                     for (int hour = 17; hour < 20; hour++)
                     {
                         for (int minute = 0; minute < 60; minute += 30)
@@ -609,7 +544,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
-                // Add time slots to the database
                 await _context.TimeSlots.AddRangeAsync(timeSlots);
                 await _context.SaveChangesAsync();
                 
@@ -617,62 +551,49 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
         }
         
-        // POST: Patient/Appointments/SaveDateTimeSelection
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SaveDateTimeSelection(DateTime appointmentDate, string appointmentTime, string slotIds, string redirectUrl)
         {
-            // Log all session values for debugging
             _logger.LogInformation($"TreatmentId in session: {HttpContext.Session.GetInt32("SelectedTreatmentId")}");
             _logger.LogInformation($"DoctorId in session: {HttpContext.Session.GetInt32("SelectedDoctorId")}");
             
-            // Basic validation for date and time
             if (appointmentDate < DateTime.UtcNow.Date)
             {
                 _logger.LogWarning($"Attempted to select past date: {appointmentDate}");
                 return RedirectToAction("SelectDateTime");
             }
 
-            // Convert input date to UTC if needed
-            if (appointmentDate.Kind != DateTimeKind.Utc)
+                        if (appointmentDate.Kind != DateTimeKind.Utc)
             {
                 appointmentDate = DateTime.SpecifyKind(appointmentDate, DateTimeKind.Utc);
             }
 
-            // Store in session
-            HttpContext.Session.SetString("AppointmentDate", appointmentDate.ToString("yyyy-MM-dd"));
+                        HttpContext.Session.SetString("AppointmentDate", appointmentDate.ToString("yyyy-MM-dd"));
             HttpContext.Session.SetString("AppointmentTime", appointmentTime);
             
-            // Store the consecutive slot IDs for the appointment
-            if (!string.IsNullOrEmpty(slotIds))
+                        if (!string.IsNullOrEmpty(slotIds))
             {
                 HttpContext.Session.SetString("SlotIds", slotIds);
                 _logger.LogInformation($"Stored slot IDs: {slotIds}");
             }
             
-            // Log all stored values before redirect
-            _logger.LogInformation($"Stored date: {appointmentDate.ToString("yyyy-MM-dd")}, time: {appointmentTime}");
+                        _logger.LogInformation($"Stored date: {appointmentDate.ToString("yyyy-MM-dd")}, time: {appointmentTime}");
             
-            // Redirect to next page
-            return RedirectToAction("Confirm");
+                        return RedirectToAction("Confirm");
         }
         
-        // GET: Patient/Appointments/Book/Confirm
-        public async Task<IActionResult> Confirm()
+                public async Task<IActionResult> Confirm()
         {
-            // Log the start of method
-            _logger.LogInformation("Starting Confirm method");
+                        _logger.LogInformation("Starting Confirm method");
             
-            // Get all booking details from session
-            var treatmentId = HttpContext.Session.GetInt32("SelectedTreatmentId");
+                        var treatmentId = HttpContext.Session.GetInt32("SelectedTreatmentId");
             var doctorId = HttpContext.Session.GetInt32("SelectedDoctorId");
             var appointmentDate = HttpContext.Session.GetString("AppointmentDate");
             var appointmentTime = HttpContext.Session.GetString("AppointmentTime");
             
-            // Log session values
             _logger.LogInformation($"Session values - TreatmentId: {treatmentId}, DoctorId: {doctorId}, Date: {appointmentDate}, Time: {appointmentTime}");
             
-            // Check for data in the request (could be passed as query parameters)
             if (treatmentId == null && Request.Query.ContainsKey("treatmentId"))
             {
                 if (int.TryParse(Request.Query["treatmentId"], out int queryTreatmentId))
@@ -691,7 +612,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
             }
             
-            // If missing any required selections, redirect appropriately
             if (treatmentId == null)
             {
                 return RedirectToAction("Book");
@@ -707,10 +627,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return RedirectToAction("SelectDateTime");
             }
             
-            // Prepare view model
             var bookingModel = new AppointmentBookingViewModel();
             
-            // Get treatment details
             var treatment = await _context.TreatmentTypes
                 .Where(t => t.Id == treatmentId)
                 .FirstOrDefaultAsync();
@@ -727,7 +645,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ViewData["TreatmentPrice"] = $"RM {treatment.Price}";
             }
             
-            // Get doctor details
             var doctor = await _context.Doctors
                 .Where(d => d.Id == doctorId)
                 .FirstOrDefaultAsync();
@@ -742,7 +659,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ViewData["DoctorSpecialization"] =doctor.Specialty;
             }
             
-            // Set appointment date and time
             if (DateTime.TryParse(appointmentDate, out DateTime parsedDate))
             {
                 bookingModel.AppointmentDate = parsedDate;
@@ -751,7 +667,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             bookingModel.AppointmentTime = appointmentTime;
             
-            // Format the time for display (convert 24h to 12h format)
             if (TimeSpan.TryParse(appointmentTime, out TimeSpan time))
             {
                 bool isPM = time.Hours >= 12;
@@ -769,15 +684,11 @@ namespace DentalManagement.Areas.Patient.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitBooking(AppointmentBookingViewModel model)
         {
-            // Add extensive debug logging
             _logger.LogInformation($"SubmitBooking started with TreatmentId={model.TreatmentId}, DoctorId={model.DoctorId}");
             _logger.LogInformation($"AppointmentDate={model.AppointmentDate}, AppointmentTime={model.AppointmentTime}");
             
-            // We need to manually validate only the required fields and ignore validation
-            // for the display fields that aren't being submitted by the form
-            ModelState.Clear(); // Clear all validation since we'll do it manually
+            ModelState.Clear(); 
             
-            // Check only the required fields
             if (model.TreatmentId <= 0)
             {
                 ModelState.AddModelError("TreatmentId", "Treatment is required");
@@ -788,7 +699,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ModelState.AddModelError("DoctorId", "Doctor is required");
             }
             
-            // Date is a value type, so it can't be null, but check if it's the default
             if (model.AppointmentDate == default)
             {
                 ModelState.AddModelError("AppointmentDate", "Appointment date is required");
@@ -799,10 +709,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ModelState.AddModelError("AppointmentTime", "Appointment time is required");
             }
             
-            // If we have validation errors, reload the page with the errors
             if (!ModelState.IsValid)
             {
-                // Log validation errors
                 foreach (var state in ModelState)
                 {
                     foreach (var error in state.Value.Errors)
@@ -811,7 +719,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
-                // Reload the data for the form
                 await RepopulateViewModelData(model);
                 
                 return View("Confirm", model);
@@ -819,14 +726,12 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             try
             {
-                // Get current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
                 
-                // Get patient
                 var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
                 if (patient == null)
                 {
@@ -834,7 +739,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return View("Confirm", model);
                 }
                 
-                // Get treatment for cost calculation
                 var treatment = await _context.TreatmentTypes.FindAsync(model.TreatmentId);
                 if (treatment == null)
                 {
@@ -842,10 +746,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return View("Confirm", model);
                 }
                 
-                // Calculate deposit amount (30% of treatment cost)
                 decimal depositAmount = treatment.Price * 0.3m;
                 
-                // Create the appointment with a temporary status
                 var appointment = new Appointment
                 {
                     PatientId = patient.Id,
@@ -855,18 +757,16 @@ namespace DentalManagement.Areas.Patient.Controllers
                     AppointmentTime = TimeSpan.Parse(model.AppointmentTime),
                     Duration = treatment.Duration,
                     Notes = model.Notes ?? "",
-                    Status = "Pending-Payment", // New status before payment
+                    Status = "Pending-Payment", 
                     CreatedAt = DateTime.UtcNow,
                     PaymentStatus = PaymentStatus.Pending,
                     DepositAmount = depositAmount,
                     TotalAmount = treatment.Price
                 };
                 
-                // Save the appointment to get an ID
                 _context.Appointments.Add(appointment);
                 await _context.SaveChangesAsync();
                 
-                // Construct URLs
                 string successUrl = BuildActionUrl(
                     "BookingSuccess",
                     "Appointments",
@@ -879,14 +779,12 @@ namespace DentalManagement.Areas.Patient.Controllers
                     new { area = "Patient", id = appointment.Id }
                 );
                 
-                // Add failure URL
                 string failureUrl = BuildActionUrl(
                     "BookingFailure",
                     "Appointments",
                     new { area = "Patient", id = appointment.Id }
                 );
                 
-                // Create Stripe checkout session with failure URL
                 var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
                     appointment.Id, 
                     depositAmount, 
@@ -895,7 +793,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     failureUrl
                 );
                 
-                // Redirect to Stripe checkout
                 return Redirect(checkoutUrl);
             }
             catch (Exception ex)
@@ -911,55 +808,36 @@ namespace DentalManagement.Areas.Patient.Controllers
         {
             try 
             {
-                // Get current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
 
-                // Find the patient associated with the user
                 var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
                 if (patient == null)
                 {
                     return RedirectToAction("Index");
                 }
 
-                // Clear all session variables related to booking process
                 HttpContext.Session.Clear();
 
 
-                // Optional: Remove any pending appointments in "Pending-Payment" status
-                // var pendingAppointments = await _context.Appointments
-                //     .Where(a => a.PatientId == patient.Id && a.Status == "Pending-Payment")
-                //     .ToListAsync();
-
-                // if (pendingAppointments.Any())
-                // {
-                //     _context.Appointments.RemoveRange(pendingAppointments);
-                //     await _context.SaveChangesAsync();
-                // }
-
-                // Log the cancellation
                 _logger.LogInformation("Booking process cancelled and session state cleared");
 
-                // Redirect to the main appointments page
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                // Log any errors
                 _logger.LogError(ex, "Error in CancelBooking method");
                 return RedirectToAction("Index");
             }
         }
 
-        // Helper method to reload data for the view model
         private async Task RepopulateViewModelData(AppointmentBookingViewModel model)
         {
             try
             {
-                // Get treatment details
                 if (model.TreatmentId > 0)
                 {
                     var treatment = await _context.TreatmentTypes.FindAsync(model.TreatmentId);
@@ -973,7 +851,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     }
                 }
                 
-                // Get doctor details
                 if (model.DoctorId > 0)
                 {
                     var doctor = await _context.Doctors.FindAsync(model.DoctorId);
@@ -1000,7 +877,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             try 
             {
-                // Fetch the appointment with all related details
                 var appointment = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Include(a => a.TreatmentType)
@@ -1013,7 +889,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return RedirectToAction("Index");
                 }
                 
-                // Verify the appointment belongs to the current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null || appointment.Patient.UserID != user.Id)
                 {
@@ -1021,11 +896,9 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return RedirectToAction("Index");
                 }
                 
-                // Populate ViewData with appointment details
                 ViewData["AppointmentId"] = appointment.Id;
                 ViewData["AppointmentDate"] = appointment.AppointmentDate.ToString("dddd, MMMM d, yyyy");
                 
-                // Format time
                 bool isPM = appointment.AppointmentTime.Hours >= 12;
                 int hour12 = appointment.AppointmentTime.Hours % 12;
                 if (hour12 == 0) hour12 = 12;
@@ -1037,7 +910,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 ViewData["TreatmentCost"] = $"RM {appointment.TreatmentType.Price:0.00}";
                 ViewData["DepositAmount"] = $"RM {(appointment.TreatmentType.Price * 0.3m):0.00}";
                 
-                // Set the error message or use a default
                 ViewData["ErrorMessage"] = string.IsNullOrEmpty(error) 
                     ? "Your payment could not be processed." 
                     : error;
@@ -1059,7 +931,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             try 
             {
-                // Fetch the appointment with all related details
                 var appointment = await _context.Appointments
                     .Include(a => a.Doctor)
                     .Include(a => a.TreatmentType)
@@ -1072,7 +943,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return RedirectToAction("Index");
                 }
                 
-                // Verify the appointment belongs to the current user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null || appointment.Patient.UserID != user.Id)
                 {
@@ -1080,11 +950,9 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return RedirectToAction("Index");
                 }
                 
-                // Populate ViewData with appointment details
                 ViewData["AppointmentId"] = appointment.Id;
                 ViewData["AppointmentDate"] = appointment.AppointmentDate.ToString("dddd, MMMM d, yyyy");
                 
-                // Format time
                 bool isPM = appointment.AppointmentTime.Hours >= 12;
                 int hour12 = appointment.AppointmentTime.Hours % 12;
                 if (hour12 == 0) hour12 = 12;
@@ -1124,7 +992,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return NotFound();
             }
             
-            // Check if appointment belongs to current user
             var user = await _userManager.GetUserAsync(User);
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             
@@ -1133,7 +1000,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return Forbid();
             }
             
-            // Check if appointment can be cancelled
             var today = DateTime.UtcNow.Date;
             var canCancel = appointment.Status != "Cancelled" && appointment.Status != "Completed" && 
                         (appointment.AppointmentDate > today || 
@@ -1145,14 +1011,11 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return RedirectToAction(nameof(Index));
             }
             
-            // Store the status before update for email notification logic
             var previousStatus = appointment.Status;
             
-            // Cancel appointment
             appointment.Status = "Cancelled";
             appointment.UpdatedAt = DateTime.UtcNow;
             
-            // Release associated time slots
             var associatedTimeSlots = await _context.TimeSlots
                 .Where(ts => ts.AppointmentId == appointment.Id)
                 .ToListAsync();
@@ -1165,40 +1028,32 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             await _context.SaveChangesAsync();
             
-            // Format appointment date and time for notifications
             string formattedDate = appointment.AppointmentDate.ToString("MMMM d, yyyy");
             
-            // Format time
             bool isPM = appointment.AppointmentTime.Hours >= 12;
             int hour12 = appointment.AppointmentTime.Hours % 12;
             if (hour12 == 0) hour12 = 12;
             string formattedTime = $"{hour12}:{appointment.AppointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
             
-            // Determine refund details
             string refundMessage = "";
 
-            // If appointment is in Pending-Payment status, just cancel
             if (appointment.PaymentStatus == PaymentStatus.Pending)
             {
                 refundMessage = "This appointment was in pending status and has been cancelled.";
             }
             else
             {
-                // Existing refund logic for paid appointments
                 bool isEligibleForRefund = false;
                 bool refundProcessed = false;
                 decimal refundAmount = 0;
 
                 try 
                 {
-                    // Check if appointment is more than 24 hours away
                     DateTime appointmentDateTime = appointment.AppointmentDate.Date + appointment.AppointmentTime;
                     isEligibleForRefund = (appointmentDateTime - DateTime.UtcNow).TotalHours > 24;
                     
-                    // If eligible, attempt to process refund
                     if (isEligibleForRefund)
                     {
-                        // Find the deposit payment
                         var depositPayment = appointment.Payments
                             .FirstOrDefault(p => p.PaymentType == PaymentType.Deposit && p.Status == "succeeded");
                         
@@ -1206,7 +1061,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                         {
                             refundAmount = depositPayment.Amount;
                             
-                            // Attempt to process refund
                             refundProcessed = await _paymentService.ProcessRefundAsync(appointment.Id);
                         }
                     }
@@ -1220,7 +1074,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
             }
             
-            // Create in-app notification for appointment cancellation
             var notification = new UserNotification
             {
                 UserId = user.Id,
@@ -1239,16 +1092,13 @@ namespace DentalManagement.Areas.Patient.Controllers
             
             _logger.LogInformation($"Created in-app notification for cancelled appointment ID: {appointment.Id}");
             
-            // Existing email notification logic remains unchanged
             if (previousStatus == "Scheduled" || previousStatus == "Confirmed")
             {
                 try
                 {
-                    // Get the user's notification preferences
                     var preferences = await _context.UserNotificationPreferences
                         .FirstOrDefaultAsync(p => p.UserId == user.Id);
                         
-                    // If no preferences found, create default ones with email notifications enabled
                     if (preferences == null)
                     {
                         preferences = new UserNotificationPreferences
@@ -1265,10 +1115,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                         await _context.SaveChangesAsync();
                     }
                     
-                    // Only send cancellation email if user has enabled the preference
                     if (preferences.EmailAppointmentChanges)
                     {
-                        // Create appointment details for email
                         var appointmentDetails = new AppointmentDetailViewModel
                         {
                             Id = appointment.Id,
@@ -1283,13 +1131,11 @@ namespace DentalManagement.Areas.Patient.Controllers
                             TreatmentCost = appointment.TreatmentType.Price
                         };
                         
-                        // Send cancellation email
                         await _emailService.SendAppointmentCancellationEmailAsync(
                             user.Email,
                             $"{patient.FirstName} {patient.LastName}",
                             appointmentDetails);
                         
-                        // Update notification to track email sent
                         notification.EmailSent = true;
                         notification.EmailSentAt = DateTime.UtcNow;
                         await _context.SaveChangesAsync();
@@ -1303,7 +1149,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log the error but don't fail the cancellation if email fails
                     _logger.LogError(ex, "Error handling appointment cancellation notification");
                 }
             }
@@ -1312,7 +1157,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Helper method to determine refund message
         private string DetermineRefundMessage(bool isEligibleForRefund, bool refundProcessed, decimal refundAmount)
         {
             if (!isEligibleForRefund)
@@ -1328,15 +1172,13 @@ namespace DentalManagement.Areas.Patient.Controllers
             return "You are eligible for a refund, but there was an issue processing it. Please contact our support team for assistance.";
         }
         
-        // GET: Patient/Appointments/Details/{id}
-        // Additional action for processing remaining payment will be needed
         public async Task<IActionResult> Details(int id)
         {
             var today = DateTime.UtcNow.Date;
             var appointment = await _context.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.TreatmentType)
-                .Include(a => a.Payments) // Include payments related to this appointment
+                .Include(a => a.Payments) 
                 .FirstOrDefaultAsync(a => a.Id == id);
                     
             if (appointment == null)
@@ -1344,7 +1186,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return NotFound();
             }
             
-            // Check if appointment belongs to current user
             var user = await _userManager.GetUserAsync(User);
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             
@@ -1353,7 +1194,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return Forbid();
             }
             
-            // Find payment dates and calculate amounts
             DateTime? depositPaymentDate = null;
             DateTime? fullPaymentDate = null;
             decimal amountPaid = 0;
@@ -1362,10 +1202,8 @@ namespace DentalManagement.Areas.Patient.Controllers
             {
                 foreach (var payment in appointment.Payments.Where(p => p.Status == "succeeded"))
                 {
-                    // Add to the total paid amount
                     amountPaid += payment.Amount;
                     
-                    // Track payment dates based on type
                     if (payment.PaymentType == PaymentType.Deposit)
                     {
                         depositPaymentDate = payment.CreatedAt;
@@ -1377,10 +1215,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
             }
             
-            // Calculate remaining amount
             decimal remainingAmount = appointment.TotalAmount - amountPaid;
             
-            // Create view model
             var viewModel = new AppointmentDetailViewModel
             {
                 Id = appointment.Id,
@@ -1397,7 +1233,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 CanCancel = appointment.Status != "Cancelled" && appointment.Status != "Completed" && 
                         (appointment.AppointmentDate > today || 
                         (appointment.AppointmentDate == today && appointment.AppointmentTime > DateTime.UtcNow.TimeOfDay)),
-                // Payment related properties
                 PaymentStatus = appointment.PaymentStatus,
                 DepositAmount = appointment.DepositAmount,
                 AmountPaid = amountPaid,
@@ -1411,12 +1246,10 @@ namespace DentalManagement.Areas.Patient.Controllers
 
         public async Task BookTimeSlotsAsync(int appointmentId, List<int> slotIds)
         {
-            // Get all the slots we need to book
             var slots = await _context.TimeSlots
                 .Where(ts => slotIds.Contains(ts.Id))
                 .ToListAsync();
             
-            // Update each slot
             foreach (var slot in slots)
             {
                 slot.IsBooked = true;
@@ -1428,7 +1261,6 @@ namespace DentalManagement.Areas.Patient.Controllers
 
         public async Task<List<int>> FindConsecutiveSlotIdsAsync(int doctorId, DateTime appointmentDate, TimeSpan appointmentTime, int durationMinutes)
         {
-            // Find the starting slot
             var startSlot = await _context.TimeSlots
                 .FirstOrDefaultAsync(ts => 
                     ts.DoctorId == doctorId && 
@@ -1441,19 +1273,14 @@ namespace DentalManagement.Areas.Patient.Controllers
                 throw new Exception("Starting time slot not available.");
             }
             
-            // How many consecutive slots we need
             int requiredSlots = (int)Math.Ceiling(durationMinutes / 60.0);
             
-            // All consecutive slots
             var slotIds = new List<int> { startSlot.Id };
             
-            // If we need more than one slot
             if (requiredSlots > 1)
             {
-                // Get the next slots after the start slot
                 var nextStartTime = startSlot.EndTime;
                 
-                // Find the following slots
                 for (int i = 1; i < requiredSlots; i++)
                 {
                     var nextSlot = await _context.TimeSlots
@@ -1475,7 +1302,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             return slotIds;
         }
 
-       // POST: Patient/Appointments/UpdateNotificationPreferences
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateNotificationPreferences(UserNotificationPreferences model)
@@ -1488,11 +1314,9 @@ namespace DentalManagement.Areas.Patient.Controllers
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
                 
-                // Get existing preferences
                 var preferences = await _context.UserNotificationPreferences
                     .FirstOrDefaultAsync(p => p.UserId == user.Id);
                     
-                // If no preferences found, create new ones
                 if (preferences == null)
                 {
                     preferences = new UserNotificationPreferences
@@ -1503,7 +1327,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     _context.UserNotificationPreferences.Add(preferences);
                 }
                 
-                // Update email preferences
                 preferences.EmailAppointmentReminders = model.EmailAppointmentReminders;
                 preferences.EmailNewAppointments = model.EmailNewAppointments;
                 preferences.EmailAppointmentChanges = model.EmailAppointmentChanges;
@@ -1514,7 +1337,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 
                 TempData["SuccessMessage"] = "Notification preferences updated successfully.";
                 
-                // Redirect back to the settings page or wherever appropriate
                 return RedirectToAction("NotificationSettings");
             }
             catch (Exception ex)
@@ -1525,7 +1347,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             }
         }
 
-        // GET: Patient/Appointments/NotificationSettings
         public async Task<IActionResult> NotificationSettings()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -1534,11 +1355,9 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return RedirectToAction("Login", "Account", new { area = "Identity" });
             }
             
-            // Get user's notification preferences
             var preferences = await _context.UserNotificationPreferences
                 .FirstOrDefaultAsync(p => p.UserId == user.Id);
                 
-            // If no preferences exist, create default ones
             if (preferences == null)
             {
                 preferences = new UserNotificationPreferences
@@ -1563,7 +1382,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
 {
     try 
     {
-        // Find the appointment
         var appointment = await _context.Appointments
             .Include(a => a.TimeSlots)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -1573,14 +1391,12 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
             return Json(new { isAvailable = false });
         }
 
-        // Check if all associated time slots are still available
         var slotIds = appointment.TimeSlots.Select(ts => ts.Id).ToList();
         
         var availableSlots = await _context.TimeSlots
             .Where(ts => slotIds.Contains(ts.Id))
             .ToListAsync();
         
-        // Check if all slots are still not booked
         bool allSlotsAvailable = availableSlots.All(slot => !slot.IsBooked);
         
         return Json(new { isAvailable = allSlotsAvailable });
@@ -1597,7 +1413,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
     {
         try 
         {
-            // Find the appointment
             var appointment = await _context.Appointments
                 .Include(a => a.TreatmentType)
                 .FirstOrDefaultAsync(a => a.Id == id);
@@ -1608,7 +1423,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return RedirectToAction("Index");
             }
 
-            // Verify the appointment belongs to the current user
             var user = await _userManager.GetUserAsync(User);
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             
@@ -1617,10 +1431,8 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return Forbid();
             }
 
-            // Calculate deposit amount (30% of treatment cost)
             decimal depositAmount = appointment.TreatmentType.Price * 0.3m;
             
-            // Construct URLs using the helper method
             string successUrl = BuildActionUrl(
                 "BookingSuccess",
                 "Appointments",
@@ -1633,17 +1445,14 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 new { area = "Patient", id = appointment.Id }
             );
             
-            // Add failure URL
             string failureUrl = BuildActionUrl(
                 "BookingFailure",
                 "Appointments",
                 new { area = "Patient", id = appointment.Id }
             );
             
-            // Add logging for debugging URLs
             _logger.LogInformation($"Payment URLs - Success: {successUrl}, Cancel: {cancelUrl}, Failure: {failureUrl}");
             
-            // Create Stripe checkout session with failure URL
             var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
                 appointment.Id, 
                 depositAmount, 
@@ -1651,11 +1460,8 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 cancelUrl,
                 failureUrl
             );
-            
-            // Log the checkout URL for debugging
             _logger.LogInformation($"Stripe checkout URL: {checkoutUrl}");
             
-            // Redirect to Stripe checkout
             return Redirect(checkoutUrl);
         }
         catch (Exception ex)
@@ -1672,7 +1478,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
     {
         try 
         {
-            // Find the appointment
             var appointment = await _context.Appointments
                 .Include(a => a.TreatmentType)
                 .Include(a => a.Payments)
@@ -1684,7 +1489,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return RedirectToAction("Index");
             }
 
-            // Verify the appointment belongs to the current user
             var user = await _userManager.GetUserAsync(User);
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             
@@ -1693,7 +1497,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return Forbid();
             }
 
-            // Calculate the remaining amount to pay
             decimal amountPaid = appointment.Payments
                 .Where(p => p.Status == "succeeded")
                 .Sum(p => p.Amount);
@@ -1706,7 +1509,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return RedirectToAction("Details", new { id = appointment.Id });
             }
 
-            // Construct URLs using the helper method
             string successUrl = BuildActionUrl(
                 "PaymentSuccess",
                 "Appointments",
@@ -1719,14 +1521,12 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 new { area = "Patient", id = appointment.Id }
             );
             
-            // Add failure URL
             string failureUrl = BuildActionUrl(
                 "BookingFailure",
                 "Appointments",
                 new { area = "Patient", id = appointment.Id, error = "Your remaining payment could not be processed." }
             );
             
-            // Create Stripe checkout session for the remaining amount with failure URL
             var checkoutUrl = await _paymentService.CreateCheckoutSessionAsync(
                 appointment.Id, 
                 remainingAmount, 
@@ -1736,7 +1536,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 PaymentType.FullPayment
             );
             
-            // Redirect to Stripe checkout
             return Redirect(checkoutUrl);
         }
         catch (Exception ex)
@@ -1761,10 +1560,9 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return NotFound();
             }
 
-            // Update appointment payment status to Paid if this was the remaining payment
             if (type == "remaining")
             {
-                appointment.Status = "Completed"; // Add this line to update the status to "Completed"
+                appointment.Status = "Completed"; 
                 appointment.PaymentStatus = PaymentStatus.Paid;
                 appointment.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
@@ -1785,9 +1583,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
             return RedirectToAction("Details", new { id = id });
         }
     }
-
-    // Add this action to your AppointmentsController.cs file
-
     [HttpGet]
     public async Task<IActionResult> GetTreatmentReport(int id)
     {
@@ -1795,7 +1590,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
         {
             _logger.LogInformation($"GetTreatmentReport called for appointment ID: {id}");
             
-            // Get current user
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
@@ -1803,7 +1597,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return Unauthorized();
             }
 
-            // Get patient
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserID == user.Id);
             if (patient == null)
             {
@@ -1811,7 +1604,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return Unauthorized();
             }
 
-            // Find the appointment and verify it belongs to the current patient
             var appointment = await _context.Appointments
                 .Include(a => a.Doctor)
                 .FirstOrDefaultAsync(a => a.Id == id && a.PatientId == patient.Id);
@@ -1822,14 +1614,12 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 return NotFound();
             }
 
-            // Only allow accessing reports for completed appointments
             if (appointment.Status != "Completed")
             {
                 _logger.LogWarning($"Patient attempted to access report for non-completed appointment {id}");
                 return BadRequest(new { message = "Reports are only available for completed appointments" });
             }
 
-            // Get the treatment report for this appointment
             var treatmentReport = await _context.TreatmentReports
                 .Include(tr => tr.Doctor)
                 .FirstOrDefaultAsync(tr => tr.AppointmentId == id);
@@ -1837,11 +1627,9 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
             if (treatmentReport == null)
             {
                 _logger.LogInformation($"No treatment report found for appointment {id}");
-                // Return empty object if no report exists
                 return Json(new { exists = false });
             }
 
-            // Check if the notes are null or empty
             if (string.IsNullOrWhiteSpace(treatmentReport.Notes))
             {
                 _logger.LogInformation($"Treatment report found for appointment {id}, but notes are empty");
@@ -1853,7 +1641,6 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
                 });
             }
 
-            // Return the treatment report data with notes
             _logger.LogInformation($"Returning treatment report with notes for appointment {id}");
             return Json(new {
                 id = treatmentReport.Id,
@@ -1873,36 +1660,28 @@ public async Task<IActionResult> CheckSlotAvailability(int id)
         }
     }
 
-    // Replace the BuildActionUrl method with this completely new implementation
     private string BuildActionUrl(string action, string controller, object routeValues)
     {
-        // First generate the relative URL part
         var relativeUrl = Url.Action(action, controller, routeValues);
         
-        // Log what was generated
         _logger.LogInformation($"Generated relative URL: {relativeUrl}");
         
-        // Check if it's already an absolute URL (shouldn't be, but just in case)
         if (relativeUrl != null && relativeUrl.StartsWith("http"))
         {
             _logger.LogWarning($"URL.Action returned an absolute URL: {relativeUrl}");
             return relativeUrl;
         }
         
-        // Get the base URL from the environment variable
         var baseUrl = Environment.GetEnvironmentVariable("APPLICATION_URL") ?? "http://localhost:5001";
         baseUrl = baseUrl.TrimEnd('/');
         
-        // Ensure the relative URL has a leading slash
         if (relativeUrl != null && !relativeUrl.StartsWith("/"))
         {
             relativeUrl = "/" + relativeUrl;
         }
         
-        // Combine them properly
         var fullUrl = baseUrl + relativeUrl;
         
-        // Log the final result
         _logger.LogInformation($"Final URL constructed: {fullUrl}");
         
         return fullUrl;

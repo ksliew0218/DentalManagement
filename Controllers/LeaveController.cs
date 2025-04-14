@@ -35,7 +35,6 @@ namespace DentalManagement.Controllers
             _logger = logger;
         }
 
-        // GET: Leave
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -50,11 +49,9 @@ namespace DentalManagement.Controllers
             ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
             ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
             
-            // Get current year leave balances
             var currentYear = DateTime.UtcNow.Year;
             var leaveBalances = await _leaveService.GetDoctorLeaveBalancesAsync(doctor.Id, currentYear);
             
-            // Get leave requests
             var leaveRequests = await _leaveService.GetDoctorLeaveRequestsAsync(doctor.Id);
 
             var viewModel = new DoctorLeaveViewModel
@@ -67,7 +64,6 @@ namespace DentalManagement.Controllers
             return View(viewModel);
         }
 
-        // GET: Leave/Apply
         public async Task<IActionResult> Apply()
         {
             var model = new LeaveRequestViewModel();
@@ -88,7 +84,6 @@ namespace DentalManagement.Controllers
             return View(model);
         }
 
-        // POST: Leave/Apply
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(LeaveRequestViewModel model)
@@ -99,7 +94,6 @@ namespace DentalManagement.Controllers
                 {
                     ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
                     
-                    // Add doctor profile picture for layout
                     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     var doctorProfile = await _context.Doctors
                         .Include(d => d.User)
@@ -119,7 +113,6 @@ namespace DentalManagement.Controllers
                     return NotFound();
                 }
 
-                // Check if user is a doctor
                 if (user.Role != UserRole.Doctor)
                 {
                     return RedirectToAction("AccessDenied", "Home");
@@ -131,7 +124,6 @@ namespace DentalManagement.Controllers
                     return NotFound("Doctor profile not found");
                 }
 
-                // Validate dates
                 if (model.EndDate < model.StartDate)
                 {
                     ModelState.AddModelError("EndDate", "End date cannot be before start date");
@@ -149,12 +141,9 @@ namespace DentalManagement.Controllers
                     ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
                     return View(model);
                 }
-
-                // Normalize dates to UTC for duplicate check
                 var utcStartDate = DateTime.SpecifyKind(model.StartDate.Date, DateTimeKind.Utc);
                 var utcEndDate = DateTime.SpecifyKind(model.EndDate.Date, DateTimeKind.Utc);
 
-                // Check for duplicate leave requests
                 var existingRequest = await _context.DoctorLeaveRequests
                     .AnyAsync(lr => lr.DoctorId == doctor.Id && 
                                    lr.Status == LeaveRequestStatus.Pending &&
@@ -171,7 +160,6 @@ namespace DentalManagement.Controllers
                     return View(model);
                 }
 
-                // Create leave request
                 var leaveRequest = new DoctorLeaveRequest
                 {
                     DoctorId = doctor.Id,
@@ -179,15 +167,14 @@ namespace DentalManagement.Controllers
                     StartDate = DateTime.SpecifyKind(model.StartDate.Date, DateTimeKind.Utc),
                     EndDate = DateTime.SpecifyKind(model.EndDate.Date, DateTimeKind.Utc),
                     Reason = model.Reason ?? "No reason provided",
-                    DocumentPath = null, // Document is optional
+                    DocumentPath = null, 
                     Status = LeaveRequestStatus.Pending,
                     RequestDate = DateTime.UtcNow,
-                    ApprovedById = null, // Will be set when approved/rejected
+                    ApprovedById = null, 
                     ApprovalDate = null,
-                    Comments = null // Will be set when approved/rejected
+                    Comments = null 
                 };
 
-                // Process the request
                 var result = await _leaveService.ProcessLeaveRequestAsync(leaveRequest);
 
                 if (result.Success)
@@ -210,7 +197,6 @@ namespace DentalManagement.Controllers
                 ModelState.AddModelError("", "An error occurred while processing your request. Please try again.");
                 ViewBag.LeaveTypes = new SelectList(_context.LeaveTypes, "Id", "Name");
                 
-                // Add doctor profile picture for layout
                 var errorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var errorDoctor = await _context.Doctors
                     .Include(d => d.User)
@@ -225,7 +211,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // GET: Leave/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -253,7 +238,6 @@ namespace DentalManagement.Controllers
             return View(leaveRequest);
         }
 
-        // GET: Leave/Cancel/5
         public async Task<IActionResult> Cancel(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -280,7 +264,6 @@ namespace DentalManagement.Controllers
             return View(leaveRequest);
         }
 
-        // POST: Leave/Cancel/5
         [HttpPost, ActionName("Cancel")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelConfirmed(int id)

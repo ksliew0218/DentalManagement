@@ -13,7 +13,6 @@ namespace DentalManagement.Models
         [ForeignKey("Doctor")]
         public int DoctorId { get; set; }
         
-        // Make navigation property nullable to avoid null reference exceptions
         public virtual Doctor? Doctor { get; set; }
 
         [Required]
@@ -25,7 +24,6 @@ namespace DentalManagement.Models
         [Required]
         public bool IsBooked { get; set; } = false;
         
-        // New field to track which appointment this slot belongs to
         public int? AppointmentId { get; set; }
         
         [ForeignKey("AppointmentId")]

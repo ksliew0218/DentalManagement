@@ -35,11 +35,10 @@ namespace DentalManagement.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure DoctorTreatment composite key
             modelBuilder.Entity<DoctorTreatment>()
                 .HasKey(dt => new { dt.DoctorId, dt.TreatmentTypeId });
 
-            // Configure DoctorTreatment relationships
+            
             modelBuilder.Entity<DoctorTreatment>()
                 .HasOne(dt => dt.Doctor)
                 .WithMany(d => d.DoctorTreatments)
@@ -50,7 +49,7 @@ namespace DentalManagement.Models
                 .WithMany(t => t.DoctorTreatments)
                 .HasForeignKey(dt => dt.TreatmentTypeId);
                 
-            // Configure TimeSlot with DateTimeKind.Utc for PostgreSQL
+            
             modelBuilder.Entity<TimeSlot>()
                 .Property(t => t.StartTime)
                 .HasConversion(
@@ -63,7 +62,7 @@ namespace DentalManagement.Models
                     v => v, 
                     v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
                     
-            // Configure TimeSlot relationships
+            
             modelBuilder.Entity<TimeSlot>()
                 .HasOne(ts => ts.Appointment)
                 .WithMany(a => a.TimeSlots)
@@ -71,7 +70,7 @@ namespace DentalManagement.Models
                 .OnDelete(DeleteBehavior.SetNull)
                 .IsRequired(false);
 
-            // Configure Appointment Relationships
+            
             modelBuilder.Entity<Appointment>()
                 .HasOne(a => a.Patient)
                 .WithMany()
@@ -90,7 +89,7 @@ namespace DentalManagement.Models
                 .HasForeignKey(a => a.TreatmentTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure Appointment constraints
+            
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.Status)
                 .HasMaxLength(50)
@@ -100,12 +99,12 @@ namespace DentalManagement.Models
                 .Property(a => a.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 
-            // Add the Duration property to Appointment
+            
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.Duration)
                 .HasDefaultValue(60);
 
-            // Payment-related configurations for Appointment
+            t
             modelBuilder.Entity<Appointment>()
                 .Property(a => a.PaymentStatus)
                 .HasDefaultValue(PaymentStatus.Pending);
@@ -118,7 +117,7 @@ namespace DentalManagement.Models
                 .Property(a => a.DepositAmount)
                 .HasColumnType("decimal(18,2)");
 
-            // Configure Payment entity
+            
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Appointment)
                 .WithMany(a => a.Payments)
@@ -138,7 +137,7 @@ namespace DentalManagement.Models
                 .Property(p => p.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
                 
-            // Configure DateTime properties for Payment
+            
             modelBuilder.Entity<Payment>()
                 .Property(p => p.CreatedAt)
                 .HasConversion(
@@ -151,7 +150,7 @@ namespace DentalManagement.Models
                     v => v.HasValue ? v.Value : DateTime.MinValue, 
                     v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
-            // Configure DateTime properties for leave management
+            
             modelBuilder.Entity<DoctorLeaveRequest>()
                 .Property(l => l.StartDate)
                 .HasConversion(
@@ -176,7 +175,7 @@ namespace DentalManagement.Models
                     v => v.HasValue ? v.Value : DateTime.MinValue, 
                     v => v == DateTime.MinValue ? (DateTime?)null : DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
-           // Configure UserNotification
+           
             modelBuilder.Entity<UserNotification>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -213,7 +212,7 @@ namespace DentalManagement.Models
                     .IsRequired()
                     .HasMaxLength(50);
             });
-            // Configure UserNotificationPreferences
+            
             modelBuilder.Entity<UserNotificationPreferences>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -230,7 +229,7 @@ namespace DentalManagement.Models
                         v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             });
 
-            // Configure AppointmentReminder
+            
             modelBuilder.Entity<AppointmentReminder>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -251,7 +250,7 @@ namespace DentalManagement.Models
                     .HasMaxLength(50);
             });
             
-            // Configure TreatmentReport
+            
             modelBuilder.Entity<TreatmentReport>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -293,7 +292,7 @@ namespace DentalManagement.Models
             });
         }
 
-        // Ensure UTC DateTime values when saving to database
+        
         public override int SaveChanges()
         {
             ProcessDateTimes();
@@ -321,7 +320,6 @@ namespace DentalManagement.Models
                             {
                                 if (value is DateTime dateTime)
                                 {
-                                    // Always store DateTimes as UTC in PostgreSQL
                                     if (dateTime.Kind != DateTimeKind.Utc)
                                     {
                                         property.SetValue(entry.Entity, DateTime.SpecifyKind(dateTime, DateTimeKind.Utc));

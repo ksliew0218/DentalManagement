@@ -1,4 +1,3 @@
-/* Updated CSS for Correct Animation Alignment */
 
 .loading-container {
   position: fixed;
@@ -103,7 +102,6 @@
   }
 }
 
-/* Adjusted delays for smoother wave effect */
 .strand:nth-child(1) .top {
   animation-delay: -2.7s;
 }

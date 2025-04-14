@@ -27,14 +27,12 @@ namespace DentalManagement.Areas.Patient.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Get current user
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return Challenge();
             }
 
-            // Get the patient associated with current user
             var patient = await _context.Patients
                 .FirstOrDefaultAsync(p => p.UserID == user.Id);
 
@@ -43,10 +41,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return NotFound("Patient profile not found.");
             }
 
-            // Create the main view model
             var viewModel = new BillingViewModel();
 
-            // 1. Get pending deposit appointments
             var pendingDeposits = await _context.Appointments
                 .Include(a => a.TreatmentType)
                 .Include(a => a.Doctor)
@@ -58,7 +54,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
-            // Map to view models
             foreach (var appointment in pendingDeposits)
             {
                 viewModel.PendingDeposits.Add(new PendingDepositViewModel
@@ -75,7 +70,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 });
             }
 
-            // 2. Get outstanding payments (partially paid, where deposit is paid but final payment is needed)
             var outstandingPayments = await _context.Appointments
                 .Include(a => a.TreatmentType)
                 .Include(a => a.Doctor)
@@ -87,10 +81,8 @@ namespace DentalManagement.Areas.Patient.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToListAsync();
 
-            // Map to view models
             foreach (var appointment in outstandingPayments)
             {
-                // Get deposit payment (to get receipt URL)
                 var depositPayment = appointment.Payments
                     .FirstOrDefault(p => p.PaymentType == PaymentType.Deposit && p.Status == "succeeded");
 
@@ -110,7 +102,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 });
             }
 
-            // 3. Get payment history (all payments)
             var paymentHistory = await _context.Payments
                 .Include(p => p.Appointment)
                 .ThenInclude(a => a.TreatmentType)
@@ -121,7 +112,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
-            // Map to view models
             foreach (var payment in paymentHistory)
             {
                 viewModel.PaymentHistory.Add(new PaymentHistoryViewModel

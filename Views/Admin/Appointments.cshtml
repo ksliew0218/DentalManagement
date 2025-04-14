@@ -5,7 +5,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
@@ -13,7 +12,6 @@
         </ol>
     </nav>
     
-    <!-- Page Header -->
     <div class="page-header">
         <div>
             <h1><i class="bi bi-calendar3 me-2 text-primary"></i>All Appointments</h1>
@@ -34,7 +32,7 @@
         Admin mode provides view-only access to patient and appointment information. For dental chart functionality, please log in as a doctor.
     </div>
 
-    <!-- Filters Card -->
+    
     <div class="row mb-4" id="filterSection">
         <div class="col-md-12">
             <div class="card shadow-sm border-0">
@@ -71,7 +69,7 @@
                             <label for="patientFilter" class="form-label">Patient</label>
                             <select id="patientFilter" class="form-select">
                                 <option value="">All Patients</option>
-                                <!-- Options populated via JavaScript -->
+                                
                             </select>
                         </div>
                     </div>
@@ -80,14 +78,14 @@
                             <label for="doctorFilter" class="form-label">Doctor</label>
                             <select id="doctorFilter" class="form-select">
                                 <option value="">All Doctors</option>
-                                <!-- Options populated via JavaScript -->
+                                
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="treatmentFilter" class="form-label">Treatment Type</label>
                             <select id="treatmentFilter" class="form-select">
                                 <option value="">All Treatments</option>
-                                <!-- Options populated via JavaScript -->
+                                
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -116,7 +114,7 @@
         </div>
     </div>
 
-    <!-- Appointments Table -->
+    
     <div class="row">
         <div class="col-md-12 mb-4">
             <div class="card shadow-sm border-0">
@@ -241,52 +239,41 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Initialize DataTable with custom filter options
             var appointmentsTable = $('#appointmentsTable').DataTable({
-                order: [[4, 'desc'], [5, 'asc']], // Sort by date desc, then time asc
+                order: [[4, 'desc'], [5, 'asc']], 
                 language: {
                     search: "_INPUT_",
                     searchPlaceholder: "Search appointments..."
                 },
                 lengthMenu: [10, 25, 50, 100],
                 pageLength: 25,
-                // Don't automatically search - let our custom filters do the work
                 search: {
                     return: true
                 },
                 columnDefs: [
-                    { targets: 0, visible: false } // Hide ID column
+                    { targets: 0, visible: false } 
                 ]
             });
             
-            // Initialize filter dropdowns
             initializeFilterDropdowns();
             
-            // Add custom filtering function
             setupCustomFiltering();
             
-            // Setup event handlers for filter buttons
             setupFilterButtons();
             
-            // Add styles to DataTables elements
             styleDataTable();
             
-            // Setup filter toggle functionality
             setupFilterToggle();
             
-            // Function to initialize filter dropdowns
             function initializeFilterDropdowns() {
-                // Initialize patients dropdown
+                
                 populateDropdown('patientFilter', 1);
                 
-                // Initialize doctors dropdown
                 populateDropdown('doctorFilter', 2);
                 
-                // Initialize treatments dropdown
                 populateDropdown('treatmentFilter', 3);
             }
             
-            // Function to populate dropdown with unique values from a column
             function populateDropdown(dropdownId, columnIndex) {
                 var values = [];
                 $('#appointmentsTable tbody tr').each(function() {
@@ -304,14 +291,11 @@
                 });
             }
             
-            // Function to setup custom filtering
             function setupCustomFiltering() {
                 $.fn.dataTable.ext.search.push(
                     function(settings, data, dataIndex) {
-                        // Skip if not our table
                         if (settings.nTable.id !== 'appointmentsTable') return true;
                         
-                        // Get filter values
                         var statusFilter = $('#statusFilter').val();
                         var paymentStatusFilter = $('#paymentStatusFilter').val();
                         var patientFilter = $('#patientFilter').val();
@@ -320,7 +304,6 @@
                         var startDateFilter = $('#startDateFilter').val();
                         var endDateFilter = $('#endDateFilter').val();
                         
-                        // Get row data
                         var patient = data[1].trim();
                         var doctor = data[2].trim();
                         var treatment = data[3].trim();
@@ -328,7 +311,6 @@
                         var status = data[6];
                         var paymentStatus = data[7];
                         
-                        // Extract status text from HTML (badge)
                         if (status.includes('<span class="badge')) {
                             var statusMatch = status.match(/>([^<]+)</);
                             if (statusMatch && statusMatch[1]) {
@@ -338,7 +320,6 @@
                             status = status.trim();
                         }
                         
-                        // Extract payment status text from HTML (badge)
                         if (paymentStatus.includes('<span class="badge')) {
                             var paymentStatusMatch = paymentStatus.match(/>([^<]+)</);
                             if (paymentStatusMatch && paymentStatusMatch[1]) {
@@ -348,17 +329,14 @@
                             paymentStatus = paymentStatus.trim();
                         }
                         
-                        // Apply filters
                         var passesStatus = !statusFilter || status === statusFilter;
                         var passesPaymentStatus = !paymentStatusFilter || paymentStatus === paymentStatusFilter;
                         var passesPatient = !patientFilter || patient.includes(patientFilter);
                         var passesDoctor = !doctorFilter || doctor === doctorFilter;
                         var passesTreatment = !treatmentFilter || treatment === treatmentFilter;
                         
-                        // Date range filter
                         var passesDate = true;
                         if (startDateFilter || endDateFilter) {
-                            // Convert display date to YYYY-MM-DD format for comparison
                             var dateArr = date.split(',')[0].split(' ');
                             var month = {
                                 'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
@@ -369,13 +347,10 @@
                             var rowDate = year + '-' + month + '-' + day;
                             
                             if (startDateFilter && endDateFilter) {
-                                // Both start and end dates are specified
                                 passesDate = rowDate >= startDateFilter && rowDate <= endDateFilter;
                             } else if (startDateFilter) {
-                                // Only start date is specified
                                 passesDate = rowDate >= startDateFilter;
                             } else if (endDateFilter) {
-                                // Only end date is specified
                                 passesDate = rowDate <= endDateFilter;
                             }
                         }
@@ -385,14 +360,11 @@
                 );
             }
             
-            // Function to setup filter buttons
             function setupFilterButtons() {
-                // Apply filters button click
                 $('#applyFiltersBtn').on('click', function() {
                     appointmentsTable.draw();
                 });
                 
-                // Clear filters button click
                 $('#clearFiltersBtn').on('click', function() {
                     $('#statusFilter, #paymentStatusFilter, #patientFilter, #doctorFilter, #treatmentFilter').val('');
                     $('#startDateFilter, #endDateFilter').val('');
@@ -400,7 +372,6 @@
                 });
             }
             
-            // Function to setup filter toggle
             function setupFilterToggle() {
                 $('#toggleFiltersBtn').on('click', function() {
                     $('#filterSection').slideToggle(300, function() {
@@ -414,7 +385,6 @@
                 });
             }
             
-            // Function to style DataTable elements
             function styleDataTable() {
                 $('.dataTables_filter input').addClass('form-control form-control-sm');
                 $('.dataTables_length select').addClass('form-select form-select-sm');

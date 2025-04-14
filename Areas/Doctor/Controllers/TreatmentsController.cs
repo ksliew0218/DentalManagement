@@ -41,15 +41,12 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return NotFound("Doctor profile not found. Please contact the administrator.");
                 }
 
-                // Get all active treatments assigned to this doctor
                 var doctorTreatments = await _context.DoctorTreatments
                     .Where(dt => dt.DoctorId == doctor.Id && dt.IsActive && !dt.IsDeleted)
                     .Include(dt => dt.TreatmentType)
                     .ToListAsync();
 
-                // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
-                // Add doctor profile picture URL to ViewData
                 ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
                 return View(doctorTreatments);
@@ -85,7 +82,6 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 return NotFound("Treatment not found or not assigned to you.");
             }
 
-            // Get doctor's name for the view
             ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
 
             return View(doctorTreatment);

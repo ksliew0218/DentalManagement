@@ -42,12 +42,10 @@ public class HomeController : Controller
                 return RedirectToAction("AccessDenied");
             }
             
-            // Get counts for dashboard
             ViewBag.DoctorCount = _context.Doctors.Count();
             ViewBag.PatientCount = _context.Patients.Count();
             ViewBag.TreatmentCount = _context.TreatmentTypes.Where(t => !t.IsDeleted).Count();
             
-            // Redirect to the new Admin Dashboard
             return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
         }
         catch (Exception ex)

@@ -7,7 +7,7 @@ namespace DentalManagement.Models
     public class DoctorTreatment
     {
         [Key]
-        public int Id { get; set; }  // Primary Key
+        public int Id { get; set; }  
 
         [ForeignKey("Doctor")]
         public int DoctorId { get; set; }

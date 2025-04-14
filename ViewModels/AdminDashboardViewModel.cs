@@ -12,6 +12,5 @@ namespace DentalManagement.ViewModels
         public int AppointmentCount { get; set; }
         public decimal TotalRevenue { get; set; }
         
-        // Can be expanded with more statistics as needed
     }
 } 

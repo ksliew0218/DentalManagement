@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace DentalManagement.Controllers
 {
     [AllowAnonymous]
-    // This controller is only for testing - you can remove it or secure it in production
     [Route("api/debug/reminders")]
     [ApiController]
     public class ReminderDebugController : ControllerBase
@@ -34,7 +33,6 @@ namespace DentalManagement.Controllers
             _logger = logger;
         }
 
-        // Test sending reminder for a specific appointment
         [HttpGet("test/{appointmentId}")]
         public async Task<IActionResult> TestReminder(int appointmentId)
         {
@@ -66,7 +64,6 @@ namespace DentalManagement.Controllers
             
             try
             {
-                // Create reminder record
                 var reminderRecord = new AppointmentReminder
                 {
                     AppointmentId = appointment.Id,
@@ -80,12 +77,10 @@ namespace DentalManagement.Controllers
                 await _context.SaveChangesAsync();
                 result["reminderCreated"] = true;
                 
-                // Get user ID and information
                 var userId = appointment.Patient.UserID;
                 string doctorName = $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}";
                 string treatmentName = appointment.TreatmentType.Name;
                 
-                // Create in-app notification
                 var notification = await _notificationService.CreateAppointmentReminderNotificationAsync(
                     userId,
                     appointment.Id,
@@ -98,7 +93,6 @@ namespace DentalManagement.Controllers
                 reminderRecord.SentByPushNotification = true;
                 result["notificationCreated"] = true;
                 
-                // Get the user's notification preferences
                 var preferences = await _context.UserNotificationPreferences
                     .FirstOrDefaultAsync(p => p.UserId == userId);
                 
@@ -121,10 +115,8 @@ namespace DentalManagement.Controllers
                 
                 result["emailEnabled"] = preferences.EmailAppointmentReminders;
                 
-                // Send email if enabled
                 if (preferences.EmailAppointmentReminders)
                 {
-                    // Create appointment details for email
                     var appointmentDetails = new AppointmentDetailViewModel
                     {
                         Id = appointment.Id,
@@ -139,11 +131,9 @@ namespace DentalManagement.Controllers
                         TreatmentDuration = appointment.TreatmentType.Duration
                     };
                     
-                    // Get patient information
                     var patientName = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}";
                     var patientEmail = appointment.Patient.User.Email;
                     
-                    // Send reminder email
                     await _emailService.SendAppointmentReminderEmailAsync(
                         patientEmail, 
                         patientName, 
@@ -153,7 +143,6 @@ namespace DentalManagement.Controllers
                     
                     reminderRecord.SentByEmail = true;
                     
-                    // Update the notification to track email sent
                     if (notification != null)
                     {
                         notification.EmailSent = true;
@@ -163,7 +152,6 @@ namespace DentalManagement.Controllers
                     result["emailSent"] = true;
                 }
                 
-                // Save changes
                 await _context.SaveChangesAsync();
                 
                 return Ok(result);
@@ -177,7 +165,6 @@ namespace DentalManagement.Controllers
             }
         }
         
-        // Test finding appointments that need reminders
         [HttpGet("find-appointments")]
         public async Task<IActionResult> FindAppointmentsForReminders()
         {
@@ -219,13 +206,11 @@ namespace DentalManagement.Controllers
             }
         }
         
-        // Test template rendering (without sending an email)
         [HttpGet("test-template")]
         public async Task<IActionResult> TestTemplate()
         {
             try
             {
-                // Sample data for testing template rendering
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", "John Doe" },
@@ -241,14 +226,12 @@ namespace DentalManagement.Controllers
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
                 
-                // Get the email template service
                 var templateService = HttpContext.RequestServices.GetService(typeof(EmailTemplateService)) as EmailTemplateService;
                 if (templateService == null)
                 {
                     return BadRequest("EmailTemplateService not found");
                 }
                 
-                // Get email content
                 string emailContent = await templateService.GetEmailTemplateAsync("Appointment48HourReminder", replacements);
                 
                 if (string.IsNullOrEmpty(emailContent))
@@ -256,7 +239,6 @@ namespace DentalManagement.Controllers
                     return NotFound("Email template not found or could not be rendered");
                 }
                 
-                // Return the rendered HTML
                 return Content(emailContent, "text/html");
             }
             catch (Exception ex)

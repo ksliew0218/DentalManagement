@@ -7,7 +7,7 @@
 <link href="~/css/notifications.css" rel="stylesheet" asp-append-version="true">
 
 <div class="dashboard-container">
-    <!-- Success message -->
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success">
@@ -15,7 +15,7 @@
         </div>
     }
     
-    <!-- Error message -->
+    
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger">
@@ -23,7 +23,7 @@
         </div>
     }
 
-    <!-- Tabs for Notifications and Preferences -->
+    
     <ul class="nav nav-tabs notification-tabs" id="notificationTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications-pane" type="button" role="tab" aria-controls="notifications-pane" aria-selected="true">
@@ -41,11 +41,9 @@
         </li>
     </ul>
     
-    <!-- Tab Content -->
+    
     <div class="tab-content" id="notificationTabsContent">
-        <!-- Notifications Tab -->
         <div class="tab-pane fade show active" id="notifications-pane" role="tabpanel" aria-labelledby="notifications-tab">
-            <!-- Notifications Header -->
             <div class="notifications-header">
                 <h2>Your Notifications</h2>
                 @if (Model.HasNotifications)
@@ -59,7 +57,6 @@
                 }
             </div>
             
-            <!-- Notifications List -->
             <div class="notifications-list">
                 @if (!Model.HasNotifications)
                 {
@@ -122,12 +119,12 @@
             </div>
         </div>
         
-        <!-- Preferences Tab -->
+        
         <div class="tab-pane fade" id="preferences-pane" role="tabpanel" aria-labelledby="preferences-tab">
             <form id="notificationPreferencesForm" asp-action="SavePreferences" method="post" class="notification-form">
                 @Html.AntiForgeryToken()
                 
-                <!-- Hidden fields for reminder timings (set with default values) -->
+                
                 <input type="hidden" name="Want24HourReminder" value="false" />
                 <input type="hidden" name="Want48HourReminder" value="true" />
                 <input type="hidden" name="WantWeekReminder" value="false" />
@@ -218,18 +215,15 @@
 
 @section Scripts {
     <script>
-        // Initialize checkbox and hidden field behavior
 document.addEventListener('DOMContentLoaded', function() {
     initializeNotifications();
 });
 
-// Re-initialize after AJAX content loads
 document.addEventListener('contentLoaded', function() {
     initializeNotifications();
 });
 
 function initializeNotifications() {
-    // Initialize Bootstrap tabs
     var triggerTabList = [].slice.call(document.querySelectorAll('#notificationTabs button'));
     triggerTabList.forEach(function(triggerEl) {
         var tabTrigger = new bootstrap.Tab(triggerEl);
@@ -240,29 +234,21 @@ function initializeNotifications() {
         });
     });
     
-    // Fix for toggle switches
     document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
-        // Find the corresponding hidden field with the same name
         const hiddenField = Array.from(document.querySelectorAll('input[type="hidden"]'))
             .find(input => input.name === checkbox.name);
         
         if (hiddenField) {
-            // Configure the initial state
             if (checkbox.checked) {
-                // We don't want both the checkbox and hidden field to submit values
-                // So we temporarily disable the hidden field by removing its name
                 hiddenField.setAttribute('data-orig-name', hiddenField.name);
                 hiddenField.removeAttribute('name');
             }
             
-            // Set up the change handler
             checkbox.addEventListener('change', function() {
                 if (checkbox.checked) {
-                    // If checked, disable the hidden field
                     hiddenField.setAttribute('data-orig-name', hiddenField.name);
                     hiddenField.removeAttribute('name');
                 } else {
-                    // If unchecked, enable the hidden field
                     const origName = hiddenField.getAttribute('data-orig-name');
                     if (origName) {
                         hiddenField.setAttribute('name', origName);
@@ -272,7 +258,6 @@ function initializeNotifications() {
         }
     });
     
-    // AJAX mark as read
     document.querySelectorAll('.mark-read-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
             if (!this.querySelector('button').classList.contains('read')) {
@@ -282,36 +267,26 @@ function initializeNotifications() {
         });
     });
     
-    // Add click handler to "View Details" links to also mark as read
     document.querySelectorAll('.view-details-link').forEach(function(link) {
         link.addEventListener('click', function(e) {
-            // No need to preventDefault since we want navigation to occur
             
-            // Get notification ID from data attribute
             const notificationId = this.getAttribute('data-notification-id');
             if (notificationId) {
-                // Find the parent notification item
                 const notificationItem = this.closest('.notification-item');
-                // Find the mark as read button in this notification
                 const markAsReadBtn = notificationItem.querySelector('.mark-read-btn');
                 
-                // Only mark as read if not already read
                 if (markAsReadBtn && !markAsReadBtn.classList.contains('read')) {
-                    // Get the form
                     const form = notificationItem.querySelector('.mark-read-form');
                     if (form) {
-                        // Create a FormData object
                         markAsReadRequest(form);
                     }
                 }
             }
             
-            // Navigation will continue normally
         });
     });
 }
 
-// Function to make the AJAX request to mark notification as read
 function markAsReadRequest(form) {
     const formData = new FormData(form);
     const url = form.getAttribute('action');
@@ -330,7 +305,6 @@ function markAsReadRequest(form) {
             button.classList.add('read');
             button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Read';
                 
-            // Update unread count
             const countBadge = document.querySelector('.notification-count');
             if (countBadge) {
                 const currentCount = parseInt(countBadge.textContent);

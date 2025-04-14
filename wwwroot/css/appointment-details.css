@@ -1,4 +1,3 @@
-/* Appointment Details Styles */
 
 .appointment-container {
   padding: 24px;
@@ -6,7 +5,7 @@
   margin: 0 auto;
 }
 
-/* Page Header */
+ Page Header */
 .page-header {
   margin-bottom: 24px;
 }
@@ -30,7 +29,6 @@
   font-size: 1rem;
 }
 
-/* Status Banner */
 .status-banner {
   display: flex;
   align-items: center;
@@ -126,7 +124,6 @@
   margin: 0;
 }
 
-/* Details Card */
 .details-card {
   background: white;
   border-radius: 10px;
@@ -234,7 +231,6 @@
   color: var(--text-secondary);
 }
 
-/* Actions Section */
 .actions-section {
   display: flex;
   gap: 12px;
@@ -285,7 +281,6 @@
   background-color: #bee3f8;
 }
 
-/* Modal Styles */
 .modal {
   display: none;
   position: fixed;
@@ -300,12 +295,10 @@
   align-items: center;
 }
 
-/* When modal is hidden, use display: none */
 .modal:not(.show) {
   display: none;
 }
 
-/* When modal is shown, use flex display for centering */
 .modal.show {
   display: flex;
 }
@@ -319,7 +312,7 @@
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   animation: modalFadeIn 0.3s ease;
-  margin: auto; /* Add this to help with centering */
+  margin: auto; 
 }
 
 @keyframes modalFadeIn {
@@ -413,7 +406,6 @@
   margin-top: 24px;
 }
 
-/* Simple buttons that match the image */
 #cancelAppointmentForm button {
   flex: 1;
   padding: 10px;
@@ -445,7 +437,6 @@
   background-color: #e8e8e8;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .detail-item {
     flex-direction: column;
@@ -475,18 +466,18 @@
 }
 
 .payment-btn {
-  background-color: #48bb78; /* Green background */
-  color: white; /* White text */
-  border: 1px solid #3a9d67; /* Slightly darker green border */
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effects */
+  background-color: #48bb78; 
+  color: white; 
+  border: 1px solid #3a9d67; 
+  transition: background-color 0.3s ease, transform 0.2s ease; 
 }
 
 .payment-btn:hover {
-  background-color: #3a9d67; /* Darker green on hover */
-  transform: translateY(-2px); /* Slight lift effect on hover */
+  background-color: #3a9d67; 
+  transform: translateY(-2px); 
 }
 
-/* Payment-related styles */
+
 .payment-status {
   display: inline-flex;
   align-items: center;
@@ -509,33 +500,29 @@
   color: #6f42c1;
 }
 
-/* Add these styles to your appointment-details.css file */
 .detail-icon.total-icon {
   background-color: rgba(111, 66, 193, 0.1);
   color: #6f42c1;
 }
 
-/* Add more space between cards */
 .details-card + .details-card {
   margin-top: 1.5rem;
 }
 
 
-/* Add these styles to the head section of the page or in the appointment-details.css file */
 
 .remark-btn {
-  background-color: #6f42c1; /* Purple background */
+  background-color: #6f42c1; 
   color: white;
   border: 1px solid #5e35b1;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .remark-btn:hover {
-  background-color: #5e35b1; /* Darker purple on hover */
+  background-color: #5e35b1; 
   transform: translateY(-2px);
 }
 
-/* Modal styles to match design in screenshot */
 #doctor-remarks-modal .modal-content {
   border-radius: 8px;
   border: none;

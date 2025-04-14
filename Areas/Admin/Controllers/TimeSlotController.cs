@@ -23,13 +23,11 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             
-            // Check if the TimeSlots DbSet is available
             if (_context.TimeSlots == null)
             {
                 throw new InvalidOperationException("TimeSlots DbSet is not available.");
             }
             
-            // Check if context can connect to database
             try
             {
                 bool canConnect = _context.Database.CanConnect();
@@ -41,7 +39,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             }
         }
 
-        // GET: Admin/TimeSlot/Index
         public async Task<IActionResult> Index()
         {
             var timeSlots = await _context.TimeSlots
@@ -54,7 +51,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             return View(timeSlots);
         }
 
-        // GET: Admin/TimeSlot/Create
         public async Task<IActionResult> Create()
         {
             var doctors = await _context.Doctors
@@ -64,13 +60,11 @@ namespace DentalManagement.Areas.Admin.Controllers
                 
             ViewBag.Doctors = new SelectList(doctors, "Id", "User.Email");
             
-            // The default values are now set in the CreateTimeSlotViewModel constructor
             var model = new CreateTimeSlotViewModel();
             
             return View(model);
         }
 
-        // POST: Admin/TimeSlot/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateTimeSlotViewModel model)
@@ -79,7 +73,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             {
                 try
                 {
-                    // Check if doctor exists and is not deleted
                     var doctor = await _context.Doctors.FindAsync(model.DoctorId);
                     if (doctor == null || doctor.IsDeleted)
                     {
@@ -88,11 +81,9 @@ namespace DentalManagement.Areas.Admin.Controllers
                         return View(model);
                     }
                     
-                    // Get the time components from DailyStartTime and DailyEndTime
                     int startHour = model.DailyStartTime.Hour;
                     int endHour = model.DailyEndTime.Hour;
                     
-                    // Validate that end time is after start time
                     if (endHour <= startHour)
                     {
                         ModelState.AddModelError("DailyEndTime", "End time must be after start time");
@@ -100,7 +91,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                         return View(model);
                     }
                     
-                    // Validate that the date range is valid
                     if (model.EndDate < model.StartDate)
                     {
                         ModelState.AddModelError("EndDate", "End date must be after start date");
@@ -108,30 +98,23 @@ namespace DentalManagement.Areas.Admin.Controllers
                         return View(model);
                     }
                     
-                    // Calculate all slots for each day in the date range
                     var timeSlots = new List<TimeSlot>();
                     int duplicateSlots = 0;
                     
-                    // Convert all dates to UTC
                     DateTime startDate = DateTime.SpecifyKind(model.StartDate.Date, DateTimeKind.Utc);
                     DateTime endDate = DateTime.SpecifyKind(model.EndDate.Date, DateTimeKind.Utc);
                     
-                    // Get existing slots for this doctor in the date range to check for duplicates
                     var existingSlots = await _context.TimeSlots
                         .Where(ts => ts.DoctorId == model.DoctorId)
                         .Where(ts => ts.StartTime.Date >= startDate && ts.StartTime.Date <= endDate)
                         .ToListAsync();
                     
-                    // Loop through each day in the date range
                     for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
                     {
-                        // Loop through each hour from start to end time
                         for (int hour = startHour; hour < endHour; hour++)
                         {
-                            // Skip lunch hour (12-1 PM)
                             if (hour == 12) continue;
                             
-                            // Create explicit UTC DateTimes for slot start and end
                             DateTime slotStart = DateTime.SpecifyKind(
                                 new DateTime(date.Year, date.Month, date.Day, hour, 0, 0), 
                                 DateTimeKind.Utc
@@ -142,7 +125,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                                 DateTimeKind.Utc
                             );
                             
-                            // Check for duplicates
                             bool isDuplicate = existingSlots.Any(s => 
                                 s.DoctorId == model.DoctorId && 
                                 s.StartTime.Year == slotStart.Year &&
@@ -181,7 +163,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                         return RedirectToAction(nameof(Index));
                     }
                     
-                    // Save all time slots to database
                     _context.TimeSlots.AddRange(timeSlots);
                     await _context.SaveChangesAsync();
                     
@@ -196,7 +177,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log detailed error information
                     Console.WriteLine($"Error saving time slots: {ex.Message}");
                     if (ex.InnerException != null)
                     {
@@ -211,23 +191,19 @@ namespace DentalManagement.Areas.Admin.Controllers
             return View(model);
         }
         
-        // GET: Admin/TimeSlot/ClearPast
         public IActionResult ClearPast()
         {
             return View();
         }
         
-        // POST: Admin/TimeSlot/ClearPast
         [HttpPost, ActionName("ClearPast")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ClearPastConfirmed()
         {
             try
             {
-                // Get the current date in UTC
                 var today = DateTime.UtcNow.Date;
                 
-                // Find all past time slots
                 var pastSlots = await _context.TimeSlots
                     .Where(t => t.StartTime.Date < today)
                     .ToListAsync();
@@ -238,7 +214,6 @@ namespace DentalManagement.Areas.Admin.Controllers
                     return RedirectToAction(nameof(Index));
                 }
                 
-                // Remove the past slots
                 _context.TimeSlots.RemoveRange(pastSlots);
                 await _context.SaveChangesAsync();
                 
@@ -253,7 +228,6 @@ namespace DentalManagement.Areas.Admin.Controllers
             }
         }
         
-        // Helper method to prepare ViewBag.Doctors
         private async Task PrepareViewBagDoctorsAsync()
         {
             var doctors = await _context.Doctors

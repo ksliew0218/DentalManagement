@@ -129,21 +129,17 @@ namespace DentalManagement.Services
             string treatmentName,
             string doctorName)
         {
-            // Format appointment date and time for notification
             string formattedDate = appointmentDate.ToString("dddd, MMMM d, yyyy");
             
-            // Format time
             bool isPM = appointmentTime.Hours >= 12;
             int hour12 = appointmentTime.Hours % 12;
             if (hour12 == 0) hour12 = 12;
             string formattedTime = $"{hour12}:{appointmentTime.Minutes:D2} {(isPM ? "PM" : "AM")}";
             
-            // Always use 48-hour reminder
             string title = "Appointment in 2 Days";
             string message = $"Your {treatmentName} appointment with {doctorName} is scheduled for {formattedDate} at {formattedTime}. " +
                             $"This is your 48-hour reminder.";
                             
-            // Create the notification
             return await CreateAppointmentNotificationAsync(
                 userId,
                 appointmentId,
@@ -197,7 +193,7 @@ namespace DentalManagement.Services
                     
                 if (!unreadNotifications.Any())
                 {
-                    return true; // No unread notifications
+                    return true; 
                 }
                 
                 var now = DateTime.UtcNow;
@@ -262,7 +258,7 @@ namespace DentalManagement.Services
                     
                 if (!notifications.Any())
                 {
-                    return true; // No notifications to delete
+                    return true; 
                 }
                 
                 _context.UserNotifications.RemoveRange(notifications);

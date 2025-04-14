@@ -36,7 +36,6 @@ namespace DentalManagement.Areas.Doctor.Models
         [Range(0, 100, ErrorMessage = "Experience years must be between 0 and 100")]
         public int ExperienceYears { get; set; }
 
-        // Profile picture URL is nullable, not required
         public string? ProfilePictureUrl { get; set; }
     }
 } 

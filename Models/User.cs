@@ -30,9 +30,8 @@ namespace DentalManagement.Models
             set => _updatedAt = DateTime.SpecifyKind(value, DateTimeKind.Utc);
         }
 
-        public virtual Patient? Patient { get; set; }  // Make it nullable
+        public virtual Patient? Patient { get; set; }  
 
-        // Doctor relationship
-        public virtual Doctor? Doctor { get; set; }  // Make it nullable    
+        public virtual Doctor? Doctor { get; set; }    
         }
 }

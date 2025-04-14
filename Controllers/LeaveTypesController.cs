@@ -27,7 +27,6 @@ namespace DentalManagement.Controllers
             _logger = logger;
         }
 
-        // GET: LeaveTypes
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -43,13 +42,11 @@ namespace DentalManagement.Controllers
             return View(leaveTypes);
         }
 
-        // GET: LeaveTypes/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: LeaveTypes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,IsPaid,DefaultDays,Description")] LeaveType leaveType)
@@ -64,7 +61,6 @@ namespace DentalManagement.Controllers
             return View(leaveType);
         }
 
-        // GET: LeaveTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -80,7 +76,6 @@ namespace DentalManagement.Controllers
             return View(leaveType);
         }
 
-        // POST: LeaveTypes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,IsPaid,DefaultDays,Description")] LeaveType leaveType)
@@ -114,7 +109,6 @@ namespace DentalManagement.Controllers
             return View(leaveType);
         }
 
-        // GET: LeaveTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -132,12 +126,10 @@ namespace DentalManagement.Controllers
             return View(leaveType);
         }
 
-        // POST: LeaveTypes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            // Check if this leave type is in use
             var isInUse = await _context.DoctorLeaveRequests.AnyAsync(r => r.LeaveTypeId == id)
                 || await _context.DoctorLeaveBalances.AnyAsync(b => b.LeaveTypeId == id);
                 

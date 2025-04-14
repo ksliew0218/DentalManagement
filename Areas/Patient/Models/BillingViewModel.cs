@@ -4,7 +4,6 @@ using DentalManagement.Models;
 
 namespace DentalManagement.Areas.Patient.Models
 {
-    // Main ViewModel that contains all three sections
     public class BillingViewModel
     {
         public List<PendingDepositViewModel> PendingDeposits { get; set; } = new List<PendingDepositViewModel>();
@@ -12,7 +11,6 @@ namespace DentalManagement.Areas.Patient.Models
         public List<PaymentHistoryViewModel> PaymentHistory { get; set; } = new List<PaymentHistoryViewModel>();
     }
 
-    // ViewModel for appointments requiring deposit payment
     public class PendingDepositViewModel
     {
         public int AppointmentId { get; set; }
@@ -25,8 +23,6 @@ namespace DentalManagement.Areas.Patient.Models
         public PaymentStatus PaymentStatus { get; set; }
         public string AppointmentStatus { get; set; }
     }
-
-    // ViewModel for appointments with deposit paid but requiring final payment
     public class OutstandingPaymentViewModel
     {
         public int AppointmentId { get; set; }
@@ -40,10 +36,9 @@ namespace DentalManagement.Areas.Patient.Models
         public PaymentStatus PaymentStatus { get; set; }
         public string AppointmentStatus { get; set; }
         public string DepositReceiptUrl { get; set; }
-        public bool IsEligibleForPayment { get; set; } // Only completed appointments should be eligible
+        public bool IsEligibleForPayment { get; set; } 
     }
 
-    // ViewModel for payment history (fully paid and refunds)
     public class PaymentHistoryViewModel
     {
         public int AppointmentId { get; set; }

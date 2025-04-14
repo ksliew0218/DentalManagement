@@ -5,7 +5,6 @@ using DentalManagement.Models;
 
 namespace DentalManagement.ViewModels
 {
-    // View model for doctor's leave overview page
     public class DoctorLeaveViewModel
     {
         public Doctor Doctor { get; set; }
@@ -13,7 +12,6 @@ namespace DentalManagement.ViewModels
         public List<DoctorLeaveRequest> LeaveRequests { get; set; } = new List<DoctorLeaveRequest>();
     }
     
-    // View model for leave application form
     public class LeaveRequestViewModel
     {
         public int DoctorId { get; set; }
@@ -37,7 +35,6 @@ namespace DentalManagement.ViewModels
         public string Reason { get; set; }
     }
     
-    // View model for admin to manage leave requests
     public class AdminLeaveManagementViewModel
     {
         public List<DoctorLeaveRequest> PendingRequests { get; set; }
@@ -45,7 +42,6 @@ namespace DentalManagement.ViewModels
         public List<DoctorLeaveRequest> RejectedRequests { get; set; }
     }
     
-    // View model for approving or rejecting leave
     public class LeaveApprovalViewModel
     {
         public int LeaveRequestId { get; set; }

@@ -6,7 +6,7 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
+    
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
@@ -14,7 +14,7 @@
         </ol>
     </nav>
     
-    <!-- Page Header -->
+    
     <div class="page-header">
         <div>
             <h1><i class="bi bi-person-badge me-2 text-primary"></i>Doctors</h1>
@@ -114,7 +114,7 @@
     </div>
 </div>
 
-<!-- Bootstrap Modal for Confirmation -->
+
 <div class="modal fade" id="confirmStatusModal" tabindex="-1" aria-labelledby="confirmStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -151,17 +151,14 @@
                 }
             });
             
-            // Apply style to DataTables search box
             $('.dataTables_filter input').addClass('form-control form-control-sm ms-2');
             $('.dataTables_filter input').attr('placeholder', 'Search...');
             
-            // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
             
-            // Handle Status Change Modal
             document.getElementById('confirmStatusModal').addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
                 var status = button.getAttribute('data-status');
@@ -179,7 +176,6 @@
                 document.getElementById('statusForm').setAttribute('action', actionUrl);
             });
 
-            // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
                 $('.alert-dismissible').fadeOut('slow');
             }, 5000);

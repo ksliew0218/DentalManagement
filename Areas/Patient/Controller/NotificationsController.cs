@@ -34,7 +34,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             _notificationService = notificationService;
         }
 
-        // GET: Patient/Notifications
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -43,13 +42,10 @@ namespace DentalManagement.Areas.Patient.Controllers
                 return NotFound();
             }
 
-            // Get the user's notifications
             var notifications = await _notificationService.GetUserNotificationsAsync(user.Id, 50);
             
-            // Get the user's notification preferences
             var preferences = await GetUserNotificationPreferencesAsync(user.Id);
 
-            // Create view model
             var viewModel = new NotificationsViewModel
             {
                 Notifications = notifications,
@@ -60,16 +56,13 @@ namespace DentalManagement.Areas.Patient.Controllers
             return PartialView("_Notifications", viewModel);
         }
 
-        // Helper method to get or create user notification preferences
         private async Task<UserNotificationPreferences> GetUserNotificationPreferencesAsync(string userId)
         {
-            // Get current preferences or create new default preferences
             var preferences = await _context.UserNotificationPreferences
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (preferences == null)
             {
-                // Create default preferences for new users
                 preferences = new UserNotificationPreferences
                 {
                     UserId = userId,
@@ -107,13 +100,11 @@ namespace DentalManagement.Areas.Patient.Controllers
 
             try 
             {
-                // Find existing preferences
                 var preferences = await _context.UserNotificationPreferences
                     .FirstOrDefaultAsync(p => p.UserId == user.Id);
 
                 if (preferences == null)
                 {
-                    // Create new preferences
                     preferences = new UserNotificationPreferences
                     {
                         UserId = user.Id,
@@ -129,7 +120,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                 }
                 else
                 {
-                    // Update existing preferences
                     preferences.EmailAppointmentReminders = model.EmailAppointmentReminders;
                     preferences.EmailNewAppointments = model.EmailNewAppointments;
                     preferences.EmailAppointmentChanges = model.EmailAppointmentChanges;
@@ -139,7 +129,6 @@ namespace DentalManagement.Areas.Patient.Controllers
                     _logger.LogInformation($"Updated existing notification preferences for user {user.Id}");
                 }
 
-                // Save changes with error tracking
                 var saveResult = await _context.SaveChangesAsync();
                 _logger.LogInformation($"SaveChanges result: {saveResult} rows affected");
 
@@ -154,7 +143,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Patient/Notifications/MarkAsRead
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkAsRead(int id)
@@ -167,7 +155,6 @@ namespace DentalManagement.Areas.Patient.Controllers
 
             await _notificationService.MarkAsReadAsync(id, user.Id);
             
-            // If the request is AJAX, return success
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return Json(new { success = true });
@@ -176,7 +163,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Patient/Notifications/MarkAllAsRead
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkAllAsRead()
@@ -189,7 +175,6 @@ namespace DentalManagement.Areas.Patient.Controllers
 
             await _notificationService.MarkAllAsReadAsync(user.Id);
             
-            // If the request is AJAX, return success
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return Json(new { success = true });
@@ -198,7 +183,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Patient/Notifications/Delete
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -211,7 +195,6 @@ namespace DentalManagement.Areas.Patient.Controllers
 
             await _notificationService.DeleteNotificationAsync(id, user.Id);
             
-            // If the request is AJAX, return success
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return Json(new { success = true });
@@ -220,7 +203,6 @@ namespace DentalManagement.Areas.Patient.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Patient/Notifications/ClearAll
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ClearAll()

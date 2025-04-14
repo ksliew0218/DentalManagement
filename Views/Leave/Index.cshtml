@@ -13,7 +13,7 @@
         </div>
     }
 
-    <!-- Page Heading with Navigation -->
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 fw-bold mb-0">
             <i class="bi bi-calendar-range me-2"></i>Leave Management
@@ -29,9 +29,7 @@
     </div>
 
     <div class="row">
-        <!-- Left sidebar -->
         <div class="col-md-3">
-            <!-- Leave Balances Card -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
                     <i class="bi bi-wallet2 me-2"></i>
@@ -103,7 +101,7 @@
                 </div>
             </div>
 
-            <!-- Quick Info Card -->
+            
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
                     <i class="bi bi-info-circle me-2"></i>
@@ -147,7 +145,7 @@
             </div>
         </div>
         
-        <!-- Main content -->
+        
         <div class="col-md-9">
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -191,7 +189,6 @@
                     </ul>
                     
                     <div class="tab-content p-3" id="leaveTabContent">
-                        <!-- Pending Requests Tab -->
                         <div class="tab-pane fade show active" id="pending-content" role="tabpanel" aria-labelledby="pending-tab">
                             @if (Model.LeaveRequests?.Any(r => r.Status == LeaveRequestStatus.Pending) == true)
                             {
@@ -270,7 +267,7 @@
                             }
                         </div>
                         
-                        <!-- Approved Requests Tab -->
+                        
                         <div class="tab-pane fade" id="approved-content" role="tabpanel" aria-labelledby="approved-tab">
                             @if (Model.LeaveRequests?.Any(r => r.Status == LeaveRequestStatus.Approved) == true)
                             {
@@ -341,7 +338,7 @@
                             }
                         </div>
                         
-                        <!-- Rejected Requests Tab -->
+                        
                         <div class="tab-pane fade" id="rejected-content" role="tabpanel" aria-labelledby="rejected-tab">
                             @if (Model.LeaveRequests?.Any(r => r.Status == LeaveRequestStatus.Rejected) == true)
                             {
@@ -420,7 +417,6 @@
 
 @section Styles {
     <style>
-        /* Nav tabs custom styling */
         .nav-tabs-custom .nav-link {
             color: #6e84a3;
             border: none;
@@ -436,7 +432,6 @@
             background-color: transparent;
         }
         
-        /* Empty state icon */
         .empty-state-icon {
             display: inline-flex;
             align-items: center;
@@ -449,7 +444,6 @@
             font-size: 2rem;
         }
         
-        /* Leave balance styles */
         .leave-balance-item {
             padding: 1rem;
             border-radius: 0.5rem;
@@ -485,7 +479,6 @@
             background-color: #dc3545;
         }
         
-        /* Year badge */
         .year-badge {
             display: inline-flex;
             align-items: center;
@@ -497,7 +490,6 @@
             border-radius: 0.5rem;
         }
         
-        /* Leave info styles */
         .leave-info-item {
             position: relative;
             padding-left: 3rem;
@@ -537,7 +529,6 @@
             color: #28a745;
         }
         
-        /* Date divider */
         .date-divider {
             display: flex;
             align-items: center;
@@ -547,7 +538,6 @@
             margin: 0.25rem 0;
         }
         
-        /* Duration badge */
         .duration-badge {
             display: inline-flex;
             align-items: center;

@@ -35,7 +35,6 @@ namespace DentalManagement.Controllers
             _userManager = userManager;
         }
 
-        // GET: TreatmentType
         public async Task<IActionResult> Index()
         {
             try
@@ -46,13 +45,11 @@ namespace DentalManagement.Controllers
                     return RedirectToAction("AccessDenied", "Home");
                 }
 
-                // Load treatments with their active doctor assignments
                 var treatments = await _context.TreatmentTypes
-                    .Where(t => !t.IsDeleted) // Filter out deleted treatment types
+                    .Where(t => !t.IsDeleted) 
                     .Include(t => t.DoctorTreatments)
                     .ToListAsync();
                 
-                // For each treatment, filter the doctor treatments to only active ones
                 foreach (var treatment in treatments)
                 {
                     treatment.DoctorTreatments = treatment.DoctorTreatments
@@ -71,7 +68,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // GET: TreatmentType/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             try
@@ -97,14 +93,13 @@ namespace DentalManagement.Controllers
                     return NotFound();
                 }
 
-                // Get completed appointments for this treatment type
                 var treatmentHistory = await _context.Appointments
                     .Include(a => a.Patient)
                     .Include(a => a.Doctor)
                     .Where(a => a.TreatmentTypeId == id && a.Status == "Completed")
                     .OrderByDescending(a => a.AppointmentDate)
                     .ThenByDescending(a => a.AppointmentTime)
-                    .Take(10) // Limit to 10 most recent for performance
+                    .Take(10) 
                     .Select(a => new TreatmentHistoryViewModel
                     {
                         AppointmentId = a.Id,
@@ -127,12 +122,10 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // GET: TreatmentType/Create
         public IActionResult Create()
         {
             try
             {
-                // Improved doctor selection with full name display
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
                         .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
@@ -155,7 +148,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // POST: TreatmentType/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TreatmentType treatmentType, int[] DoctorIds, IFormFile ImageFile)
@@ -168,12 +160,10 @@ namespace DentalManagement.Controllers
                     return RedirectToAction("AccessDenied", "Home");
                 }
 
-                // Remove any model validation errors for ImageFile since it's optional
                 ModelState.Remove("ImageFile");
 
                 if (ModelState.IsValid)
                 {
-                    // Handle image upload
                     if (ImageFile != null && ImageFile.Length > 0)
                     {
                         try
@@ -185,13 +175,11 @@ namespace DentalManagement.Controllers
                             }
                             else
                             {
-                                // Log the error but don't prevent saving other changes
                                 _logger.LogWarning("Failed to save the image, but continuing with other updates");
                             }
                         }
                         catch (Exception ex)
                         {
-                            // Log the error but don't prevent saving other changes
                             _logger.LogError(ex, "Error uploading image, but continuing with other updates");
                         }
                     }
@@ -201,7 +189,6 @@ namespace DentalManagement.Controllers
                     _context.Add(treatmentType);
                     await _context.SaveChangesAsync();
 
-                    // Link doctors to the treatment
                     if (DoctorIds != null && DoctorIds.Length > 0)
                     {
                         foreach (var doctorId in DoctorIds)
@@ -222,7 +209,6 @@ namespace DentalManagement.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // If we got this far, something failed, redisplay form
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
                         .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
@@ -245,7 +231,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // GET: TreatmentType/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             try
@@ -271,13 +256,11 @@ namespace DentalManagement.Controllers
                     return NotFound();
                 }
                 
-                // Get the IDs of doctors currently assigned to this treatment
                 var assignedDoctorIds = treatmentType.DoctorTreatments
                     .Where(dt => dt.IsActive && !dt.IsDeleted)
                     .Select(dt => dt.DoctorId)
                     .ToList();
                 
-                // Prepare the multiselect list with all doctors
                 ViewData["DoctorIds"] = new MultiSelectList(
                     _context.Doctors
                         .Where(d => d.Status == StatusType.Active && !d.IsDeleted)
@@ -323,14 +306,12 @@ namespace DentalManagement.Controllers
                     DoctorIds = Array.Empty<int>();
                 }
 
-                // Remove any model validation errors for ImageFile since it's optional
                 ModelState.Remove("ImageFile");
 
                 if (ModelState.IsValid)
                 {
                     try
                     {
-                        // Get the existing treatment from the database to update
                         var existingTreatment = await _context.TreatmentTypes
                             .Include(t => t.DoctorTreatments)
                             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
@@ -340,13 +321,10 @@ namespace DentalManagement.Controllers
                             return NotFound();
                         }
                         
-                        // Handle image removal and upload
                         if (RemoveImage)
                         {
-                            // Just remove the image, don't upload a new one yet
                             if (!string.IsNullOrEmpty(existingTreatment.ImageUrl))
                             {
-                                // Delete file using the helper method (passing null as new file)
                                 await SaveImageFile(null, existingTreatment.ImageUrl);
                                 existingTreatment.ImageUrl = null;
                                 _logger.LogInformation("Image removed successfully");
@@ -356,8 +334,7 @@ namespace DentalManagement.Controllers
                         {
                             try
                             {
-                                // Only upload new image if RemoveImage is false and a file is provided
-                                string imageUrl = await SaveImageFile(ImageFile, null); // Pass null to avoid deleting old image
+                                string imageUrl = await SaveImageFile(ImageFile, null); 
                                 if (imageUrl != null)
                                 {
                                     existingTreatment.ImageUrl = imageUrl;
@@ -365,23 +342,19 @@ namespace DentalManagement.Controllers
                                 }
                                 else
                                 {
-                                    // Log the error but don't prevent saving other changes
                                     _logger.LogWarning("Failed to save the image, but continuing with other updates");
                                 }
                             }
                             catch (Exception ex)
                             {
-                                // Log the error but don't prevent saving other changes
                                 _logger.LogError(ex, "Error uploading image, but continuing with other updates");
                             }
                         }
-                        // If no image is provided, keep the existing one (no action needed)
                         else
                         {
                             _logger.LogInformation("No new image provided, keeping existing image");
                         }
                         
-                        // Update the treatment properties
                         existingTreatment.Name = treatmentType.Name;
                         existingTreatment.Description = treatmentType.Description;
                         existingTreatment.Price = treatmentType.Price;
@@ -390,17 +363,14 @@ namespace DentalManagement.Controllers
                         existingTreatment.IsDeleted = treatmentType.IsDeleted;
                         existingTreatment.UpdatedAt = DateTime.UtcNow;
                         
-                        // Mark doctors as inactive if they were removed
                         foreach (var doctorTreatment in existingTreatment.DoctorTreatments)
                         {
-                            // If the doctor is not in the new list and not already marked as inactive
                             if (!DoctorIds.Contains(doctorTreatment.DoctorId) && doctorTreatment.IsActive && !doctorTreatment.IsDeleted)
                             {
                                 doctorTreatment.IsActive = false;
                                 doctorTreatment.UpdatedAt = DateTime.UtcNow;
                                 _logger.LogInformation($"Deactivated doctor {doctorTreatment.DoctorId} from treatment {existingTreatment.Id}");
                             }
-                            // If the doctor is in the new list but was previously inactive
                             else if (DoctorIds.Contains(doctorTreatment.DoctorId) && (!doctorTreatment.IsActive || doctorTreatment.IsDeleted))
                             {
                                 doctorTreatment.IsActive = true;
@@ -410,14 +380,11 @@ namespace DentalManagement.Controllers
                             }
                         }
                         
-                        // Add new doctor assignments
                         foreach (var doctorId in DoctorIds)
                         {
-                            // Check if this doctor is already assigned
                             var existingAssignment = existingTreatment.DoctorTreatments
                                 .FirstOrDefault(dt => dt.DoctorId == doctorId);
                                 
-                            // If not already assigned, create a new assignment
                             if (existingAssignment == null)
                             {
                                 _context.DoctorTreatments.Add(new DoctorTreatment
@@ -472,7 +439,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // GET: TreatmentType/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             try
@@ -507,7 +473,6 @@ namespace DentalManagement.Controllers
             }
         }
 
-        // POST: TreatmentType/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -565,15 +530,12 @@ namespace DentalManagement.Controllers
         {
             if (imageFile == null || imageFile.Length == 0)
             {
-                // If there's an old image to delete but no new image
                 if (!string.IsNullOrEmpty(oldImageUrl))
                 {
                     try
                     {
-                        // Get the absolute path to the wwwroot folder
                         string webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
                         
-                        // Strip off the leading '/' if present
                         string oldImageRelativePath = oldImageUrl.TrimStart('/');
                         string oldImageFullPath = Path.Combine(webRootPath, oldImageRelativePath);
                         
@@ -600,7 +562,6 @@ namespace DentalManagement.Controllers
 
             try
             {
-                // Get the absolute path to the wwwroot folder - this approach is more reliable
                 string webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
                 string uploadsRelativePath = "images/treatments";
                 string uploadsFolder = Path.Combine(webRootPath, uploadsRelativePath);
@@ -608,15 +569,12 @@ namespace DentalManagement.Controllers
                 _logger.LogInformation($"Full path to web root: {webRootPath}");
                 _logger.LogInformation($"Full path to uploads folder: {uploadsFolder}");
                 
-                // Ensure the directory exists (create full path)
                 if (!Directory.Exists(uploadsFolder))
                 {
                     _logger.LogInformation($"Creating directory structure for: {uploadsFolder}");
                     try {
-                        // Create directory and all parent directories if they don't exist
                         Directory.CreateDirectory(uploadsFolder);
                         
-                        // Verify directory was created
                         if (!Directory.Exists(uploadsFolder)) {
                             _logger.LogError($"Failed to create directory: {uploadsFolder}");
                             return null;
@@ -628,7 +586,6 @@ namespace DentalManagement.Controllers
                     }
                 }
                 
-                // Create a unique filename with sanitization
                 string originalFileName = Path.GetFileName(imageFile.FileName);
                 string safeFileName = new string(originalFileName.Where(c => !Path.GetInvalidFileNameChars().Contains(c)).ToArray());
                 string uniqueFileName = $"{Guid.NewGuid()}_{safeFileName}";
@@ -636,18 +593,15 @@ namespace DentalManagement.Controllers
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 _logger.LogInformation($"Saving image to: {filePath}");
                 
-                // Save file with explicit file stream
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await imageFile.CopyToAsync(fileStream);
-                    fileStream.Flush();  // Ensure all data is written
+                    fileStream.Flush();  
                 }
                 
-                // Verify file was saved
                 if (System.IO.File.Exists(filePath))
                 {
                     _logger.LogInformation($"File successfully saved at: {filePath}");
-                    // Return URL path relative to website root - use forward slashes for URLs regardless of OS
                     return $"/{uploadsRelativePath.Replace('\\', '/')}/{uniqueFileName}";
                 }
                 else

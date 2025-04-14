@@ -1,6 +1,4 @@
-/* Date & Time Selection Page Styles */
 
-/* Booking Summary */
 .booking-summary {
   display: flex;
   gap: 16px;
@@ -57,7 +55,6 @@
   color: #718096;
 }
 
-/* Date Time Selection Layout - Side by side */
 .datetime-selection {
   background: white;
   border-radius: 12px;
@@ -71,7 +68,6 @@
   gap: 24px;
 }
 
-/* Calendar Section (Left Side) */
 .calendar-section {
   flex: 1;
   border-right: 1px solid #edf2f7;
@@ -218,7 +214,6 @@
   background: #4299e1;
 }
 
-/* Time Slots Section (Right Side) */
 .timeslots-section {
   flex: 1;
   display: flex;
@@ -397,7 +392,6 @@
   color: #4299e1;
 }
 
-/* Navigation Buttons */
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
@@ -443,7 +437,6 @@
   cursor: not-allowed;
 }
 
-/* Responsive Adjustments */
 @media (max-width: 992px) {
   .selection-container {
     flex-direction: column;

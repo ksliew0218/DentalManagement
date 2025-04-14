@@ -25,7 +25,6 @@ namespace DentalManagement.Areas.Admin.Controllers
         {
             try
             {
-                // Create an AdminDashboardViewModel with proper data
                 var model = new AdminDashboardViewModel
                 {
                     DoctorCount = _context.Doctors.Count(d => !d.IsDeleted),
@@ -38,10 +37,8 @@ namespace DentalManagement.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                // Handle any errors gracefully
                 ViewBag.ErrorMessage = "Error loading dashboard data: " + ex.Message;
                 
-                // Return a model with default values
                 var defaultModel = new AdminDashboardViewModel
                 {
                     DoctorCount = 0,

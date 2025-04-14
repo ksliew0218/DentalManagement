@@ -6,7 +6,7 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
+    
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
@@ -14,7 +14,7 @@
         </ol>
     </nav>
     
-    <!-- Page Header -->
+    
     <div class="page-header">
         <div>
             <h1><i class="bi bi-calendar-week me-2 text-primary"></i>Doctor Time Slots</h1>
@@ -120,7 +120,7 @@
     <script>
         $(document).ready(function () {
             $('#timeSlotsTable').DataTable({
-                "order": [[1, "asc"], [2, "asc"]], // Sort by date and then by start time
+                "order": [[1, "asc"], [2, "asc"]], 
                 "pageLength": 10,
                 "language": {
                     "search": "<i class='bi bi-search'></i> Search:",
@@ -133,11 +133,9 @@
                 }
             });
             
-            // Apply style to DataTables search box
             $('.dataTables_filter input').addClass('form-control form-control-sm ms-2');
             $('.dataTables_filter input').attr('placeholder', 'Search...');
             
-            // Auto-dismiss alerts after 5 seconds
             setTimeout(function() {
                 $('.alert-dismissible').alert('close');
             }, 5000);

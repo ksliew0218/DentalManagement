@@ -23,34 +23,27 @@ namespace DentalManagement.Areas.Doctor.Controllers
             _userManager = userManager;
         }
 
-        // GET: Doctor/Patients
         public async Task<IActionResult> Index()
         {
             try
             {
-                // Get the current logged-in user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
 
-                // Get the doctor profile for the current user
                 var doctor = await _context.Doctors
                     .FirstOrDefaultAsync(d => d.User.Id == user.Id);
                 
                 if (doctor == null)
                 {
-                    // The current user is not a doctor
                     return RedirectToAction("AccessDenied", "Home", new { area = "" });
                 }
 
-                // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
-                // Add doctor profile picture URL to ViewData
                 ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
-                // Get all appointments for this doctor with their associated patients
                 var patientsQuery = await _context.Appointments
                     .Where(a => a.DoctorId == doctor.Id)
                     .Include(a => a.Patient)
@@ -70,34 +63,27 @@ namespace DentalManagement.Areas.Doctor.Controllers
             }
         }
 
-        // GET: Doctor/Patients/Details/5
         public async Task<IActionResult> Details(int id)
         {
             try
             {
-                // Get the current logged-in user
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account", new { area = "Identity" });
                 }
 
-                // Get the doctor profile for the current user
                 var doctor = await _context.Doctors
                     .FirstOrDefaultAsync(d => d.User.Id == user.Id);
                 
                 if (doctor == null)
                 {
-                    // The current user is not a doctor
                     return RedirectToAction("AccessDenied", "Home", new { area = "" });
                 }
 
-                // Set doctor name in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
-                // Add doctor profile picture URL to ViewData
                 ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
-                // Check if the patient exists and has had appointments with this doctor
                 var patient = await _context.Patients
                     .Include(p => p.User)
                     .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
@@ -107,7 +93,6 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return NotFound();
                 }
 
-                // Check if this doctor has treated this patient
                 var hasAppointmentWithDoctor = await _context.Appointments
                     .AnyAsync(a => a.DoctorId == doctor.Id && a.PatientId == id);
 
@@ -117,7 +102,6 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Get patient's appointments with this doctor
                 var appointments = await _context.Appointments
                     .Include(a => a.TreatmentType)
                     .Include(a => a.TreatmentReports)

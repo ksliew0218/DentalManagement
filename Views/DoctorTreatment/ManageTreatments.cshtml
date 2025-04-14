@@ -6,7 +6,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
@@ -16,14 +15,14 @@
         </ol>
     </nav>
 
-    <!-- Success message alert -->
+    
     <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" id="successAlert" style="display: none;">
         <i class="bi bi-check-circle-fill me-2"></i>
         <span id="successMessage">Assignment updated successfully!</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <!-- Error message alert -->
+    
     <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" id="errorAlert" style="display: none;">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
         <span id="errorMessage">An error occurred. Please try again.</span>
@@ -149,7 +148,6 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Filter treatments
             $("#treatmentSearch").on("keyup", function() {
                 var value = $(this).val().toLowerCase();
                 $(".treatment-row").filter(function() {
@@ -157,7 +155,6 @@
                 });
             });
             
-            // Toggle showing all treatments or only assigned ones
             $("#showAllTreatments").on("change", function() {
                 if ($(this).is(":checked")) {
                     $(".treatment-row").show();
@@ -167,7 +164,6 @@
                 }
             });
             
-            // Add assignment
             $(".add-assignment-btn").on("click", function() {
                 const doctorId = $(this).data("doctor-id");
                 const treatmentId = $(this).data("treatment-id");
@@ -187,11 +183,9 @@
                     },
                     success: function(result) {
                         if (result.success) {
-                            // Update UI
                             row.removeClass("unassigned-treatment").addClass("assigned-treatment");
                             row.find(".assignment-status").removeClass("bg-secondary").addClass("bg-success").text("Active");
                             
-                            // Replace buttons
                             const btnGroup = row.find(".btn-group");
                             btnGroup.html(`
                                 <button type="button" class="btn btn-sm btn-outline-warning toggle-active-btn"
@@ -209,10 +203,8 @@
                                 </button>
                             `);
                             
-                            // Reattach event handlers
                             attachEventHandlers();
                             
-                            // Show success message
                             showSuccessMessage("Treatment assigned successfully!");
                         } else {
                             showErrorMessage(result.message || "An error occurred while assigning the treatment.");
@@ -224,7 +216,6 @@
                 });
             });
             
-            // Remove assignment
             function handleRemoveAssignment() {
                 const doctorId = $(this).data("doctor-id");
                 const treatmentId = $(this).data("treatment-id");
@@ -244,11 +235,9 @@
                     },
                     success: function(result) {
                         if (result.success) {
-                            // Update UI
                             row.removeClass("assigned-treatment").addClass("unassigned-treatment");
                             row.find(".assignment-status").removeClass("bg-success bg-warning").addClass("bg-secondary").text("Not Assigned");
                             
-                            // Replace buttons
                             const btnGroup = row.find(".btn-group");
                             btnGroup.html(`
                                 <button type="button" class="btn btn-sm btn-outline-primary add-assignment-btn"
@@ -258,10 +247,8 @@
                                 </button>
                             `);
                             
-                            // Reattach event handlers
                             attachEventHandlers();
                             
-                            // Show success message
                             showSuccessMessage("Treatment assignment removed successfully!");
                         } else {
                             showErrorMessage(result.message || "An error occurred while removing the assignment.");
@@ -273,7 +260,6 @@
                 });
             }
             
-            // Toggle active status
             function handleToggleActive() {
                 const doctorId = $(this).data("doctor-id");
                 const treatmentId = $(this).data("treatment-id");
@@ -296,23 +282,19 @@
                     },
                     success: function(result) {
                         if (result.success) {
-                            // Update status badge
                             const statusBadge = row.find(".assignment-status");
                             if (isActive) {
-                                // Was active, now inactive
                                 statusBadge.removeClass("bg-success").addClass("bg-warning").text("Inactive");
                                 button.removeClass("btn-outline-warning").addClass("btn-outline-success");
                                 button.html('<i class="bi bi-play-circle"></i> Activate');
                                 button.data("is-active", "false");
                             } else {
-                                // Was inactive, now active
                                 statusBadge.removeClass("bg-warning").addClass("bg-success").text("Active");
                                 button.removeClass("btn-outline-success").addClass("btn-outline-warning");
                                 button.html('<i class="bi bi-pause-circle"></i> Deactivate');
                                 button.data("is-active", "true");
                             }
                             
-                            // Show success message
                             showSuccessMessage("Assignment status updated successfully!");
                         } else {
                             showErrorMessage(result.message || "An error occurred while updating the assignment status.");
@@ -324,7 +306,6 @@
                 });
             }
             
-            // Attach event handlers
             function attachEventHandlers() {
                 $(".remove-assignment-btn").off("click").on("click", handleRemoveAssignment);
                 $(".toggle-active-btn").off("click").on("click", handleToggleActive);
@@ -347,11 +328,9 @@
                         },
                         success: function(result) {
                             if (result.success) {
-                                // Update UI
                                 row.removeClass("unassigned-treatment").addClass("assigned-treatment");
                                 row.find(".assignment-status").removeClass("bg-secondary").addClass("bg-success").text("Active");
                                 
-                                // Replace buttons
                                 const btnGroup = row.find(".btn-group");
                                 btnGroup.html(`
                                     <button type="button" class="btn btn-sm btn-outline-warning toggle-active-btn"
@@ -369,10 +348,8 @@
                                     </button>
                                 `);
                                 
-                                // Reattach event handlers
                                 attachEventHandlers();
                                 
-                                // Show success message
                                 showSuccessMessage("Treatment assigned successfully!");
                             } else {
                                 showErrorMessage(result.message || "An error occurred while assigning the treatment.");
@@ -385,10 +362,8 @@
                 });
             }
             
-            // Initial attachment of event handlers
             attachEventHandlers();
             
-            // Helper functions for alerts
             function showSuccessMessage(message) {
                 $("#successMessage").text(message);
                 $("#successAlert").fadeIn().delay(3000).fadeOut();

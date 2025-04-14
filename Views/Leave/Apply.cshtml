@@ -5,7 +5,7 @@
 }
 
 <div class="container-fluid px-4">
-    <!-- Page Heading with Navigation -->
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 fw-bold mb-0">
             <i class="bi bi-calendar-plus me-2"></i>Apply for Leave
@@ -16,7 +16,7 @@
     </div>
 
     <div class="row">
-        <!-- Main Content -->
+        
         <div class="col-lg-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
@@ -109,9 +109,9 @@
             </div>
         </div>
         
-        <!-- Sidebar -->
+        
         <div class="col-lg-4">
-            <!-- Reminders Card -->
+            
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
                     <i class="bi bi-info-circle me-2"></i>
@@ -145,7 +145,7 @@
                 </div>
             </div>
             
-            <!-- Help Card -->
+            
             <div class="card shadow-sm">
                 <div class="card-header d-flex align-items-center">
                     <i class="bi bi-question-circle me-2"></i>
@@ -172,7 +172,6 @@
 
 @section Styles {
     <style>
-        /* Reminder styling */
         .reminder-item {
             position: relative;
             padding-left: 2.5rem;
@@ -193,7 +192,6 @@
             color: #3b7ddd;
         }
         
-        /* Help icon */
         .help-icon {
             display: inline-flex;
             align-items: center;
@@ -206,7 +204,6 @@
             background-color: rgba(59, 125, 221, 0.1);
         }
         
-        /* Form styling */
         .form-label {
             font-weight: 500;
             color: #12263f;
@@ -226,7 +223,6 @@
             box-shadow: 0 0 0 0.25rem rgba(59, 125, 221, 0.25);
         }
         
-        /* Validation summary styling */
         .validation-summary ul {
             list-style-type: none;
             padding-left: 0;
@@ -244,27 +240,22 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function() {
-            // Set minimum date to today for start date
             const today = new Date().toISOString().split('T')[0];
             document.getElementById("StartDate").setAttribute('min', today);
             
-            // Update end date minimum when start date changes
             $("#StartDate").change(function() {
                 const startDate = $(this).val();
                 document.getElementById("EndDate").setAttribute('min', startDate);
                 
-                // If end date is before start date, update it
                 if ($("#EndDate").val() < startDate) {
                     $("#EndDate").val(startDate);
                 }
             });
 
-            // Initialize with start date value
             if ($("#StartDate").val()) {
                 document.getElementById("EndDate").setAttribute('min', $("#StartDate").val());
             }
             
-            // Prevent double submission
             $("#leaveForm").submit(function() {
                 $("#submitBtn").prop('disabled', true);
                 $("#submitBtn").html('<i class="bi bi-hourglass-split me-1"></i>Processing...');

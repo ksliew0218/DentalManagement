@@ -5,7 +5,6 @@
 }
 
 <style>
-    /* Profile page specific styles */
     .profile-image-container {
         width: 150px;
         height: 150px;
@@ -60,11 +59,8 @@
                 <div class="card-body">
                     <form id="profile-form" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        
-                        <!-- Hidden field for existing profile picture URL -->
                         <input type="hidden" asp-for="ProfilePictureUrl" />
 
-                        <!-- Profile Picture -->
                         <div class="mb-3 text-center">
                             @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
                             {
@@ -100,21 +96,18 @@
                                     <small class="form-text text-muted">Leave this empty if you don't want to change your profile picture.</small>
                                 </div>
 
-                                <!-- First Name -->
                                 <div class="form-group mb-3">
                                     <label asp-for="FirstName" class="form-label"></label>
                                     <input asp-for="FirstName" class="form-control" />
                                     <span asp-validation-for="FirstName" class="text-danger"></span>
                                 </div>
 
-                                <!-- Last Name -->
                                 <div class="form-group mb-3">
                                     <label asp-for="LastName" class="form-label"></label>
                                     <input asp-for="LastName" class="form-control" />
                                     <span asp-validation-for="LastName" class="text-danger"></span>
                                 </div>
 
-                                <!-- Gender -->
                                 <div class="form-group mb-3">
                                     <label asp-for="Gender" class="form-label"></label>
                                     <select asp-for="Gender" class="form-control">
@@ -127,28 +120,24 @@
                             </div>
 
                             <div class="col-md-6">
-                                <!-- Date of Birth -->
                                 <div class="form-group mb-3">
                                     <label asp-for="DateOfBirth" class="form-label"></label>
                                     <input asp-for="DateOfBirth" type="date" class="form-control" />
                                     <span asp-validation-for="DateOfBirth" class="text-danger"></span>
                                 </div>
 
-                                <!-- Phone Number -->
                                 <div class="form-group mb-3">
                                     <label asp-for="PhoneNumber" class="form-label"></label>
                                     <input asp-for="PhoneNumber" class="form-control" />
                                     <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                                 </div>
 
-                                <!-- Specialty -->
                                 <div class="form-group mb-3">
                                     <label asp-for="Specialty" class="form-label"></label>
                                     <input asp-for="Specialty" class="form-control" />
                                     <span asp-validation-for="Specialty" class="text-danger"></span>
                                 </div>
 
-                                <!-- Experience Years -->
                                 <div class="form-group mb-3">
                                     <label asp-for="ExperienceYears" class="form-label"></label>
                                     <input asp-for="ExperienceYears" type="number" min="0" class="form-control" />
@@ -157,7 +146,6 @@
                             </div>
                         </div>
 
-                        <!-- Qualifications -->
                         <div class="form-group mb-3">
                             <label asp-for="Qualifications" class="form-label"></label>
                             <textarea asp-for="Qualifications" class="form-control" style="height: 100px"></textarea>

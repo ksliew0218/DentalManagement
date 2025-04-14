@@ -84,7 +84,7 @@
                                             </button>
                                         </div>
 
-                                        <!-- Delete Confirmation Modal -->
+                                        
                                         <div class="modal fade" id="deleteModal@(item.Id)" tabindex="-1">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -126,10 +126,9 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // If jQuery and DataTables are available, enhance the table
             if (typeof $.fn.DataTable !== 'undefined') {
                 $('#appointmentsTable').DataTable({
-                    order: [[3, 'desc'], [4, 'asc']], // Sort by date desc, then time asc
+                    order: [[3, 'desc'], [4, 'asc']], 
                     pageLength: 25,
                     responsive: true
                 });

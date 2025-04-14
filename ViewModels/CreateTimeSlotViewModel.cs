@@ -30,14 +30,11 @@ namespace DentalManagement.ViewModels
 
         public CreateTimeSlotViewModel()
         {
-            // Use simple DateTime values without specifying Kind
             var today = DateTime.Now.Date;
             
-            // Initialize with default values
             StartDate = today;
             EndDate = today.AddDays(7);
             
-            // Default work hours
             DailyStartTime = new DateTime(2000, 1, 1, 9, 0, 0);
             DailyEndTime = new DateTime(2000, 1, 1, 17, 0, 0);
         }

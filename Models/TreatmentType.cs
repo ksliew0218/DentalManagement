@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DentalManagement.Models
 {
-    [Table("TreatmentTypes")] // This explicitly names the table, but is optional
+    [Table("TreatmentTypes")] 
     public class TreatmentType
     {
         [Key]
@@ -16,22 +16,16 @@ namespace DentalManagement.Models
 
         public string? Description { get; set; }
 
-        // Use decimal for monetary values
         public decimal Price { get; set; }
 
-        // Duration in minutes
         public int Duration { get; set; }
 
-        // Image URL for treatment
         public string? ImageUrl { get; set; }
 
-        // Mark active/inactive if you want to hide old treatments
         public bool IsActive { get; set; } = true;
         
-        // Soft delete flag
         public bool IsDeleted { get; set; } = false;
 
-        // Automatically set to UTC now upon creation
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }

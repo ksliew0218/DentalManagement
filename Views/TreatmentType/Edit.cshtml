@@ -6,7 +6,7 @@
 }
 
 <div class="container-fluid">
-    <!-- Breadcrumb -->
+    
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb breadcrumb-custom">
             <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
@@ -15,7 +15,7 @@
         </ol>
     </nav>
     
-    <!-- Page Header -->
+    
     <div class="page-header">
         <div>
             <h1><i class="bi bi-clipboard2-pulse me-2 text-primary"></i>Edit Treatment</h1>
@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- Display success message if available in TempData -->
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show mb-4 fade-in" role="alert">
@@ -40,7 +40,7 @@
             </h6>
         </div>
         <div class="card-body">
-            <!-- Add error message display section -->
+            
             @if (!ViewData.ModelState.IsValid)
             {
                 <div class="alert alert-danger mb-4 fade-in">
@@ -145,7 +145,7 @@
                                         <span>New Image</span>
                                     </div>
                                     <div class="card-body p-2" id="previewContent">
-                                        <!-- Preview image will be inserted here -->
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +218,6 @@
 
 @section Scripts {
     <script>
-        // Form validation and submission
         (function () {
             'use strict'
             var forms = document.querySelectorAll('.needs-validation')
@@ -232,7 +231,6 @@
                             event.preventDefault();
                             event.stopPropagation();
                         } else {
-                            // Show loading state
                             submitBtn.disabled = true;
                             submitSpinner.classList.remove('d-none');
                             submitBtn.innerHTML = submitBtn.innerHTML.replace('Save Changes', 'Saving...');
@@ -242,20 +240,16 @@
                 });
         })();
         
-        // Doctor selection functionality
         document.addEventListener('DOMContentLoaded', function() {
             const doctorItems = document.querySelectorAll('.doctor-item');
             const doctorSelection = document.getElementById('doctorSelection');
             const selectedDoctorsCount = document.getElementById('selectedDoctorsCount');
             
-            // Initialize selected count
             updateSelectedCount();
             
-            // Add click handlers for all doctor items
             doctorItems.forEach(item => {
                 const doctorId = item.getAttribute('data-doctor-id');
                 
-                // Add doctor button
                 const addBtn = item.querySelector('.add-doctor');
                 if (addBtn) {
                     addBtn.addEventListener('click', function() {
@@ -263,7 +257,6 @@
                     });
                 }
                 
-                // Remove doctor button
                 const removeBtn = item.querySelector('.remove-doctor');
                 if (removeBtn) {
                     removeBtn.addEventListener('click', function() {
@@ -272,12 +265,9 @@
                 }
             });
             
-            // Select doctor function
             function selectDoctor(doctorId, item) {
-                // Update the UI
                 item.classList.add('selected');
                 
-                // Replace the add button with a remove button
                 const buttonContainer = item.querySelector('.add-doctor').parentElement;
                 buttonContainer.innerHTML = `
                     <button type="button" class="btn btn-sm btn-danger remove-doctor">
@@ -285,13 +275,11 @@
                     </button>
                 `;
                 
-                // Add click handler for the new remove button
                 const newRemoveBtn = buttonContainer.querySelector('.remove-doctor');
                 newRemoveBtn.addEventListener('click', function() {
                     unselectDoctor(doctorId, item);
                 });
                 
-                // Update the hidden select
                 for (let i = 0; i < doctorSelection.options.length; i++) {
                     if (doctorSelection.options[i].value === doctorId) {
                         doctorSelection.options[i].selected = true;
@@ -302,12 +290,9 @@
                 updateSelectedCount();
             }
             
-            // Unselect doctor function
             function unselectDoctor(doctorId, item) {
-                // Update the UI
                 item.classList.remove('selected');
                 
-                // Replace the remove button with an add button
                 const buttonContainer = item.querySelector('.remove-doctor').parentElement;
                 buttonContainer.innerHTML = `
                     <button type="button" class="btn btn-sm btn-success add-doctor">
@@ -315,13 +300,11 @@
                     </button>
                 `;
                 
-                // Add click handler for the new add button
                 const newAddBtn = buttonContainer.querySelector('.add-doctor');
                 newAddBtn.addEventListener('click', function() {
                     selectDoctor(doctorId, item);
                 });
                 
-                // Update the hidden select
                 for (let i = 0; i < doctorSelection.options.length; i++) {
                     if (doctorSelection.options[i].value === doctorId) {
                         doctorSelection.options[i].selected = false;
@@ -332,7 +315,6 @@
                 updateSelectedCount();
             }
             
-            // Update selected count function
             function updateSelectedCount() {
                 let count = 0;
                 for (let i = 0; i < doctorSelection.options.length; i++) {
@@ -344,7 +326,6 @@
             }
         });
         
-        // Image preview functionality
         document.addEventListener('DOMContentLoaded', function() {
             const imageInput = document.querySelector('input[name="ImageFile"]');
             const imagePreview = document.getElementById('imagePreview');
@@ -353,33 +334,27 @@
             const imageUploadError = document.getElementById('imageUploadError');
             
             imageInput.addEventListener('change', function() {
-                // Reset error message
                 imageUploadError.style.display = 'none';
                 
-                // Clear the preview
                 previewContent.innerHTML = '';
                 
-                // Check if a file was selected
                 if (this.files && this.files[0]) {
                     const file = this.files[0];
                     
-                    // Validate file type
                     if (!file.type.match('image.*')) {
                         imageUploadError.style.display = 'block';
                         imageUploadError.querySelector('span').textContent = 'Please select an image file (JPG, PNG, etc.).';
-                        this.value = ''; // Clear the input
+                        this.value = ''; 
                         return;
                     }
                     
-                    // Validate file size (max 5MB)
                     if (file.size > 5 * 1024 * 1024) {
                         imageUploadError.style.display = 'block';
                         imageUploadError.querySelector('span').textContent = 'Image size exceeds 5MB. Please select a smaller image.';
-                        this.value = ''; // Clear the input
+                        this.value = ''; 
                         return;
                     }
                     
-                    // Create and display the preview image
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const img = document.createElement('img');
@@ -388,20 +363,16 @@
                         img.style.maxHeight = '200px';
                         previewContent.appendChild(img);
                         
-                        // Show the preview container
                         imagePreview.style.display = 'block';
                         
-                        // If there's a current image, keep showing it for comparison
                         if (currentImage) {
                             currentImage.style.display = 'block';
                         }
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    // No file selected, hide the preview
                     imagePreview.style.display = 'none';
                     
-                    // But keep showing the current image if it exists
                     if (currentImage) {
                         currentImage.style.display = 'block';
                     }

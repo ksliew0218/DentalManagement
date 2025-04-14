@@ -19,7 +19,6 @@ namespace DentalManagement.Services
             _logger = logger;
         }
 
-        // Initialize leave balances for a new doctor
         public async Task InitializeDoctorLeaveBalancesAsync(int doctorId)
         {
             var leaveTypes = await _context.LeaveTypes.ToListAsync();
@@ -43,14 +42,11 @@ namespace DentalManagement.Services
             await _context.SaveChangesAsync();
         }
         
-        // Calculate business days between two dates (excluding weekends)
         public decimal CalculateBusinessDays(DateTime startDate, DateTime endDate)
         {
-            // Convert dates to UTC if they aren't already
             startDate = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
             endDate = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
             
-            // If start and end are the same, and it's a weekday, return 1
             if (startDate.Date == endDate.Date)
             {
                 if (startDate.DayOfWeek != DayOfWeek.Saturday && startDate.DayOfWeek != DayOfWeek.Sunday)
@@ -65,7 +61,6 @@ namespace DentalManagement.Services
             
             while (currentDate <= endDate.Date)
             {
-                // Check if the current day is not a weekend
                 if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
                 {
                     businessDays++;
@@ -77,22 +72,18 @@ namespace DentalManagement.Services
             return businessDays;
         }
         
-        // Process a leave request
         public async Task<(bool Success, string Message)> ProcessLeaveRequestAsync(DoctorLeaveRequest request)
         {
             try
             {
-                // Calculate business days
                 decimal businessDays = CalculateBusinessDays(request.StartDate, request.EndDate);
                 request.TotalDays = businessDays;
                 
                 _logger.LogInformation($"Leave request: Start={request.StartDate:yyyy-MM-dd}, End={request.EndDate:yyyy-MM-dd}, Total Days={request.TotalDays}");
                 
-                // Ensure dates are in UTC format
                 request.StartDate = DateTime.SpecifyKind(request.StartDate.Date, DateTimeKind.Utc);
                 request.EndDate = DateTime.SpecifyKind(request.EndDate.Date, DateTimeKind.Utc);
 
-                // Validate dates
                 if (request.EndDate < request.StartDate)
                 {
                     return (false, "End date cannot be before start date.");
@@ -108,7 +99,6 @@ namespace DentalManagement.Services
                     return (false, "Leave request must include at least one working day.");
                 }
                 
-                // For paid leave types, check if doctor has enough balance
                 var leaveType = await _context.LeaveTypes.FindAsync(request.LeaveTypeId);
                 
                 if (leaveType == null)
@@ -137,7 +127,6 @@ namespace DentalManagement.Services
                     }
                 }
                 
-                // Add the request
                 await _context.DoctorLeaveRequests.AddAsync(request);
                 await _context.SaveChangesAsync();
                 
@@ -152,27 +141,19 @@ namespace DentalManagement.Services
             }
         }
         
-        // Process the rejection of a leave request
         private async Task HandleLeaveRequestRejectionAsync(DoctorLeaveRequest request)
         {
             try
             {
-                // For rejected requests, we don't need to update the balance
-                // But we might want to notify the doctor or perform other actions
-                
-                // Log the rejection
                 _logger.LogInformation($"Leave request ID {request.Id} has been rejected. Doctor ID: {request.DoctorId}");
                 
-                // We could add code here to send a notification to the doctor
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error handling leave request rejection for ID: {request.Id}");
-                // We don't throw the exception here to avoid disrupting the main workflow
             }
         }
         
-        // Approve or reject a leave request
         public async Task<(bool Success, string Message)> UpdateLeaveRequestStatusAsync(
             int requestId, LeaveRequestStatus status, string approvedById, string? comments = null)
         {
@@ -193,16 +174,13 @@ namespace DentalManagement.Services
                     return (false, "Can only update pending leave requests.");
                 }
                 
-                // Update status
                 request.Status = status;
                 request.ApprovedById = approvedById;
                 request.ApprovalDate = DateTime.UtcNow;
                 request.Comments = comments;
                 
-                // Handle based on status
                 if (status == LeaveRequestStatus.Approved)
                 {
-                    // Handle leave balance update for paid leave
                     if (request.LeaveType.IsPaid)
                     {
                         var leaveBalance = await _context.DoctorLeaveBalances
@@ -225,12 +203,10 @@ namespace DentalManagement.Services
                         _logger.LogInformation($"Deducted {request.TotalDays} days from leave balance. New balance: {leaveBalance.RemainingDays}");
                     }
                     
-                    // Handle time slots - mark as unavailable during leave period
                     await UpdateTimeSlotsDuringLeaveAsync(request);
                 }
                 else if (status == LeaveRequestStatus.Rejected)
                 {
-                    // Handle rejection specific operations
                     await HandleLeaveRequestRejectionAsync(request);
                 }
                 
@@ -245,16 +221,13 @@ namespace DentalManagement.Services
             }
         }
         
-        // Helper method to mark time slots as unavailable during the leave period
         private async Task UpdateTimeSlotsDuringLeaveAsync(DoctorLeaveRequest leaveRequest)
         {
             try
             {
-                // Ensure dates are in UTC format
                 var startDate = DateTime.SpecifyKind(leaveRequest.StartDate.Date, DateTimeKind.Utc);
                 var endDate = DateTime.SpecifyKind(leaveRequest.EndDate.Date, DateTimeKind.Utc);
                 
-                // Get all time slots that fall within the leave period for this doctor
                 var timeSlots = await _context.TimeSlots
                     .Where(ts => ts.DoctorId == leaveRequest.DoctorId &&
                                ts.StartTime.Date >= startDate.Date &&
@@ -267,15 +240,11 @@ namespace DentalManagement.Services
                     
                     foreach (var slot in timeSlots)
                     {
-                        // If the slot is already booked for an appointment, we should handle
-                        // this carefully - we might want to reschedule or notify admin
                         if (slot.IsBooked)
                         {
                             _logger.LogWarning($"Time slot ID {slot.Id} is already booked during the approved leave period");
-                            // Here we could add code to notify the admin or reschedule
                         }
                         
-                        // Mark the slot as booked/unavailable during leave
                         slot.IsBooked = true;
                     }
                     
@@ -290,11 +259,9 @@ namespace DentalManagement.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error updating time slots for leave request ID: {leaveRequest.Id}");
-                // We don't throw here - we just log the error but still allow the leave approval to proceed
             }
         }
         
-        // Get doctor leave balance summary
         public async Task<List<DoctorLeaveBalance>> GetDoctorLeaveBalancesAsync(int doctorId, int year)
         {
             var balances = await _context.DoctorLeaveBalances
@@ -302,7 +269,6 @@ namespace DentalManagement.Services
                 .Where(lb => lb.DoctorId == doctorId && lb.Year == year)
                 .ToListAsync();
                 
-            // Fix any balances with TotalDays = 0
             foreach (var balance in balances)
             {
                 if (balance.TotalDays == 0)
@@ -316,7 +282,6 @@ namespace DentalManagement.Services
             return balances;
         }
         
-        // Get doctor leave requests
         public async Task<List<DoctorLeaveRequest>> GetDoctorLeaveRequestsAsync(int doctorId)
         {
             return await _context.DoctorLeaveRequests
@@ -327,7 +292,6 @@ namespace DentalManagement.Services
                 .ToListAsync();
         }
         
-        // Get all pending leave requests (for admin)
         public async Task<List<DoctorLeaveRequest>> GetPendingLeaveRequestsAsync()
         {
             return await _context.DoctorLeaveRequests

@@ -10,10 +10,10 @@ namespace DentalManagement.Models
     public class Doctor
     {
         [Key]
-        public int Id { get; set; }  // Primary Key (Auto Increment)
+        public int Id { get; set; }  
 
         [ForeignKey("User")]
-        public string UserID { get; set; } // Foreign Key for User
+        public string UserID { get; set; } 
         public User User { get; set; } 
 
         [Required]
@@ -31,21 +31,20 @@ namespace DentalManagement.Models
         public string? PhoneNumber { get; set; }
 
         [Required]
-        public string Specialty { get; set; } // Doctor's specialty (e.g., Orthodontist, Surgeon)
+        public string Specialty { get; set; } 
 
         public string? Qualifications { get; set; }
 
-        public int ExperienceYears { get; set; } // Years of experience
+        public int ExperienceYears { get; set; } 
 
-        public string? AvailableTimeSlots { get; set; } // Store JSON data for time slots
+        public string? AvailableTimeSlots { get; set; } 
 
-        public string? ProfilePictureUrl { get; set; } // Store URL for profile picture
+        public string? ProfilePictureUrl { get; set; } 
         public bool IsDeleted { get; set; } = false;
 
         [Required]
-        public StatusType Status { get; set; } // Active/Inactive
+        public StatusType Status { get; set; } 
         
-        // Navigation properties
         public List<DoctorTreatment> DoctorTreatments { get; set; } = new();
         public List<DoctorLeaveBalance> LeaveBalances { get; set; } = new();
         public List<DoctorLeaveRequest> LeaveRequests { get; set; } = new();

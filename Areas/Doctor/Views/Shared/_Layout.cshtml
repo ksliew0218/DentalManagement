@@ -9,34 +9,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SmileCraft Dental Management</title>
     
-    <!-- Bootstrap CSS -->
+    
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     
-    <!-- Bootstrap Icons -->
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-    <!-- Google Fonts - Inter -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Doctor Dashboard CSS -->
+    
     <link rel="stylesheet" href="~/css/doctor-dashboard.css" />
     
-    <!-- Custom CSS -->
+    
     <link rel="stylesheet" href="~/css/site.css" />
     
-    <!-- Additional Styles -->
+    
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     @if (SignInManager.IsSignedIn(User))
     {
         <div class="app-container">
-            <!-- Sidebar -->
             <div id="sidebar" class="sidebar">
                 <div class="sidebar-scroll-area">
-                    <!-- Header Section -->
                     <div class="header-section">
                         <div class="logo-section">
                             <img src="~/images/logo.png" alt="Logo" class="logo-expanded">
@@ -47,7 +45,6 @@
                         </button>
                     </div>
                     
-                    <!-- Profile Section -->
                     <div class="profile-section">
                         <div class="profile-image">
                             @if (ViewData["DoctorProfileImage"] != null)
@@ -76,12 +73,11 @@
                         </div>
                     </div>
                     
-                    <!-- Menu Toggle for Collapsed State -->
                     <button class="menu-toggle-collapsed">
                         <i class="bi bi-chevron-right"></i>
                     </button>
                     
-                    <!-- Navigation Menu -->
+                    
                     <ul class="nav-menu">
                         <li>
                             <a asp-area="Doctor" asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"].ToString() == "Dashboard" ? "active" : "")">
@@ -136,7 +132,7 @@
                     </ul>
                 </div>
                 
-                <!-- Sidebar Footer -->
+                
                 <div class="sidebar-footer">
                     <div class="footer-title">SmileCraft Dental Management</div>
                     <div class="info-item">
@@ -150,9 +146,8 @@
                 </div>
             </div>
             
-            <!-- Main Content -->
+            
             <div class="main-content">
-                <!-- Mobile Menu Toggle Button -->
                 <button class="mobile-menu-toggle d-block d-md-none">
                     <i class="bi bi-list"></i>
                 </button>
@@ -170,23 +165,23 @@
         </div>
     }
     
-    <!-- Footer -->
+    
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; @DateTime.Now.Year - SmileCraft Dental Management System
         </div>
     </footer>
     
-    <!-- jQuery -->
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     
-    <!-- Bootstrap JS Bundle -->
+    
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Doctor Dashboard JS -->
+    
     <script src="~/js/doctor-dashboard.js"></script>
     
-    <!-- Site JS -->
+    
     <script src="~/js/site.js" asp-append-version="true"></script>
     
     @await RenderSectionAsync("Scripts", required: false)

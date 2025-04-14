@@ -4,13 +4,11 @@
 }
 
 <head>
-    <!-- Link to your custom dashboard CSS -->
     <link href="~/css/dashboard.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/treatment-details.css" rel="stylesheet" asp-append-version="true">
 </head>
 
 <div class="dashboard-container">
-    <!-- Welcome Card -->
     <div class="welcome-card">
         <div class="welcome-header">
             <div class="welcome-title">
@@ -65,7 +63,7 @@
         </div>
     </div>
 
-    <!-- Treatment Progress Section -->
+    
     <!-- @if (ViewData["OngoingTreatment"] != null)
     {
         <div class="treatment-progress-section">
@@ -120,7 +118,7 @@
         </div>
     } -->
 
-    <!-- Appointments Section -->
+    
     <!-- <div class="appointments-section">
         <div class="section-card">
             <div class="card-header">
@@ -176,7 +174,7 @@
         </div>
     </div> -->
 
-    <!-- Recent Treatment History Section -->
+    
     <!-- <div class="section-card treatment-history">
         <div class="card-header">
             <h3><i class="bi bi-clipboard2-pulse"></i> Recent Treatment History</h3>
@@ -222,7 +220,7 @@
         }
     </div> -->
 
-<!-- Treatment Types Section -->
+
 <div class="section-card treatment-types">
     <div class="card-header">
         <h3><i class="bi bi-grid"></i> Available Treatments</h3>
@@ -313,10 +311,9 @@ else
 }
 </div>
 
-<!-- Treatment Details Overlay -->
+
 <div id="treatment-details-overlay">
     <div id="treatment-details-content">
-        <!-- Content will be populated by JavaScript -->
     </div>
 </div>
 

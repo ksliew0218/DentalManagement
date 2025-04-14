@@ -1,4 +1,4 @@
-/* Reset and Base */
+
 * {
   margin: 0;
   padding: 0;
@@ -30,13 +30,11 @@ body {
   color: var(--text-color);
 }
 
-/* Layout */
 .app-container {
   display: flex;
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   width: var(--sidebar-width);
   background: var(--sidebar-bg);
@@ -59,7 +57,6 @@ body {
   flex-direction: column;
 }
 
-/* Style the scrollbar to be subtle */
 .sidebar-scroll-area::-webkit-scrollbar {
   width: 4px;
 }
@@ -73,7 +70,6 @@ body {
   border-radius: 4px;
 }
 
-/* Header Section */
 .header-section {
   padding: 15px 20px;
   display: flex;
@@ -131,7 +127,6 @@ body {
   font-size: 1.2rem;
 }
 
-/* Style for collapsed toggle button */
 .menu-toggle-collapsed {
   display: none;
   background: none;
@@ -158,7 +153,6 @@ body {
   outline: none;
 }
 
-/* Remove any default button styles */
 .menu-toggle-collapsed:focus,
 .menu-toggle-collapsed:active {
   outline: none;
@@ -166,22 +160,19 @@ body {
   box-shadow: none;
 }
 
-/* Show/hide appropriate toggle based on sidebar state */
 .sidebar.collapsed .menu-toggle {
-  display: none; /* Hide header toggle when collapsed */
+  display: none; 
 }
 
 .sidebar.collapsed .menu-toggle-collapsed {
-  display: block; /* Show collapsed toggle when sidebar is collapsed */
+  display: block; 
 }
 
-/* Position the collapsed toggle at the top of nav menu */
 .nav-menu {
   margin-top: 0;
   padding-top: 0;
 }
 
-/* Profile Section */
 .profile-section {
   padding: 20px;
   text-align: center;
@@ -220,7 +211,6 @@ body {
   background-color: var(--primary-color);
 }
 
-/* This ensures the .rounded-circle class works properly */
 .rounded-circle {
   border-radius: 50% !important;
 }
@@ -251,7 +241,6 @@ body {
   color: var(--text-muted);
 }
 
-/* Navigation Menu */
 .nav-menu {
   list-style: none;
   padding: 15px 0;
@@ -316,7 +305,6 @@ body {
   color: var(--danger-color);
 }
 
-/* Main content area */
 .main-content {
   margin-left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
@@ -325,7 +313,6 @@ body {
   padding: 20px;
 }
 
-/* Topbar */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -414,7 +401,6 @@ body {
   object-fit: cover;
 }
 
-/* Dashboard Content */
 .dashboard-content {
   padding: 20px;
   background: white;
@@ -422,7 +408,6 @@ body {
   box-shadow: 0 0.125rem 0.25rem rgba(18, 38, 63, 0.075);
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -511,7 +496,6 @@ body {
   font-weight: 500;
 }
 
-/* Table Section */
 .table-section {
   margin-top: 30px;
   background: white;
@@ -626,7 +610,6 @@ tr:hover td {
   color: var(--primary-color);
 }
 
-/* Calendar Widget */
 .calendar-widget {
   background: white;
   border-radius: 10px;
@@ -731,7 +714,6 @@ tr:hover td {
   background: var(--active-item-bg);
 }
 
-/* Sidebar collapse styles */
 .sidebar.collapsed {
   width: var(--sidebar-collapsed-width);
 }
@@ -789,13 +771,11 @@ tr:hover td {
   margin: 4px 5px;
 }
 
-/* Main content adjustment when sidebar is collapsed */
 .sidebar.collapsed ~ .main-content {
   margin-left: var(--sidebar-collapsed-width);
   width: calc(100% - var(--sidebar-collapsed-width));
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
@@ -825,7 +805,6 @@ tr:hover td {
   }
 }
 
-/* Responsive adjustments for smaller screens */
 @media (max-width: 576px) {
   .topbar {
     flex-direction: column;

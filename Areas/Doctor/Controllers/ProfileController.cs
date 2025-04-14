@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.Hosting;
 namespace DentalManagement.Areas.Doctor.Controllers
 {
     [Area("Doctor")]
-    // Temporarily commenting out this restriction for testing
-    // [Authorize(Roles = "Doctor")]
     [Authorize]
     public class ProfileController : Controller
     {
@@ -41,12 +39,10 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 if (user == null)
                 {
-                    // Log the user ID from claims for debugging
                     var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                     return Content($"User not found. User claims ID: {userId ?? "none"}");
                 }
 
-                // Get and display the user's roles for debugging
                 var roles = await _userManager.GetRolesAsync(user);
                 var rolesList = string.Join(", ", roles);
 
@@ -68,8 +64,6 @@ namespace DentalManagement.Areas.Doctor.Controllers
                     ExperienceYears = doctor.ExperienceYears,
                     ProfilePictureUrl = doctor.ProfilePictureUrl
                 };
-
-                // Set doctor name and profile picture in ViewData for the layout
                 ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
                 ViewData["DoctorProfilePicture"] = doctor.ProfilePictureUrl;
 
@@ -85,7 +79,6 @@ namespace DentalManagement.Areas.Doctor.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(Models.DoctorProfileViewModel model, IFormFile? profilePicture)
         {
-            // Remove model validation for ProfilePictureUrl if there's an error for it
             if (ModelState.ContainsKey("ProfilePictureUrl"))
             {
                 ModelState.Remove("ProfilePictureUrl");
@@ -108,7 +101,6 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 return NotFound("Doctor profile not found. Please contact the administrator.");
             }
 
-            // Update basic info
             doctor.FirstName = model.FirstName;
             doctor.LastName = model.LastName;
             
@@ -123,15 +115,12 @@ namespace DentalManagement.Areas.Doctor.Controllers
             doctor.Qualifications = model.Qualifications;
             doctor.ExperienceYears = model.ExperienceYears;
 
-            // Only update profile picture if a new one is provided
             if (profilePicture != null && profilePicture.Length > 0)
             {
                 try
                 {
-                    // Create a path within wwwroot
                     var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "profiles");
                     
-                    // Create directory if it doesn't exist
                     if (!Directory.Exists(uploadsFolder))
                     {
                         Directory.CreateDirectory(uploadsFolder);
@@ -149,13 +138,10 @@ namespace DentalManagement.Areas.Doctor.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log error but continue with profile update
                     Console.WriteLine($"Error uploading profile picture: {ex.Message}");
                     ModelState.AddModelError("profilePicture", "Failed to upload profile picture, but other profile information was updated.");
                 }
             }
-            // We're not updating doctor.ProfilePictureUrl if no new image is provided
-            // This leaves the existing profile picture unchanged
 
             try
             {

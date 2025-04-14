@@ -1,31 +1,24 @@
-// Wrap all functionality in a function that can be called on page load and after AJAX navigation
 function initializeAppointmentFilters() {
-  // Tab switching functionality
   const tabButtons = document.querySelectorAll('.filter-tab');
   const tabContents = document.querySelectorAll('.tab-content');
 
   if (!tabButtons.length || !tabContents.length) {
-    // If elements don't exist, exit early
     return;
   }
 
   tabButtons.forEach((button) => {
     button.addEventListener('click', function () {
-      // Remove active class from all buttons and contents
       tabButtons.forEach((btn) => btn.classList.remove('active'));
       tabContents.forEach((content) => content.classList.remove('active'));
 
-      // Add active class to current button and corresponding content
       this.classList.add('active');
       const tabId = this.getAttribute('data-tab');
       document.getElementById(tabId + '-tab').classList.add('active');
 
-      // Apply active filters to the new tab content
       applyAllFilters();
     });
   });
 
-  // Modal functionality
   const modal = document.getElementById('cancel-confirmation-modal');
   const closeButtons = document.querySelectorAll('.close-modal-btn');
   const keepAppointmentBtn = document.getElementById('keep-appointment-btn');
@@ -48,7 +41,6 @@ function initializeAppointmentFilters() {
     keepAppointmentBtn.addEventListener('click', closeModal);
   }
 
-  // Close modal if clicked outside
   window.addEventListener('click', function (event) {
     const modal = document.getElementById('cancel-confirmation-modal');
     if (event.target === modal) {
@@ -56,7 +48,6 @@ function initializeAppointmentFilters() {
     }
   });
 
-  // Handle card animations
   const appointmentCards = document.querySelectorAll('.appointment-card');
   appointmentCards.forEach((card, index) => {
     setTimeout(() => {
@@ -64,7 +55,6 @@ function initializeAppointmentFilters() {
     }, 100 * (index + 1));
   });
 
-  // Date Filter Functionality
   const dateFilterBtn = document.getElementById('dateFilterBtn');
   const datePickerContainer = document.getElementById('datePickerContainer');
   const closeDatePicker = document.querySelector('.close-date-picker');
@@ -77,12 +67,10 @@ function initializeAppointmentFilters() {
   const activeFilterTags = document.getElementById('activeFilterTags');
   const clearAllFilters = document.getElementById('clearAllFilters');
 
-  // If required elements don't exist, exit early
   if (!dateFilterBtn || !datePickerContainer) {
     return;
   }
 
-  // Current filters state - initialize as a window property to persist across AJAX loads
   if (!window.appointmentFilters) {
     window.appointmentFilters = {
       search: '',
@@ -90,20 +78,16 @@ function initializeAppointmentFilters() {
     };
   }
   
-  // Reference the current filters for easier reading
   const currentFilters = window.appointmentFilters;
 
-  // Toggle date picker
   dateFilterBtn.addEventListener('click', function () {
     datePickerContainer.classList.toggle('active');
     this.classList.toggle('active');
 
-    // Set initial values if date range is already selected
     if (currentFilters.dateRange) {
       startDateInput.value = currentFilters.dateRange.start;
       endDateInput.value = currentFilters.dateRange.end;
 
-      // Highlight the corresponding shortcut if applicable
       dateShortcuts.forEach((shortcut) => {
         shortcut.classList.remove('active');
         if (
@@ -116,15 +100,12 @@ function initializeAppointmentFilters() {
     }
   });
 
-  // Close date picker
   if (closeDatePicker) {
     closeDatePicker.addEventListener('click', function () {
       datePickerContainer.classList.remove('active');
       dateFilterBtn.classList.remove('active');
     });
   }
-
-  // Click outside to close date picker
   document.addEventListener('click', function (event) {
     if (
       dateFilterBtn && !dateFilterBtn.contains(event.target) &&
@@ -135,54 +116,42 @@ function initializeAppointmentFilters() {
     }
   });
 
-  // Date shortcuts
   if (dateShortcuts.length) {
     dateShortcuts.forEach((shortcut) => {
       shortcut.addEventListener('click', function () {
         const range = this.getAttribute('data-range');
 
-        // Remove active class from all shortcuts
         dateShortcuts.forEach((s) => s.classList.remove('active'));
 
-        // Add active class to clicked shortcut
         this.classList.add('active');
 
-        // Set date inputs based on shortcut
         const today = new Date();
         let startDate = new Date(today);
         let endDate = new Date(today);
 
         switch (range) {
           case 'today':
-            // Start and end date are both today
             break;
           case 'week':
-            // Start date is beginning of week (Sunday)
             startDate.setDate(today.getDate() - today.getDay());
-            // End date is end of week (Saturday)
             endDate.setDate(startDate.getDate() + 6);
             break;
           case 'month':
-            // Start date is 1st of current month
             startDate.setDate(1);
-            // End date is last day of current month
             endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
             break;
           case 'all':
-            // Clear the inputs for all time
             startDateInput.value = '';
             endDateInput.value = '';
             return;
         }
 
-        // Format dates for inputs (YYYY-MM-DD)
         startDateInput.value = formatDateForInput(startDate);
         endDateInput.value = formatDateForInput(endDate);
       });
     });
   }
 
-  // Helper function to format date for input
   function formatDateForInput(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -190,21 +159,18 @@ function initializeAppointmentFilters() {
     return `${year}-${month}-${day}`;
   }
 
-  // Helper function to format date for display
   function formatDateForDisplay(dateString) {
     const date = new Date(dateString);
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return date.toLocaleDateString('en-US', options);
   }
 
-  // Apply date filter
   if (applyDateFilter) {
     applyDateFilter.addEventListener('click', function () {
       const startDate = startDateInput.value;
       const endDate = endDateInput.value;
 
       if (startDate || endDate) {
-        // Determine which shortcut was used (if any)
         let shortcut = null;
         dateShortcuts.forEach((s) => {
           if (s.classList.contains('active')) {
@@ -218,40 +184,32 @@ function initializeAppointmentFilters() {
           shortcut: shortcut,
         };
 
-        // Update UI
         updateFilterTags();
         applyAllFilters();
 
-        // Close date picker
         datePickerContainer.classList.remove('active');
         dateFilterBtn.classList.add('active');
       } else {
-        // If no dates selected, clear the filter
         clearDateFilterAndUI();
       }
     });
   }
 
-  // Clear date filter button inside date picker
   if (clearDateFilter) {
     clearDateFilter.addEventListener('click', function () {
-      // Clear the date inputs and shortcuts
       startDateInput.value = '';
       endDateInput.value = '';
       dateShortcuts.forEach((s) => s.classList.remove('active'));
 
-      // Clear the filter and update UI
       currentFilters.dateRange = null;
       updateFilterTags();
       applyAllFilters();
 
-      // Close date picker
       datePickerContainer.classList.remove('active');
       dateFilterBtn.classList.remove('active');
     });
   }
 
-  // Helper function to clear date filter and update UI
   function clearDateFilterAndUI() {
     if (startDateInput) startDateInput.value = '';
     if (endDateInput) endDateInput.value = '';
@@ -265,14 +223,11 @@ function initializeAppointmentFilters() {
     applyAllFilters();
   }
 
-  // Clear all filters
   if (clearAllFilters) {
     clearAllFilters.addEventListener('click', function () {
-      // Reset filter state
       currentFilters.search = '';
       currentFilters.dateRange = null;
 
-      // Reset UI
       const searchElement = document.getElementById('appointmentSearch');
       if (searchElement) searchElement.value = '';
       
@@ -283,10 +238,8 @@ function initializeAppointmentFilters() {
       
       if (dateFilterBtn) dateFilterBtn.classList.remove('active');
 
-      // Hide active filters display
       if (activeFilters) activeFilters.style.display = 'none';
 
-      // Show all appointments in the current tab
       const visibleTab = document.querySelector('.tab-content.active');
       if (visibleTab) {
         const cards = visibleTab.querySelectorAll('.appointment-card');
@@ -294,7 +247,6 @@ function initializeAppointmentFilters() {
           card.style.display = 'flex';
         });
 
-        // Hide empty state
         const emptyState = visibleTab.querySelector('.empty-category-card');
         if (emptyState) {
           emptyState.style.display = 'none';
@@ -303,28 +255,23 @@ function initializeAppointmentFilters() {
     });
   }
 
-  // Update filter tags display
   function updateFilterTags() {
     if (!activeFilterTags) return;
     
-    // Clear existing tags
     activeFilterTags.innerHTML = '';
 
     let hasActiveFilters = false;
 
-    // Add search filter tag
     if (currentFilters.search) {
       hasActiveFilters = true;
       addFilterTag('Search', `"${currentFilters.search}"`, 'search');
     }
 
-    // Add date range filter tag
     if (currentFilters.dateRange) {
       hasActiveFilters = true;
 
       let dateLabel;
 
-      // Use friendly label for shortcuts
       if (currentFilters.dateRange.shortcut) {
         switch (currentFilters.dateRange.shortcut) {
           case 'today':
@@ -341,7 +288,6 @@ function initializeAppointmentFilters() {
             break;
         }
       } else {
-        // Custom date range
         if (currentFilters.dateRange.start && currentFilters.dateRange.end) {
           dateLabel = `${formatDateForDisplay(
             currentFilters.dateRange.start
@@ -360,13 +306,11 @@ function initializeAppointmentFilters() {
       addFilterTag('Date', dateLabel, 'date');
     }
 
-    // Show/hide active filters section
     if (activeFilters) {
       activeFilters.style.display = hasActiveFilters ? 'flex' : 'none';
     }
   }
 
-  // Add a filter tag to the display
   function addFilterTag(type, value, filterKey) {
     const tagElement = document.createElement('div');
     tagElement.className = 'filter-tag';
@@ -377,7 +321,6 @@ function initializeAppointmentFilters() {
             </button>
         `;
 
-    // Add click event to remove button
     const removeButton = tagElement.querySelector('.remove-filter');
     removeButton.addEventListener('click', function () {
       const filterKey = this.getAttribute('data-filter');
@@ -390,7 +333,6 @@ function initializeAppointmentFilters() {
         clearDateFilterAndUI();
       }
 
-      // Update UI and apply filters
       updateFilterTags();
       applyAllFilters();
     });
@@ -398,8 +340,6 @@ function initializeAppointmentFilters() {
     activeFilterTags.appendChild(tagElement);
   }
   
-  // Helper function to check if an appointment is in the past based on date and time
-  // Improved to correctly handle AM/PM time formats
   function isAppointmentInPast(dateElement) {
     if (!dateElement) return false;
     
@@ -411,20 +351,16 @@ function initializeAppointmentFilters() {
     
     const monthText = monthElement.textContent.trim();
     const dayText = dayElement.textContent.trim();
-    let timeText = timeElement ? timeElement.textContent.trim() : '23:59'; // Default to end of day if no time
+    let timeText = timeElement ? timeElement.textContent.trim() : '23:59'; 
     
-    // Parse month name to month index (0-11)
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthIndex = monthNames.findIndex(m => monthText.includes(m));
     
     if (monthIndex === -1) return false;
     
-    // Get current time
     const now = new Date();
     
-    // Improved time parsing to correctly handle AM/PM format
     if (timeText) {
-      // Look for patterns like "5:00 PM" or "5:00PM" or just "5:00"
       const timeMatch = timeText.match(/(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i);
       
       if (timeMatch) {
@@ -432,14 +368,12 @@ function initializeAppointmentFilters() {
         const minutes = parseInt(timeMatch[2]);
         const ampm = timeMatch[3] ? timeMatch[3].toUpperCase() : null;
         
-        // Handle AM/PM conversion to 24-hour format
         if (ampm === 'PM' && hours < 12) {
-          hours += 12; // Convert PM times to 24-hour (except 12 PM)
+          hours += 12; 
         } else if (ampm === 'AM' && hours === 12) {
-          hours = 0; // 12 AM is 0 in 24-hour format
+          hours = 0; 
         }
         
-        // Create appointment date with the correct hours and minutes
         const appointmentDate = new Date(
           now.getFullYear(),
           monthIndex,
@@ -448,12 +382,10 @@ function initializeAppointmentFilters() {
           minutes
         );
         
-        // Compare with current time
         return appointmentDate < now;
       }
     }
     
-    // Fallback - create date with just day and month, set time to end of day
     const appointmentDate = new Date(
       now.getFullYear(),
       monthIndex,
@@ -462,11 +394,9 @@ function initializeAppointmentFilters() {
       59
     );
     
-    // Compare date only (if time couldn't be parsed)
     return appointmentDate < now;
   }
 
-  // Apply all active filters
   function applyAllFilters() {
     const visibleTab = document.querySelector('.tab-content.active');
 
@@ -477,7 +407,6 @@ function initializeAppointmentFilters() {
       cards.forEach((card) => {
         let visible = true;
 
-        // Apply search filter
         if (currentFilters.search) {
           const treatmentName = card
             .querySelector('.treatment-name')
@@ -494,17 +423,14 @@ function initializeAppointmentFilters() {
           }
         }
 
-        // Apply date filter
         if (visible && currentFilters.dateRange) {
           const dateBox = card.querySelector('.date-box');
           if (dateBox) {
             const monthText = dateBox.querySelector('.month').textContent;
             const dayText = dateBox.querySelector('.day').textContent;
 
-            // Get year from current date (since the appointment card might not show year)
             const currentYear = new Date().getFullYear();
 
-            // Parse month (convert from "Apr" to month number)
             const monthNames = [
               'Jan',
               'Feb',
@@ -523,17 +449,15 @@ function initializeAppointmentFilters() {
               monthText.includes(m)
             );
 
-            // Create date object for appointment
             const appointmentDate = new Date(
               currentYear,
               monthIndex,
               parseInt(dayText)
             );
 
-            // Check if date is within range
             if (currentFilters.dateRange.start) {
               const startDate = new Date(currentFilters.dateRange.start);
-              startDate.setHours(0, 0, 0, 0); // Start of day
+              startDate.setHours(0, 0, 0, 0); 
 
               if (appointmentDate < startDate) {
                 visible = false;
@@ -542,7 +466,7 @@ function initializeAppointmentFilters() {
 
             if (visible && currentFilters.dateRange.end) {
               const endDate = new Date(currentFilters.dateRange.end);
-              endDate.setHours(23, 59, 59, 999); // End of day
+              endDate.setHours(23, 59, 59, 999); 
 
               if (appointmentDate > endDate) {
                 visible = false;
@@ -551,18 +475,14 @@ function initializeAppointmentFilters() {
           }
         }
 
-        // Special handling for tabs
-        // Note: This is to ensure we maintain tab separation for cancelled appointments
         const tabId = visibleTab.id;
         const statusElement = card.querySelector('.appointment-status');
         const status = statusElement ? statusElement.textContent.trim() : '';
         
-        // Make sure cancelled appointments only show in cancelled tab
         if (tabId !== 'cancelled-tab' && status === 'Cancelled') {
           visible = false;
         }
 
-        // Update card visibility
         card.style.display = visible ? 'flex' : 'none';
 
         if (visible) {
@@ -570,7 +490,6 @@ function initializeAppointmentFilters() {
         }
       });
 
-      // Show/hide empty state
       const emptyState = visibleTab.querySelector('.empty-category-card');
       if (emptyState) {
         emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
@@ -578,25 +497,20 @@ function initializeAppointmentFilters() {
     }
   }
 
-  // Search functionality
   const searchInput = document.getElementById('appointmentSearch');
   if (searchInput) {
-    // Set initial value if search filter exists
     if (currentFilters.search) {
       searchInput.value = currentFilters.search;
     }
     
     searchInput.addEventListener('input', function () {
-      // Update current filter state
       currentFilters.search = this.value.trim();
 
-      // Update UI and apply filters
       updateFilterTags();
       applyAllFilters();
     });
   }
   
-  // Completely rewritten function to correctly organize appointments into tabs
   function organizeAppointmentsByStatus() {
     const appointments = document.querySelectorAll('.appointment-card');
     const upcomingTab = document.getElementById('upcoming-tab');
@@ -605,42 +519,32 @@ function initializeAppointmentFilters() {
     
     if (!upcomingTab || !pastTab || !cancelledTab) return;
     
-    // Prepare arrays to hold appointments for each tab
     const upcomingAppointments = [];
     const pastAppointments = [];
     const cancelledAppointments = [];
     
-    // Process each appointment card and determine which tab it belongs in
     appointments.forEach(card => {
       const statusElement = card.querySelector('.appointment-status');
       const status = statusElement ? statusElement.textContent.trim() : '';
       const dateBox = card.querySelector('.date-box');
       
-      // Create a clone of the card to move to another tab
       const cardClone = card.cloneNode(true);
       
-      // Determine which tab this appointment belongs in
       if (status === 'Cancelled') {
-        // Cancelled appointments always go to the Cancelled tab
         cancelledAppointments.push(cardClone);
       } 
       else if (status === 'Completed') {
-        // Completed appointments go to the Past tab
         pastAppointments.push(cardClone);
       }
       else if (isAppointmentInPast(dateBox)) {
-        // Past appointments based on date/time go to Past tab
         pastAppointments.push(cardClone);
       }
       else {
-        // All other appointments (future ones) go to the Upcoming tab
         upcomingAppointments.push(cardClone);
       }
     });
     
-    // Helper function to update a tab with its appointments
     function updateTabWithAppointments(tab, appointments) {
-      // Remove existing grid or empty state
       const existingGrid = tab.querySelector('.appointments-grid');
       const existingEmpty = tab.querySelector('.empty-category-card');
       
@@ -648,7 +552,6 @@ function initializeAppointmentFilters() {
       if (existingEmpty) existingEmpty.remove();
       
       if (appointments.length > 0) {
-        // Create grid and add appointments
         const grid = document.createElement('div');
         grid.className = 'appointments-grid';
         
@@ -658,7 +561,6 @@ function initializeAppointmentFilters() {
         
         tab.appendChild(grid);
       } else {
-        // Create empty state message
         const emptyState = document.createElement('div');
         emptyState.className = 'empty-category-card';
         
@@ -697,15 +599,12 @@ function initializeAppointmentFilters() {
       }
     }
     
-    // Update each tab with its appointments
     updateTabWithAppointments(upcomingTab, upcomingAppointments);
     updateTabWithAppointments(pastTab, pastAppointments);
     updateTabWithAppointments(cancelledTab, cancelledAppointments);
     
-    // Remove original cards from DOM
     appointments.forEach(card => card.remove());
     
-    // Reapply animations to new cards
     const newCards = document.querySelectorAll('.appointment-card');
     newCards.forEach((card, index) => {
       setTimeout(() => {
@@ -714,35 +613,27 @@ function initializeAppointmentFilters() {
     });
   }
   
-  // Run the organization logic on page load
   organizeAppointmentsByStatus();
   
-  // Apply existing filters on initialization
   updateFilterTags();
   applyAllFilters();
 }
 
-// Function for cancel appointment confirmation
 function confirmCancelAppointment(appointmentId) {
-  // Set the appointment ID in the hidden form field
   const appointmentIdInput = document.getElementById('appointmentIdInput');
   if (appointmentIdInput) {
     appointmentIdInput.value = appointmentId;
   }
 
-  // Show the modal
   const modal = document.getElementById('cancel-confirmation-modal');
   if (modal) {
     modal.classList.add('show');
-    modal.style.display = 'flex'; // Explicitly set display to flex
+    modal.style.display = 'flex'; 
   }
 }
 
-// Make the function globally available
 window.confirmCancelAppointment = confirmCancelAppointment;
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', initializeAppointmentFilters);
 
-// Re-initialize after AJAX content loads
 document.addEventListener('contentLoaded', initializeAppointmentFilters);

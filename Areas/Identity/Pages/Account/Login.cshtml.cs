@@ -1,6 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
+﻿#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -63,7 +61,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
 
             returnUrl ??= Url.Content("~/");
 
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -79,10 +76,8 @@ namespace DentalManagement.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // Find the user by email first
                 var user = await _userManager.FindByEmailAsync(Input.Email);
                 
-                // Check if email is confirmed if requireConfirmedEmail is enabled
                 if (user != null && !await _userManager.IsEmailConfirmedAsync(user) && 
                     _userManager.Options.SignIn.RequireConfirmedEmail)
                 {
@@ -90,8 +85,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                     return Page();
                 }
                 
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 
                 if (result.Succeeded)
@@ -101,7 +94,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                     
                     if (loggedInUser != null)
                     {
-                        // Use a simple switch statement to determine redirect path
                         string redirectUrl = loggedInUser.Role switch
                         {
                             UserRole.Admin => "/Admin/Dashboard",
@@ -114,7 +106,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                         return LocalRedirect(redirectUrl);
                     }
                     
-                    // Default redirect if user info can't be retrieved
                     return LocalRedirect("/");
                 }
                 if (result.RequiresTwoFactor)
@@ -133,7 +124,6 @@ namespace DentalManagement.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
     }

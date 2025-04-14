@@ -7,13 +7,12 @@
 <link href="~/css/billing.css" rel="stylesheet" asp-append-version="true">
 
 <div class="dashboard-container">
-    <!-- Page Header -->
     <div class="page-header">
         <h2><i class="bi bi-credit-card"></i> Billing & Payments</h2>
         <p class="subtitle">Manage your payment information and history</p>
     </div>
     
-    <!-- Alerts -->
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert-message success">
@@ -32,7 +31,7 @@
         </div>
     }
     
-    <!-- Billing Summary Cards -->
+    
     <div class="summary-cards">
         <div class="summary-card">
             <div class="summary-icon">
@@ -68,7 +67,7 @@
         </div>
     </div>
 
-    <!-- Filter Tabs -->
+    
     <div class="filter-tabs">
         <button class="filter-tab active" data-tab="pending-deposits">
             <i class="bi bi-hourglass-split"></i> Pending Deposits
@@ -81,7 +80,7 @@
         </button>
     </div>
 
-    <!-- Pending Deposits Tab -->
+    
     <div class="tab-content active" id="pending-deposits-tab">
         @if (Model?.PendingDeposits != null && Model.PendingDeposits.Any())
         {
@@ -148,7 +147,7 @@
         }
     </div>
 
-    <!-- Outstanding Balances Tab -->
+    
     <div class="tab-content" id="outstanding-balances-tab">
         @if (Model?.OutstandingPayments != null && Model.OutstandingPayments.Any())
         {
@@ -225,7 +224,7 @@
         }
     </div>
 
-    <!-- Payment History Tab -->
+    
     <div class="tab-content" id="payment-history-tab">
         @if (Model?.PaymentHistory != null && Model.PaymentHistory.Any())
         {
