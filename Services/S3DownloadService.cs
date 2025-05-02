@@ -64,7 +64,7 @@ namespace DentalManagement.Services
         {
             try
             {
-                var requestUrl = $"https://8v02ppd5k4.execute-api.us-east-1.amazonaws.com/prod/DownloadFromS3?key={Uri.EscapeDataString(key)}";
+                var requestUrl = $"https://pig7opi0h5.execute-api.us-east-1.amazonaws.com/prod_/DownloadFromS3?key={Uri.EscapeDataString(key)}";
                 _logger.LogInformation($"Request URL: {requestUrl}");
 
                 var response = await _httpClient.GetAsync(requestUrl);

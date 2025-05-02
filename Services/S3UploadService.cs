@@ -24,7 +24,7 @@ namespace DentalManagement.Services
             var json = JsonSerializer.Serialize(data);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("https://s2isajftl1.execute-api.us-east-1.amazonaws.com/prod/UploadToS3", content);
+            var response = await _httpClient.PostAsync("https://gtayzldnkc.execute-api.us-east-1.amazonaws.com/prod_/UploadToS3", content);
 
             return response.IsSuccessStatusCode;
         }
