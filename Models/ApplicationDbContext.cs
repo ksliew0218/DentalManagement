@@ -30,6 +30,7 @@ namespace DentalManagement.Models
         public DbSet<UserNotification> UserNotifications { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<TreatmentReport> TreatmentReports { get; set; }
+        public DbSet<AppointmentDocument> AppointmentDocuments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

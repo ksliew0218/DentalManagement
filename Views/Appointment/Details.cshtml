@@ -1,0 +1,143 @@
+@model DentalManagement.Models.Appointment
+
+@{
+    ViewData["Title"] = "Appointment Details";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Appointment Details</h2>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Appointment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Patient:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Patient != null)
+                                    {
+                                        @(Model.Patient.FirstName + " " + Model.Patient.LastName)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not available</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Doctor:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Doctor != null)
+                                    {
+                                        @(Model.Doctor.FirstName + " " + Model.Doctor.LastName)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not available</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Treatment:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.TreatmentType != null)
+                                    {
+                                        @Model.TreatmentType.Name
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not available</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Date:</dt>
+                                <dd class="col-sm-8">@Model.AppointmentDate.ToString("MMMM dd, yyyy")</dd>
+
+                                <dt class="col-sm-4">Time:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.AppointmentTime != null && Model.AppointmentTime != default(TimeSpan))
+                                    {
+                                        @Model.AppointmentTime.ToString(@"hh\:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not available</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge @(Model.Status == "Completed" ? "bg-success" : Model.Status == "Cancelled" ? "bg-danger" : "bg-primary")">
+                                        @Model.Status
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="mt-3">
+                            <h6 class="fw-bold">Notes:</h6>
+                            <p>@Model.Notes</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Total Amount:</dt>
+                                <dd class="col-sm-8">RM @Model.TotalAmount.ToString("0.00")</dd>
+
+                                <dt class="col-sm-4">Deposit Amount:</dt>
+                                <dd class="col-sm-8">RM @Model.DepositAmount.ToString("0.00")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Payment Status:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge @(Model.PaymentStatus == PaymentStatus.Paid ? "bg-success" : Model.PaymentStatus == PaymentStatus.PartiallyPaid ? "bg-warning" : "bg-danger")">
+                                        @Model.PaymentStatus
+                                    </span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Appointment Documents (S3 Storage)</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        View or upload documents related to this appointment. Documents are stored using AWS Lambda and S3 storage.
+                    </p>
+                    <div class="d-flex justify-content-end">
+                        <a asp-controller="AppointmentDocument" asp-action="Index" asp-route-appointmentId="@Model.Id" class="btn btn-primary">
+                            <i class="bi bi-folder"></i> Manage Documents
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

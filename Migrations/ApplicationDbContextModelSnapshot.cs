@@ -92,7 +92,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("TreatmentTypeId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.AppointmentReminder", b =>
@@ -124,7 +124,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("AppointmentId");
 
-                    b.ToTable("AppointmentReminders");
+                    b.ToTable("AppointmentReminders", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.Doctor", b =>
@@ -183,7 +183,7 @@ namespace DentalManagement.Migrations
                     b.HasIndex("UserID")
                         .IsUnique();
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.DoctorLeaveBalance", b =>
@@ -215,7 +215,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("LeaveTypeId");
 
-                    b.ToTable("DoctorLeaveBalances");
+                    b.ToTable("DoctorLeaveBalances", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.DoctorLeaveRequest", b =>
@@ -272,7 +272,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("LeaveTypeId");
 
-                    b.ToTable("DoctorLeaveRequests");
+                    b.ToTable("DoctorLeaveRequests", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.DoctorTreatment", b =>
@@ -302,7 +302,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("TreatmentTypeId");
 
-                    b.ToTable("DoctorTreatments");
+                    b.ToTable("DoctorTreatments", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.LeaveType", b =>
@@ -331,7 +331,7 @@ namespace DentalManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LeaveTypes");
+                    b.ToTable("LeaveTypes", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.Patient", b =>
@@ -384,7 +384,7 @@ namespace DentalManagement.Migrations
                     b.HasIndex("UserID")
                         .IsUnique();
 
-                    b.ToTable("Patients");
+                    b.ToTable("Patients", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.Payment", b =>
@@ -455,7 +455,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("AppointmentId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.TimeSlot", b =>
@@ -487,7 +487,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("TimeSlots");
+                    b.ToTable("TimeSlots", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.TreatmentReport", b =>
@@ -531,7 +531,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("TreatmentReports");
+                    b.ToTable("TreatmentReports", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.TreatmentType", b =>
@@ -572,7 +572,7 @@ namespace DentalManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TreatmentTypes");
+                    b.ToTable("TreatmentTypes", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.User", b =>
@@ -707,7 +707,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserNotifications");
+                    b.ToTable("UserNotifications", (string)null);
                 });
 
             modelBuilder.Entity("DentalManagement.Models.UserNotificationPreferences", b =>
@@ -741,7 +741,7 @@ namespace DentalManagement.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserNotificationPreferences");
+                    b.ToTable("UserNotificationPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

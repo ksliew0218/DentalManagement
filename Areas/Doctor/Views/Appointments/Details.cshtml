@@ -976,6 +976,22 @@
     </div>
 </div>
 
+<div class="card shadow-sm mt-4 mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Appointment Documents (S3 Storage)</h5>
+    </div>
+    <div class="card-body">
+        <p>
+            View or upload documents related to this appointment. Documents are stored using AWS Lambda and S3 storage.
+        </p>
+        <div class="d-flex justify-content-end">
+            <a asp-controller="AppointmentDocument" asp-action="Index" asp-route-appointmentId="@Model.Id" asp-area="" class="btn btn-primary">
+                <i class="bi bi-folder"></i> Manage Documents
+            </a>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $(document).ready(function() {

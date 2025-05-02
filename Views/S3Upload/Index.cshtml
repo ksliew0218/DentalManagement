@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "S3 Upload";
+}
+
+<div class="container mt-4">
+    <h2>Upload Data to S3 via AWS Lambda</h2>
+    <p class="lead">This demonstrates serverless architecture integration with AWS Lambda and S3.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Data Upload Form</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-group mb-3">
+                <label for="jsonData">JSON Data to Upload:</label>
+                <textarea class="form-control" id="jsonData" rows="8" placeholder='{"key": "value", "example": "data"}'></textarea>
+            </div>
+            <button type="button" id="uploadButton" class="btn btn-primary">Upload to S3</button>
+        </div>
+    </div>
+
+    <div class="mt-4" id="resultContainer" style="display: none;">
+        <div class="alert" id="resultAlert" role="alert">
+            <span id="resultMessage"></span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#uploadButton').click(function() {
+                var jsonData = $('#jsonData').val();
+                
+                try {
+                    // Parse the JSON to validate it
+                    var parsedData = JSON.parse(jsonData);
+                    
+                    // Send to server
+                    $.ajax({
+                        url: '@Url.Action("UploadData", "S3Upload")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: jsonData,
+                        success: function(response) {
+                            $('#resultAlert').removeClass('alert-danger').addClass('alert-success');
+                            $('#resultMessage').text(response.message);
+                            $('#resultContainer').show();
+                        },
+                        error: function(xhr) {
+                            var errorMessage = 'Upload failed';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            $('#resultAlert').removeClass('alert-success').addClass('alert-danger');
+                            $('#resultMessage').text(errorMessage);
+                            $('#resultContainer').show();
+                        }
+                    });
+                } catch (e) {
+                    $('#resultAlert').removeClass('alert-success').addClass('alert-danger');
+                    $('#resultMessage').text('Invalid JSON format: ' + e.message);
+                    $('#resultContainer').show();
+                }
+            });
+        });
+    </script>
+} 

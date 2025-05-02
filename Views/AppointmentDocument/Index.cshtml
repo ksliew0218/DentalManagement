@@ -1,0 +1,92 @@
+@model IEnumerable<DentalManagement.Models.AppointmentDocument>
+@{
+    ViewData["Title"] = "Appointment Documents";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Appointment Documents (Stored in S3)</h4>
+            <a asp-action="Upload" asp-route-appointmentId="@ViewBag.AppointmentId" class="btn btn-light">
+                <i class="bi bi-cloud-upload"></i> Upload New Document
+            </a>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Success"]
+                </div>
+            }
+            
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    No documents have been uploaded for this appointment yet.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Uploaded</th>
+                                <th>S3 Storage Key</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doc in Model)
+                            {
+                                <tr>
+                                    <td>@doc.DocumentName</td>
+                                    <td>@doc.ContentType</td>
+                                    <td>@(doc.FileSize / 1024) KB</td>
+                                    <td>@doc.UploadedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td><small class="text-muted">@doc.S3Key</small></td>
+                                    <td>
+                                        <a asp-action="Download" asp-route-id="@doc.Id" class="btn btn-sm btn-info">
+                                            <i class="bi bi-download"></i> Download
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer">
+            <a asp-area="Doctor" asp-controller="Appointments" asp-action="Details" asp-route-id="@ViewBag.AppointmentId" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Appointment
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">About Serverless Storage</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                This feature demonstrates the integration of AWS Lambda with S3 storage. When you upload a document:
+            </p>
+            <ol>
+                <li>Your browser sends the file to our ASP.NET Core application</li>
+                <li>Our application converts the file to a format suitable for API transmission</li>
+                <li>The file data is sent to an AWS Lambda function through API Gateway</li>
+                <li>The Lambda function processes the file and stores it in Amazon S3</li>
+                <li>Only metadata about the file is stored in our database</li>
+            </ol>
+            <p>
+                This serverless architecture provides scalability and cost-efficiency, as you only pay for the actual
+                storage used and the compute time when files are uploaded or accessed.
+            </p>
+        </div>
+    </div>
+</div> 
