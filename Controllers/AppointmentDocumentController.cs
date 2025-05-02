@@ -109,54 +109,77 @@ namespace DentalManagement.Controllers
                 byte[] fileBytes;
                 try 
                 {
-                    if (IsBase64String(result.FileContent))
+                    bool isBinaryContent = result.ContentType != null && 
+                        (result.ContentType.StartsWith("image/") || 
+                         result.ContentType.StartsWith("application/pdf") ||
+                         result.ContentType.StartsWith("application/octet-stream") ||
+                         result.ContentType.StartsWith("audio/") ||
+                         result.ContentType.StartsWith("video/"));
+
+                    if (isBinaryContent)
+                    {
+                        _logger.LogInformation($"Processing content as binary ({result.ContentType})");
+                        fileBytes = System.Text.Encoding.UTF8.GetBytes(result.FileContent);
+                    }
+                    else if (IsBase64String(result.FileContent))
                     {
                         fileBytes = Convert.FromBase64String(result.FileContent);
                         _logger.LogInformation("Processing content as base64");
                     }
                     else
                     {
-                        try
+                        bool looksLikeJson = result.FileContent.TrimStart().StartsWith("{") || 
+                                            result.FileContent.TrimStart().StartsWith("[");
+
+                        if (looksLikeJson)
                         {
-                            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(result.FileContent);
-                            
-                            if (jsonResponse.TryGetProperty("body", out var body))
+                            try
                             {
-                                string bodyContent = body.GetString();
-                                _logger.LogInformation("Extracting body from JSON response");
+                                var jsonResponse = JsonSerializer.Deserialize<JsonElement>(result.FileContent);
                                 
-                                if (IsBase64String(bodyContent))
+                                if (jsonResponse.TryGetProperty("body", out var body))
                                 {
-                                    fileBytes = Convert.FromBase64String(bodyContent);
+                                    string bodyContent = body.GetString();
+                                    _logger.LogInformation("Extracting body from JSON response");
+                                    
+                                    if (IsBase64String(bodyContent))
+                                    {
+                                        fileBytes = Convert.FromBase64String(bodyContent);
+                                    }
+                                    else
+                                    {
+                                        fileBytes = System.Text.Encoding.UTF8.GetBytes(bodyContent);
+                                    }
+                                }
+                                else if (jsonResponse.TryGetProperty("fileContent", out var fileContent))
+                                {
+                                    string content = fileContent.GetString();
+                                    _logger.LogInformation("Extracting fileContent from JSON response");
+                                    
+                                    if (IsBase64String(content))
+                                    {
+                                        fileBytes = Convert.FromBase64String(content);
+                                    }
+                                    else
+                                    {
+                                        fileBytes = System.Text.Encoding.UTF8.GetBytes(content);
+                                    }
                                 }
                                 else
                                 {
-                                    fileBytes = System.Text.Encoding.UTF8.GetBytes(bodyContent);
+                                    _logger.LogInformation("No recognized property in JSON, returning raw JSON");
+                                    fileBytes = System.Text.Encoding.UTF8.GetBytes(result.FileContent);
                                 }
                             }
-                            else if (jsonResponse.TryGetProperty("fileContent", out var fileContent))
+                            catch (JsonException ex)
                             {
-                                string content = fileContent.GetString();
-                                _logger.LogInformation("Extracting fileContent from JSON response");
-                                
-                                if (IsBase64String(content))
-                                {
-                                    fileBytes = Convert.FromBase64String(content);
-                                }
-                                else
-                                {
-                                    fileBytes = System.Text.Encoding.UTF8.GetBytes(content);
-                                }
-                            }
-                            else
-                            {
-                                _logger.LogInformation("No recognized property in JSON, returning raw JSON");
+                                _logger.LogInformation($"Not valid JSON, using as plain text: {ex.Message}");
                                 fileBytes = System.Text.Encoding.UTF8.GetBytes(result.FileContent);
                             }
                         }
-                        catch (JsonException)
+                        else
                         {
-                            _logger.LogInformation("Not valid JSON, using as plain text");
+                            _logger.LogInformation("Content is not JSON or base64, using as plain text");
                             fileBytes = System.Text.Encoding.UTF8.GetBytes(result.FileContent);
                         }
                     }
@@ -168,7 +191,8 @@ namespace DentalManagement.Controllers
                         $"Error processing file content: {ex.Message}\n\nRaw content: {result.FileContent}");
                 }
                 
-                return File(fileBytes, document.ContentType ?? "application/octet-stream", document.DocumentName);
+                var finalContentType = result.ContentType ?? document.ContentType ?? "application/octet-stream";
+                return File(fileBytes, finalContentType, document.DocumentName);
             }
             catch (Exception ex)
             {

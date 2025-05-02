@@ -64,14 +64,22 @@ namespace DentalManagement.Services
         {
             try
             {
-                var requestUrl = $"https://pig7opi0h5.execute-api.us-east-1.amazonaws.com/prod_/DownloadFromS3?key={Uri.EscapeDataString(key)}";
+                var requestUrl = $"https://pig7opioh5.execute-api.us-east-1.amazonaws.com/prod_/DownloadFromS3?key={Uri.EscapeDataString(key)}";
                 _logger.LogInformation($"Request URL: {requestUrl}");
 
                 var response = await _httpClient.GetAsync(requestUrl);
 
                 var responseContent = await response.Content.ReadAsStringAsync();
                 _logger.LogInformation($"Response status: {response.StatusCode}");
-                _logger.LogInformation($"Response content: {responseContent}");
+                
+                if (responseContent.Length > 200)
+                {
+                    _logger.LogInformation($"Response content (truncated): {responseContent.Substring(0, 200)}...");
+                }
+                else
+                {
+                    _logger.LogInformation($"Response content: {responseContent}");
+                }
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -82,54 +90,86 @@ namespace DentalManagement.Services
                     };
                 }
 
-                try
+                var contentType = response.Content.Headers.ContentType?.MediaType?.ToLower();
+                _logger.LogInformation($"Response content type: {contentType}");
+
+                bool isBinaryContent = contentType != null && 
+                    (contentType.StartsWith("image/") || 
+                     contentType.StartsWith("application/pdf") ||
+                     contentType.StartsWith("application/octet-stream") ||
+                     contentType.StartsWith("audio/") ||
+                     contentType.StartsWith("video/"));
+
+                if (isBinaryContent)
                 {
-                    var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
-                    
-                    if (jsonResponse.TryGetProperty("body", out var body) && 
-                        jsonResponse.TryGetProperty("statusCode", out var statusCode))
+                    return new S3DownloadResult
                     {
-                        string bodyContent = body.GetString();
-                        int status = statusCode.GetInt32();
+                        Success = true,
+                        Message = "Binary download successful",
+                        FileContent = responseContent,
+                        ContentType = contentType ?? "application/octet-stream"
+                    };
+                }
+
+                // Check if it looks like JSON (starts with '{' or '[')
+                bool looksLikeJson = responseContent.TrimStart().StartsWith("{") || 
+                                     responseContent.TrimStart().StartsWith("[");
+
+                if (looksLikeJson)
+                {
+                    try
+                    {
+                        var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseContent);
                         
-                        if (status >= 200 && status < 300)
+                        if (jsonResponse.TryGetProperty("body", out var body) && 
+                            jsonResponse.TryGetProperty("statusCode", out var statusCode))
                         {
-                            return new S3DownloadResult
+                            string bodyContent = body.GetString();
+                            int status = statusCode.GetInt32();
+                            
+                            if (status >= 200 && status < 300)
                             {
-                                Success = true,
-                                Message = "Download successful",
-                                FileContent = bodyContent,
-                                ContentType = "application/octet-stream" 
-                            };
+                                return new S3DownloadResult
+                                {
+                                    Success = true,
+                                    Message = "Download successful",
+                                    FileContent = bodyContent,
+                                    ContentType = "application/octet-stream" 
+                                };
+                            }
+                            else
+                            {
+                                return new S3DownloadResult
+                                {
+                                    Success = false,
+                                    Message = $"Lambda returned error: {bodyContent}"
+                                };
+                            }
                         }
-                        else
+                        
+                        return new S3DownloadResult
                         {
-                            return new S3DownloadResult
-                            {
-                                Success = false,
-                                Message = $"Lambda returned error: {bodyContent}"
-                            };
-                        }
+                            Success = true,
+                            Message = "Download successful",
+                            FileContent = responseContent,
+                            ContentType = contentType ?? "application/json"
+                        };
                     }
-                    
-                    return new S3DownloadResult
+                    catch (JsonException ex)
                     {
-                        Success = true,
-                        Message = "Download successful",
-                        FileContent = responseContent,
-                        ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json"
-                    };
+                        _logger.LogWarning($"Failed to parse response as JSON: {ex.Message}");
+                        // Fall through to treat as non-JSON content
+                    }
                 }
-                catch (JsonException)
+
+                // If not JSON or couldn't parse as JSON, return as is
+                return new S3DownloadResult
                 {
-                    return new S3DownloadResult
-                    {
-                        Success = true,
-                        Message = "Download successful",
-                        FileContent = responseContent,
-                        ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream"
-                    };
-                }
+                    Success = true,
+                    Message = "Download successful",
+                    FileContent = responseContent,
+                    ContentType = contentType ?? "application/octet-stream"
+                };
             }
             catch (Exception ex)
             {
