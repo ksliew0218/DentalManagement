@@ -21,6 +21,7 @@ COPY --from=build /app .
 COPY ./EmailTemplates/ /app/EmailTemplates/
 COPY appsettings.json /app/appsettings.json
 COPY appsettings.Development.json /app/appsettings.Development.json
+COPY ./wwwroot/Images /app/wwwroot/Images
 
 # Copy and set permissions for the startup script
 COPY startup.sh .

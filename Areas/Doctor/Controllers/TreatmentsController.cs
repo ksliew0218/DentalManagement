@@ -59,32 +59,86 @@ namespace DentalManagement.Areas.Doctor.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            try 
             {
-                return NotFound("User not found.");
-            }
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
 
-            var doctor = await _context.Doctors
-                .FirstOrDefaultAsync(d => d.UserID == user.Id);
-            
-            if (doctor == null)
+                var doctor = await _context.Doctors
+                    .FirstOrDefaultAsync(d => d.UserID == user.Id);
+                
+                if (doctor == null)
+                {
+                    return NotFound("Doctor profile not found. Please contact the administrator.");
+                }
+
+                var doctorTreatment = await _context.DoctorTreatments
+                    .Include(dt => dt.TreatmentType)
+                    .FirstOrDefaultAsync(dt => dt.Id == id && dt.DoctorId == doctor.Id && dt.IsActive && !dt.IsDeleted);
+
+                if (doctorTreatment == null)
+                {
+                    var alternativeTreatment = await _context.DoctorTreatments
+                        .FirstOrDefaultAsync(dt => dt.TreatmentTypeId == id && dt.DoctorId == doctor.Id && dt.IsActive && !dt.IsDeleted);
+                    
+                    if (alternativeTreatment != null)
+                    {
+                        return RedirectToAction("TreatmentDetails", new { treatmentTypeId = id });
+                    }
+                    
+                    return NotFound("Treatment not found or not assigned to you.");
+                }
+
+                ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+
+                return View(doctorTreatment);
+            }
+            catch (Exception ex)
             {
-                return NotFound("Doctor profile not found. Please contact the administrator.");
+                return Content($"Error retrieving treatment details: {ex.Message}");
             }
+        }
 
-            var doctorTreatment = await _context.DoctorTreatments
-                .Include(dt => dt.TreatmentType)
-                .FirstOrDefaultAsync(dt => dt.Id == id && dt.DoctorId == doctor.Id && dt.IsActive && !dt.IsDeleted);
-
-            if (doctorTreatment == null)
+        [HttpGet]
+        [Route("TreatmentDetails/{treatmentTypeId}")]
+        public async Task<IActionResult> TreatmentDetails(int treatmentTypeId)
+        {
+            try
             {
-                return NotFound("Treatment not found or not assigned to you.");
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                var doctor = await _context.Doctors
+                    .FirstOrDefaultAsync(d => d.UserID == user.Id);
+                
+                if (doctor == null)
+                {
+                    return NotFound("Doctor profile not found. Please contact the administrator.");
+                }
+
+                var doctorTreatment = await _context.DoctorTreatments
+                    .Include(dt => dt.TreatmentType)
+                    .FirstOrDefaultAsync(dt => dt.TreatmentTypeId == treatmentTypeId && dt.DoctorId == doctor.Id && dt.IsActive && !dt.IsDeleted);
+
+                if (doctorTreatment == null)
+                {
+                    return NotFound("Treatment not found or not assigned to you.");
+                }
+
+                ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
+
+                return View("Details", doctorTreatment);
             }
-
-            ViewData["DoctorName"] = $"Dr. {doctor.FirstName} {doctor.LastName}";
-
-            return View(doctorTreatment);
+            catch (Exception ex)
+            {
+                return Content($"Error retrieving treatment details: {ex.Message}");
+            }
         }
     }
 } 
