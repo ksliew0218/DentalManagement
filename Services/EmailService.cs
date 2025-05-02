@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
+using DentalManagement.Services;
 
 namespace DentalManagement.Services
 {
@@ -31,19 +32,23 @@ namespace DentalManagement.Services
         private readonly HtmlEncoder _htmlEncoder;
         private readonly EmailTemplateService _templateService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly AwsLambdaService _awsLambdaService;
+
 
         public EmailService(
             IOptions<EmailSettings> emailSettings,
             ILogger<EmailService> logger,
             HtmlEncoder htmlEncoder,
             EmailTemplateService templateService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            AwsLambdaService awsLambdaService)
         {
             _emailSettings = emailSettings.Value;
             _logger = logger;
             _htmlEncoder = htmlEncoder;
             _templateService = templateService;
             _httpContextAccessor = httpContextAccessor;
+            _awsLambdaService = awsLambdaService;
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
@@ -103,13 +108,13 @@ namespace DentalManagement.Services
             }
         }
 
-        public async Task SendAppointmentConfirmationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails)
+                public async Task SendAppointmentConfirmationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails)
         {
             try
             {
                 var baseUrl = GetBaseUrl();
                 var appointmentsUrl = $"{baseUrl}/Patient/Appointments";
-                
+
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
@@ -123,12 +128,18 @@ namespace DentalManagement.Services
                     { "AppointmentsUrl", appointmentsUrl },
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
-                
+
                 string emailContent = await _templateService.GetEmailTemplateAsync("AppointmentConfirmation", replacements);
-                
+
                 if (!string.IsNullOrEmpty(emailContent))
                 {
                     await SendEmailAsync(email, "Your Appointment Confirmation - SmileCraft Dental", emailContent);
+                    _logger.LogInformation($"Sent appointment confirmation email to {email} for appointment {appointmentDetails.Id}");
+
+                    // 🔔 Call Lambda SNS after email success
+                    string snsMessage = $"{patientName} has booked a {appointmentDetails.TreatmentName} appointment on {appointmentDetails.FormattedAppointmentDate} at {appointmentDetails.FormattedAppointmentTime}.";
+                    string snsSubject = "New Appointment Booked";
+                    await _awsLambdaService.TriggerSnsNotificationAsync(snsSubject, snsMessage);
                 }
                 else
                 {
@@ -141,13 +152,13 @@ namespace DentalManagement.Services
             }
         }
 
-        public async Task SendAppointmentCancellationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails)
+                public async Task SendAppointmentCancellationEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails)
         {
             try
             {
                 var baseUrl = GetBaseUrl();
                 var bookAppointmentUrl = $"{baseUrl}/Patient/Appointments/Book";
-                
+
                 var replacements = new Dictionary<string, string>
                 {
                     { "PatientName", string.IsNullOrEmpty(patientName) ? "there" : patientName },
@@ -159,12 +170,18 @@ namespace DentalManagement.Services
                     { "BookAppointmentUrl", bookAppointmentUrl },
                     { "CurrentYear", DateTime.Now.Year.ToString() }
                 };
-                
+
                 string emailContent = await _templateService.GetEmailTemplateAsync("AppointmentCancellation", replacements);
-                
+
                 if (!string.IsNullOrEmpty(emailContent))
                 {
                     await SendEmailAsync(email, "Your Appointment Cancellation - SmileCraft Dental", emailContent);
+                    _logger.LogInformation($"Sent appointment cancellation email to {email} for appointment {appointmentDetails.Id}");
+
+                    // 🔔 Call Lambda SNS after cancellation
+                    string snsMessage = $"{patientName} has cancelled their {appointmentDetails.TreatmentName} appointment on {appointmentDetails.FormattedAppointmentDate} at {appointmentDetails.FormattedAppointmentTime}.";
+                    string snsSubject = "Appointment Cancelled";
+                    await _awsLambdaService.TriggerSnsNotificationAsync(snsSubject, snsMessage);
                 }
                 else
                 {
@@ -176,6 +193,7 @@ namespace DentalManagement.Services
                 _logger.LogError(ex, $"Error sending appointment cancellation email to {email}");
             }
         }
+
 
         public async Task SendAppointmentCompletedEmailAsync(string email, string patientName, AppointmentDetailViewModel appointmentDetails, decimal remainingBalance = 0)
         {

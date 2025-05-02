@@ -19,6 +19,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<AppointmentReminderService>();
 
+builder.Services.AddScoped<AwsLambdaService>();
+builder.Services.AddHttpClient<AwsLambdaService>();
+
+
 builder.Services.AddHttpClient<IS3UploadService, S3UploadService>();
 builder.Services.AddHttpClient<IS3DownloadService, S3DownloadService>();
 builder.Services.AddScoped<IAppointmentDocumentService, AppointmentDocumentService>();
